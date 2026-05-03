@@ -7,13 +7,6 @@ import { useRef } from "react";
 
 export const projects = [
   {
-    label: "AI & Consulting",
-    title: "safarisaev.ai",
-    sub: "AI strategy & consulting presence",
-    href: "https://safarisaev.ai",
-    img: "/portfolio/safarisaev.jpg",
-  },
-  {
     label: "Lingerie & Atelier",
     title: "beautasy.co.uk",
     sub: "Luxury lingerie brand & bespoke atelier",
@@ -33,6 +26,13 @@ export const projects = [
     sub: "Premium honey import from Central Asia",
     href: "https://silkbees.co.uk",
     img: "/portfolio/silkbees.jpg",
+  },
+  {
+    label: "AI & Consulting",
+    title: "safarisaev.ai",
+    sub: "AI strategy & consulting presence",
+    href: "https://safarisaev.ai",
+    img: "/portfolio/safarisaev.jpg",
   },
 ];
 

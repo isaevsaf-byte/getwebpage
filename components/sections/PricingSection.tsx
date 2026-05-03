@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
-import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import { useRef, useState } from "react";
 
 const tiers = [
   {
+    id: "starter",
     name: "Starter",
     price: "£500",
     time: "5 days",
@@ -21,6 +21,7 @@ const tiers = [
     popular: false,
   },
   {
+    id: "standard",
     name: "Standard",
     price: "£800",
     time: "7 days",
@@ -36,6 +37,7 @@ const tiers = [
     popular: true,
   },
   {
+    id: "identity",
     name: "Identity",
     price: "£1,200",
     time: "7 days",
@@ -51,6 +53,7 @@ const tiers = [
     popular: false,
   },
   {
+    id: "custom",
     name: "Custom",
     price: "£1,500+",
     time: "TBC",
@@ -64,11 +67,38 @@ const tiers = [
     ],
     popular: false,
   },
-];
+] as const;
+
+type TierId = (typeof tiers)[number]["id"];
+type LoadingState = TierId | null;
 
 export default function PricingSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  const [loading, setLoading] = useState<LoadingState>(null);
+  const [checkoutError, setCheckoutError] = useState<TierId | null>(null);
+
+  const handleCheckout = async (tierId: TierId) => {
+    setLoading(tierId);
+    setCheckoutError(null);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier: tierId }),
+      });
+      const json = await res.json();
+      if (json.url) {
+        window.location.href = json.url;
+      } else {
+        setCheckoutError(tierId);
+        setLoading(null);
+      }
+    } catch {
+      setCheckoutError(tierId);
+      setLoading(null);
+    }
+  };
 
   return (
     <section
@@ -268,51 +298,135 @@ export default function PricingSection() {
                   ))}
                 </ul>
 
-                <Link
-                  href="/contact"
-                  style={{
-                    width: "100%",
-                    padding: "11px 16px",
-                    background: t.popular ? "#a04020" : "transparent",
-                    color: t.popular ? "#ffffff" : "#1a1612",
-                    border: `1px solid ${t.popular ? "#a04020" : "#c8c0b6"}`,
-                    borderRadius: 4,
-                    fontFamily: "var(--font-dm-sans), sans-serif",
-                    fontSize: 13,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    letterSpacing: "0.02em",
-                    transition: "all 200ms",
-                    textDecoration: "none",
-                    display: "block",
-                    textAlign: "center",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (t.popular) {
-                      (e.currentTarget as HTMLAnchorElement).style.background =
-                        "#b84a28";
-                    } else {
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor =
-                        "#9a9188";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (t.popular) {
-                      (e.currentTarget as HTMLAnchorElement).style.background =
-                        "#a04020";
-                    } else {
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor =
-                        "#c8c0b6";
-                    }
-                  }}
-                >
-                  Get started
-                </Link>
+                {/* Error message */}
+                {checkoutError === t.id && (
+                  <div
+                    style={{
+                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontSize: 12,
+                      color: "#a04020",
+                      marginBottom: 10,
+                      textAlign: "center",
+                    }}
+                  >
+                    Something went wrong. Try again.
+                  </div>
+                )}
+
+                {/* CTA — Custom goes to /contact, others to Stripe */}
+                {t.id === "custom" ? (
+                  <Link
+                    href="/contact"
+                    style={{
+                      width: "100%",
+                      padding: "11px 16px",
+                      background: "transparent",
+                      color: "#1a1612",
+                      border: "1px solid #c8c0b6",
+                      borderRadius: 4,
+                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontSize: 13,
+                      fontWeight: 500,
+                      cursor: "pointer",
+                      letterSpacing: "0.02em",
+                      textDecoration: "none",
+                      display: "block",
+                      textAlign: "center",
+                      transition: "border-color 200ms",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "#9a9188";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "#c8c0b6";
+                    }}
+                  >
+                    Get in touch
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => handleCheckout(t.id as Exclude<TierId, "custom">)}
+                    disabled={loading === t.id}
+                    style={{
+                      width: "100%",
+                      padding: "11px 16px",
+                      background:
+                        loading === t.id
+                          ? t.popular
+                            ? "#c8a090"
+                            : "#e8e3d8"
+                          : t.popular
+                          ? "#a04020"
+                          : "transparent",
+                      color: t.popular ? "#ffffff" : "#1a1612",
+                      border: `1px solid ${t.popular ? (loading === t.id ? "#c8a090" : "#a04020") : "#c8c0b6"}`,
+                      borderRadius: 4,
+                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontSize: 13,
+                      fontWeight: 500,
+                      cursor: loading === t.id ? "not-allowed" : "pointer",
+                      letterSpacing: "0.02em",
+                      transition: "all 200ms",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (loading !== t.id) {
+                        if (t.popular) {
+                          (e.currentTarget as HTMLButtonElement).style.background = "#b84a28";
+                        } else {
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = "#9a9188";
+                        }
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (loading !== t.id) {
+                        if (t.popular) {
+                          (e.currentTarget as HTMLButtonElement).style.background = "#a04020";
+                        } else {
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = "#c8c0b6";
+                        }
+                      }
+                    }}
+                  >
+                    {loading === t.id ? (
+                      <>
+                        <svg
+                          width="13"
+                          height="13"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          style={{
+                            animation: "spin 0.8s linear infinite",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                        </svg>
+                        Loading…
+                      </>
+                    ) : (
+                      "Get started"
+                    )}
+                  </button>
+                )}
               </div>
             </motion.div>
           ))}
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </section>
   );
 }

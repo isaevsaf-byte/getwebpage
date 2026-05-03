@@ -1,49 +1,53 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
+import Image from "next/image";
+import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
 export const projects = [
   {
-    label: "B2B Consulting",
+    label: "AI & Consulting",
     title: "safarisaev.ai",
     sub: "AI strategy & consulting presence",
     href: "https://safarisaev.ai",
-    bg: "#ede8e0",
-    accent: "#a04020",
+    img: "/portfolio/safarisaev.jpg",
   },
   {
     label: "Lingerie & Atelier",
     title: "beautasy.co.uk",
     sub: "Luxury lingerie brand & bespoke atelier",
     href: "https://beautasy.co.uk",
-    bg: "#e8e3d8",
-    accent: "#c87850",
+    img: "/portfolio/beautasy.jpg",
   },
   {
     label: "DJ & Artist",
     title: "bektothefuture.com",
     sub: "DJ artist portfolio & booking",
     href: "https://bektothefuture.com",
-    bg: "#e4dfd6",
-    accent: "#6b6358",
+    img: "/portfolio/bektothefuture.jpg",
   },
   {
     label: "Honey Import",
     title: "silkbees.co.uk",
     sub: "Premium honey import from Central Asia",
     href: "https://silkbees.co.uk",
-    bg: "#eae6de",
-    accent: "#b08940",
+    img: "/portfolio/silkbees.jpg",
   },
 ];
+
+const vedovec = {
+  label: "Customs Brokerage",
+  title: "vedovec.vercel.app",
+  sub: "B2B logistics & customs brokerage platform",
+  href: "https://vedovec.vercel.app",
+  img: "/portfolio/vedovec.jpg",
+};
 
 export default function WorkSection({ showAll = false }: { showAll?: boolean }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
-  const displayProjects = showAll ? projects : projects.slice(0, 4);
+  const displayProjects = showAll ? [...projects, vedovec] : projects.slice(0, 4);
 
   return (
     <section
@@ -109,12 +113,10 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
                 transition: "border-color 200ms",
               }}
               onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.borderBottomColor =
-                  "#a04020")
+                ((e.currentTarget as HTMLAnchorElement).style.borderBottomColor = "#a04020")
               }
               onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.borderBottomColor =
-                  "#c8c0b6")
+                ((e.currentTarget as HTMLAnchorElement).style.borderBottomColor = "#c8c0b6")
               }
             >
               View all
@@ -157,25 +159,30 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
                 boxShadow: "0 8px 32px rgba(26,22,18,0.09)",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.borderColor =
-                  "#c8c0b6";
+                (e.currentTarget as HTMLAnchorElement).style.borderColor = "#c8c0b6";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.borderColor =
-                  "#e8e3d8";
+                (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e8e3d8";
               }}
             >
-              {/* 4:3 image placeholder */}
+              {/* 4:3 screenshot */}
               <div
                 style={{
                   position: "relative",
                   paddingTop: "75%",
-                  background: p.bg,
                   overflow: "hidden",
+                  background: "#ede8e0",
                 }}
               >
-                <div style={{ position: "absolute", inset: 0, background: p.bg }} />
+                <Image
+                  src={p.img}
+                  alt={p.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  style={{ objectFit: "cover", objectPosition: "top" }}
+                />
               </div>
+
               <div style={{ padding: "22px 26px 24px" }}>
                 <div
                   style={{
@@ -212,82 +219,6 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
               </div>
             </motion.a>
           ))}
-
-          {/* Coming soon card */}
-          {showAll && (
-            <div
-              style={{
-                background: "#fff",
-                border: "1px solid #e8e3d8",
-                borderRadius: 6,
-                overflow: "hidden",
-                opacity: 0.45,
-              }}
-            >
-              <div
-                style={{
-                  position: "relative",
-                  paddingTop: "75%",
-                  background: "#eae6de",
-                }}
-              >
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "var(--font-dm-mono), monospace",
-                      fontSize: 8,
-                      color: "#9a9188",
-                      letterSpacing: "0.06em",
-                    }}
-                  >
-                    coming soon
-                  </span>
-                </div>
-              </div>
-              <div style={{ padding: "22px 26px 24px" }}>
-                <div
-                  style={{
-                    fontFamily: "var(--font-dm-sans), sans-serif",
-                    fontSize: 10,
-                    letterSpacing: "0.10em",
-                    textTransform: "uppercase" as const,
-                    color: "#9a9188",
-                    marginBottom: 6,
-                  }}
-                >
-                  —
-                </div>
-                <div
-                  style={{
-                    fontFamily: "var(--font-cormorant), serif",
-                    fontSize: "1.45rem",
-                    fontWeight: 400,
-                    color: "#9a9188",
-                  }}
-                >
-                  Coming soon
-                </div>
-                <div
-                  style={{
-                    fontFamily: "var(--font-dm-sans), sans-serif",
-                    fontSize: 12,
-                    color: "#9a9188",
-                    marginTop: 4,
-                  }}
-                >
-                  Next project in progress
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </section>

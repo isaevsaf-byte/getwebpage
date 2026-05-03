@@ -35,6 +35,14 @@ export async function POST(req: NextRequest) {
       depositAmount: selected.deposit,
     },
     billing_address_collection: "required",
+    consent_collection: {
+      terms_of_service: "required",
+    },
+    custom_text: {
+      terms_of_service_acceptance: {
+        message: "I agree to the GetWebPage Terms of Service",
+      },
+    },
     success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/pricing`,
   });

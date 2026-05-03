@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant, DM_Sans, DM_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const cormorant = Cormorant({
@@ -55,6 +56,7 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-dm-sans), Helvetica Neue, Arial, sans-serif" }}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );

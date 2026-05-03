@@ -47,7 +47,7 @@ const vedovec = {
 export default function WorkSection({ showAll = false }: { showAll?: boolean }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
-  const displayProjects = showAll ? [...projects, vedovec] : projects.slice(0, 4);
+  const displayProjects = showAll ? [...projects, vedovec] : [...projects, vedovec];
 
   return (
     <section
@@ -219,6 +219,81 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
               </div>
             </motion.a>
           ))}
+
+          {/* Coming soon card */}
+          <div
+            style={{
+              background: "#fff",
+              border: "1px dashed #ddd8ce",
+              borderRadius: 6,
+              overflow: "hidden",
+              opacity: 0.5,
+            }}
+          >
+            <div
+              style={{
+                position: "relative",
+                paddingTop: "75%",
+                background: "#f0ece4",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "var(--font-dm-mono), monospace",
+                    fontSize: 9,
+                    color: "#9a9188",
+                    letterSpacing: "0.10em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Coming soon
+                </span>
+              </div>
+            </div>
+            <div style={{ padding: "22px 26px 24px" }}>
+              <div
+                style={{
+                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontSize: 10,
+                  letterSpacing: "0.10em",
+                  textTransform: "uppercase" as const,
+                  color: "#9a9188",
+                  marginBottom: 6,
+                }}
+              >
+                Next project
+              </div>
+              <div
+                style={{
+                  fontFamily: "var(--font-cormorant), serif",
+                  fontSize: "1.45rem",
+                  fontWeight: 400,
+                  color: "#9a9188",
+                }}
+              >
+                In progress
+              </div>
+              <div
+                style={{
+                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontSize: 12,
+                  color: "#9a9188",
+                  marginTop: 4,
+                }}
+              >
+                Could be yours
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -12,6 +12,7 @@ export const projects = [
     sub: "Luxury lingerie brand & bespoke atelier",
     href: "https://beautasy.co.uk",
     img: "/portfolio/beautasy.jpg",
+    imgPosition: "center",
   },
   {
     label: "DJ & Artist",
@@ -19,6 +20,7 @@ export const projects = [
     sub: "DJ artist portfolio & booking",
     href: "https://bektothefuture.com",
     img: "/portfolio/bektothefuture.jpg",
+    imgPosition: "top",
   },
   {
     label: "Honey Import",
@@ -26,6 +28,7 @@ export const projects = [
     sub: "Premium honey import from Central Asia",
     href: "https://silkbees.co.uk",
     img: "/portfolio/silkbees.jpg",
+    imgPosition: "top",
   },
   {
     label: "AI & Consulting",
@@ -33,6 +36,7 @@ export const projects = [
     sub: "AI strategy & consulting presence",
     href: "https://safarisaev.ai",
     img: "/portfolio/safarisaev.jpg",
+    imgPosition: "center",
   },
 ];
 
@@ -179,7 +183,7 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
                   alt={p.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  style={{ objectFit: "cover", objectPosition: "top" }}
+                  style={{ objectFit: "cover", objectPosition: p.imgPosition ?? "top" }}
                 />
               </div>
 

@@ -90,6 +90,12 @@ export default function PricingSection() {
     card.style.setProperty("--my", `${y}%`);
   }, []);
 
+  const handleMouseLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    card.style.setProperty("--mx", "50%");
+    card.style.setProperty("--my", "200%");
+  }, []);
+
   const handleCheckout = async (tierId: TierId) => {
     setLoading(tierId);
     setCheckoutError(null);
@@ -174,6 +180,7 @@ export default function PricingSection() {
               }}
               className={t.popular ? "pricing-spotlight" : "pricing-spotlight-muted"}
               onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
               style={{
                 borderRadius: 4,
                 overflow: "hidden",
@@ -438,16 +445,10 @@ export default function PricingSection() {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-        .pricing-spotlight {
+        .pricing-spotlight, .pricing-spotlight-muted {
           background:
             linear-gradient(#f0ece4, #f0ece4) padding-box,
-            radial-gradient(circle 220px at var(--mx, 50%) var(--my, 200%), #c04828 0%, #a04020 28%, #a04020 100%) border-box;
-          border: 1px solid transparent;
-        }
-        .pricing-spotlight-muted {
-          background:
-            linear-gradient(#f0ece4, #f0ece4) padding-box,
-            radial-gradient(circle 220px at var(--mx, 50%) var(--my, 200%), #c04828 0%, #a04020 28%, #ddd8ce 65%) border-box;
+            radial-gradient(circle 220px at var(--mx, 50%) var(--my, 200%), #c04828 0%, #a04020 28%, transparent 62%) border-box;
           border: 1px solid transparent;
         }
       `}</style>

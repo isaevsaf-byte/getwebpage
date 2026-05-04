@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     },
     custom_text: {
       terms_of_service_acceptance: {
-        message: "I agree to the GetWebPage Terms of Service",
+        message: "I agree to the GetWebPage Terms of Service at getwebpage.co.uk/terms",
       },
     },
     success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,

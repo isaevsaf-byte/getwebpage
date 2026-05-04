@@ -70,7 +70,6 @@ export default function Nav() {
         {/* Desktop links */}
         <div
           style={{
-            display: "flex",
             gap: 32,
             alignItems: "center",
           }}

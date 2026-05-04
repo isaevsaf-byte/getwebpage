@@ -32,6 +32,9 @@ export const metadata: Metadata = {
   description:
     "A UK web studio building fast, beautiful websites for salons, studios, hospitality and trades. From £500, delivered in 7 days. Full ownership guaranteed.",
   keywords: "web design, website, UK, small business, affordable, fast",
+  icons: {
+    icon: "/icon.svg",
+  },
   openGraph: {
     title: "GetWebPage — Serious websites for UK small businesses",
     description: "From £500. Delivered in 7 days. Full ownership yours.",

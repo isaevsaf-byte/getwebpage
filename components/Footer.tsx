@@ -75,7 +75,7 @@ export default function Footer() {
 
           <div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "center" }}>
             <a
-              href="mailto:hello@safarisaev.ai"
+              href="mailto:saf@safarisaev.ai"
               style={{
                 fontFamily: "var(--font-dm-sans), sans-serif",
                 fontSize: 13,
@@ -90,7 +90,7 @@ export default function Footer() {
                 ((e.currentTarget as HTMLAnchorElement).style.color = "#6b6358")
               }
             >
-              hello@safarisaev.ai
+              saf@safarisaev.ai
             </a>
             {navLinks.map((l) => (
               <Link

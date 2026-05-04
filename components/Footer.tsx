@@ -73,7 +73,25 @@ export default function Footer() {
             </span>
           </Link>
 
-          <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "center" }}>
+            <a
+              href="mailto:hello@safarisaev.ai"
+              style={{
+                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontSize: 13,
+                color: "#6b6358",
+                textDecoration: "none",
+                transition: "color 200ms",
+              }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLAnchorElement).style.color = "#9a9188")
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLAnchorElement).style.color = "#6b6358")
+              }
+            >
+              hello@safarisaev.ai
+            </a>
             {navLinks.map((l) => (
               <Link
                 key={l.href}

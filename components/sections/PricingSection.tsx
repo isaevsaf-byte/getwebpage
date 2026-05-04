@@ -13,9 +13,10 @@ const tiers = [
     desc: "One-page site. Perfect for getting online fast.",
     features: [
       "Single page",
-      "AI-written copy included",
+      "Copy written for your brand, included",
       "Mobile responsive",
       "Contact form",
+      "Basic SEO setup",
       "Google Analytics",
       "Domain & hosting setup",
       "1 revision round",
@@ -30,7 +31,7 @@ const tiers = [
     desc: "Up to 5 pages. For businesses that need more room.",
     features: [
       "Up to 5 pages",
-      "AI-written copy for all pages",
+      "Copy written for your brand, included",
       "Gallery or portfolio",
       "Blog ready",
       "SEO foundations",
@@ -47,7 +48,7 @@ const tiers = [
     desc: "Full brand + site — design, copy, photography direction.",
     features: [
       "Up to 10 pages",
-      "AI copy + brand voice development",
+      "Copy written for your brand, included",
       "Brand identity",
       "Photography brief",
       "Booking integration",

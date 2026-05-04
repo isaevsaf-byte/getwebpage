@@ -40,19 +40,10 @@ export const projects = [
   },
 ];
 
-const vedovec = {
-  label: "Customs Brokerage",
-  title: "vedovec.vercel.app",
-  sub: "B2B logistics & customs brokerage platform",
-  href: "https://vedovec.vercel.app",
-  img: "/portfolio/vedovec.jpg",
-  imgPosition: "top",
-};
-
 export default function WorkSection({ showAll = false }: { showAll?: boolean }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
-  const displayProjects = showAll ? [...projects, vedovec] : [...projects, vedovec];
+  const displayProjects = showAll ? projects : projects;
 
   return (
     <section

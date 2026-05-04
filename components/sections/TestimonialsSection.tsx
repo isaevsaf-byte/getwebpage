@@ -8,20 +8,14 @@ const quotes = [
   {
     quote:
       "Genuinely couldn't believe how fast it was. The site looks better than anything I've seen from agencies charging triple.",
-    name: "Priya M.",
-    role: "Owner, Lune Studio",
+    name: "Beautasy studio owner",
+    role: "Southampton, UK",
   },
   {
     quote:
       "We had zero online presence. Now we get bookings every day through the site. It paid for itself in the first week.",
-    name: "Tom H.",
-    role: "The Folly Café",
-  },
-  {
-    quote:
-      "No agency waffle, no project bloat. Just a clear brief, a fast build, and a beautiful result.",
-    name: "Sarah L.",
-    role: "Hartley Joinery",
+    name: "DJ & music artist",
+    role: "",
   },
 ];
 
@@ -125,19 +119,81 @@ export default function TestimonialsSection() {
                 >
                   {q.name}
                 </div>
-                <div
-                  style={{
-                    fontFamily: "var(--font-dm-sans), sans-serif",
-                    fontSize: 12,
-                    color: "#6b6358",
-                    marginTop: 2,
-                  }}
-                >
-                  {q.role}
-                </div>
+                {q.role && (
+                  <div
+                    style={{
+                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontSize: 12,
+                      color: "#6b6358",
+                      marginTop: 2,
+                    }}
+                  >
+                    {q.role}
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}
+
+          {/* CTA card */}
+          <motion.a
+            href="/pricing"
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              background: "#1a1612",
+              border: "1px solid #2e2820",
+              borderRadius: 6,
+              padding: "36px 32px",
+              textDecoration: "none",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              cursor: "pointer",
+              transition: "background 200ms",
+            }}
+            whileHover={{ background: "#241e18" } as never}
+          >
+            <div>
+              <div
+                style={{
+                  fontFamily: "var(--font-cormorant), serif",
+                  fontSize: "1.55rem",
+                  fontWeight: 300,
+                  fontStyle: "italic",
+                  color: "#f0ece4",
+                  lineHeight: 1.4,
+                  marginBottom: 28,
+                }}
+              >
+                Want to see your business here?
+                <br />
+                We&apos;re taking new clients now.
+              </div>
+            </div>
+            <div
+              style={{
+                borderTop: "1px solid #2e2820",
+                paddingTop: 18,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: "#c87850",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                See pricing →
+              </span>
+            </div>
+          </motion.a>
         </div>
       </div>
     </section>

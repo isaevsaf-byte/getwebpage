@@ -172,11 +172,9 @@ export default function PricingSection() {
                 delay: i * 0.1,
                 ease: [0.16, 1, 0.3, 1],
               }}
-              className={t.popular ? "pricing-spotlight" : undefined}
-              onMouseMove={t.popular ? handleMouseMove : undefined}
+              className={t.popular ? "pricing-spotlight" : "pricing-spotlight-muted"}
+              onMouseMove={handleMouseMove}
               style={{
-                background: t.popular ? undefined : "#f0ece4",
-                border: t.popular ? undefined : "1px solid #ddd8ce",
                 borderRadius: 4,
                 overflow: "hidden",
                 display: "flex",
@@ -443,7 +441,13 @@ export default function PricingSection() {
         .pricing-spotlight {
           background:
             linear-gradient(#f0ece4, #f0ece4) padding-box,
-            radial-gradient(circle 220px at var(--mx, 50%) var(--my, 110%), #c04828 0%, #a04020 28%, #ddd8ce 62%) border-box;
+            radial-gradient(circle 220px at var(--mx, 50%) var(--my, 200%), #c04828 0%, #a04020 28%, #a04020 100%) border-box;
+          border: 1px solid transparent;
+        }
+        .pricing-spotlight-muted {
+          background:
+            linear-gradient(#f0ece4, #f0ece4) padding-box,
+            radial-gradient(circle 220px at var(--mx, 50%) var(--my, 200%), #c04828 0%, #a04020 28%, #ddd8ce 65%) border-box;
           border: 1px solid transparent;
         }
       `}</style>

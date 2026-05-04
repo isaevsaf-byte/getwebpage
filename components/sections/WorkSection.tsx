@@ -46,6 +46,7 @@ const vedovec = {
   sub: "B2B logistics & customs brokerage platform",
   href: "https://vedovec.vercel.app",
   img: "/portfolio/vedovec.jpg",
+  imgPosition: "top",
 };
 
 export default function WorkSection({ showAll = false }: { showAll?: boolean }) {

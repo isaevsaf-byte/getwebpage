@@ -82,11 +82,48 @@ export default function SuccessPage() {
               fontSize: 15,
               color: "#6b6358",
               lineHeight: 1.72,
+              marginBottom: 24,
+            }}
+          >
+            Check your email for confirmation.
+          </p>
+
+          {/* Brief CTA */}
+          <p
+            style={{
+              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontSize: 13,
+              color: "#9a9188",
               marginBottom: 12,
             }}
           >
-            Check your email — we&apos;ll send your brief link within 24 hours.
+            Or fill in your brief right now:
           </p>
+          <a
+            href="https://tally.so/r/lbV7Zo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="brief-btn"
+          >
+            Fill in the brief →
+          </a>
+          <style>{`
+            .brief-btn {
+              display: inline-block;
+              font-family: var(--font-dm-sans), sans-serif;
+              font-size: 14px;
+              font-weight: 500;
+              color: #1a1612;
+              border: 1px solid #c8c0b6;
+              border-radius: 4px;
+              padding: 11px 28px;
+              text-decoration: none;
+              margin-bottom: 40px;
+              transition: border-color 200ms;
+            }
+            .brief-btn:hover { border-color: #a04020; }
+          `}</style>
+
           <p
             style={{
               fontFamily: "var(--font-dm-sans), sans-serif",

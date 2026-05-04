@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
     await resend.emails.send({
       from: "GetWebPage <hello@safarisaev.ai>",
       to: customerEmail,
-      subject: "Your deposit is confirmed — next steps",
-      text: `Hi ${customerName},\n\nYour deposit for the ${tier} package is confirmed.\n\nWe'll be in touch within 24 hours with your brief form.\n\nQuestions? Reply to this email or contact saf@safarisaev.ai\n\nGetWebPage`,
+      subject: "Your deposit is confirmed — next step inside",
+      text: `Hi ${customerName},\n\nYour deposit for the ${tier} package is confirmed.\n\nNext step — fill in your brief:\n→ https://tally.so/r/lbV7Zo\n\nTakes about 8 minutes. The sooner you send it, the sooner we start.\n\nQuestions? Reply to this email.\n\nGetWebPage`,
     });
   }
 

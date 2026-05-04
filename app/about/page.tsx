@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import ButtonLink from "@/components/ButtonLink";
@@ -111,11 +112,20 @@ export default function AboutPage() {
             </div>
             <div
               style={{
-                background: "#eae6de",
+                position: "relative",
                 borderRadius: 4,
                 aspectRatio: "4/3",
+                overflow: "hidden",
               }}
-            />
+            >
+              <Image
+                src="/about-hero.jpg"
+                alt="GetWebPage studio workspace"
+                fill
+                style={{ objectFit: "cover", objectPosition: "center" }}
+                priority
+              />
+            </div>
           </div>
         </section>
 

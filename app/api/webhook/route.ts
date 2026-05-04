@@ -17,7 +17,10 @@ export async function POST(req: NextRequest) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    const { tier, fullPrice, depositAmount } = session.metadata!;
+    console.log("Session metadata:", session.metadata);
+    console.log("Customer details:", session.customer_details);
+
+    const { tier, fullPrice, depositAmount } = session.metadata ?? {};
     const customerEmail = session.customer_details?.email ?? "unknown";
     const customerName = session.customer_details?.name ?? "unknown";
 
@@ -25,14 +28,33 @@ export async function POST(req: NextRequest) {
       from: "GetWebPage <hello@safarisaev.ai>",
       to: "saf@safarisaev.ai",
       subject: `New paid order — ${tier} — ${customerEmail}`,
-      text: `New order received.\n\nTier: ${tier}\nName: ${customerName}\nEmail: ${customerEmail}\nDeposit paid: £${Number(depositAmount) / 100}\nFull price: £${Number(fullPrice) / 100}\nStripe session: ${session.id}`,
+      text: `New order received.
+
+Tier: ${tier}
+Name: ${customerName}
+Email: ${customerEmail}
+Deposit paid: £${Number(depositAmount) / 100}
+Full price: £${Number(fullPrice) / 100}
+Stripe session: ${session.id}`,
     });
 
     await resend.emails.send({
       from: "GetWebPage <hello@safarisaev.ai>",
       to: customerEmail,
       subject: "Your deposit is confirmed — next step inside",
-      text: `Hi ${customerName},\n\nYour deposit for the ${tier} package is confirmed.\n\nNext step — fill in your brief:\n→ https://tally.so/r/lbV7Zo\n\nTakes about 8 minutes. The sooner you send it, the sooner we start.\n\nQuestions? Reply to this email.\n\nGetWebPage`,
+      text: `Hi ${customerName},
+
+Your deposit for the ${tier} package is confirmed.
+
+Next step — fill in your brief:
+https://tally.so/r/lbV7Zo
+
+Takes about 8 minutes. The sooner you send it, the sooner we start.
+
+Questions? Reply to this email.
+
+GetWebPage
+getwebpage.co.uk`,
     });
   }
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 
 const tiers = [
   {
@@ -80,6 +80,15 @@ export default function PricingSection() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const [loading, setLoading] = useState<LoadingState>(null);
   const [checkoutError, setCheckoutError] = useState<TierId | null>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    card.style.setProperty("--mx", `${x}%`);
+    card.style.setProperty("--my", `${y}%`);
+  }, []);
 
   const handleCheckout = async (tierId: TierId) => {
     setLoading(tierId);
@@ -163,9 +172,11 @@ export default function PricingSection() {
                 delay: i * 0.1,
                 ease: [0.16, 1, 0.3, 1],
               }}
+              className={t.popular ? "pricing-spotlight" : undefined}
+              onMouseMove={t.popular ? handleMouseMove : undefined}
               style={{
-                background: "#f0ece4",
-                border: `1px solid ${t.popular ? "#a04020" : "#ddd8ce"}`,
+                background: t.popular ? undefined : "#f0ece4",
+                border: t.popular ? undefined : "1px solid #ddd8ce",
                 borderRadius: 4,
                 overflow: "hidden",
                 display: "flex",
@@ -250,7 +261,7 @@ export default function PricingSection() {
                 <p
                   style={{
                     fontFamily: "var(--font-dm-sans), sans-serif",
-                    fontSize: 13,
+                    fontSize: 15,
                     color: "#6b6358",
                     lineHeight: 1.65,
                     marginBottom: 24,
@@ -290,7 +301,7 @@ export default function PricingSection() {
                       <span
                         style={{
                           fontFamily: "var(--font-dm-sans), sans-serif",
-                          fontSize: 13,
+                          fontSize: 14,
                           color: "#6b6358",
                           lineHeight: 1.5,
                         }}
@@ -428,6 +439,12 @@ export default function PricingSection() {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        .pricing-spotlight {
+          background:
+            linear-gradient(#f0ece4, #f0ece4) padding-box,
+            radial-gradient(circle 220px at var(--mx, 50%) var(--my, 110%), #c04828 0%, #a04020 28%, #ddd8ce 62%) border-box;
+          border: 1px solid transparent;
         }
       `}</style>
     </section>

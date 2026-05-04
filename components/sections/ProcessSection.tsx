@@ -101,7 +101,7 @@ export default function ProcessSection() {
                   fontFamily: "var(--font-cormorant), serif",
                   fontSize: "3.5rem",
                   fontWeight: 300,
-                  color: "#d8d0c8",
+                  color: "#b8a898",
                   lineHeight: 1,
                   marginBottom: 28,
                 }}
@@ -122,7 +122,7 @@ export default function ProcessSection() {
               <p
                 style={{
                   fontFamily: "var(--font-dm-sans), sans-serif",
-                  fontSize: 14,
+                  fontSize: 16,
                   lineHeight: 1.75,
                   color: "#6b6358",
                 }}

@@ -99,7 +99,7 @@ export default function Nav() {
             </Link>
           ))}
           <Link
-            href="/contact"
+            href="/pricing"
             style={{
               fontFamily: "var(--font-dm-sans), sans-serif",
               fontSize: 13,
@@ -121,7 +121,7 @@ export default function Nav() {
                 "#a04020")
             }
           >
-            Get a quote
+            See pricing
           </Link>
         </div>
 
@@ -192,7 +192,7 @@ export default function Nav() {
             </Link>
           ))}
           <Link
-            href="/contact"
+            href="/pricing"
             style={{
               fontFamily: "var(--font-dm-sans), sans-serif",
               fontSize: 14,
@@ -206,7 +206,7 @@ export default function Nav() {
               marginTop: 8,
             }}
           >
-            Get a quote
+            See pricing
           </Link>
         </div>
       )}

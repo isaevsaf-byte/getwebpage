@@ -96,7 +96,7 @@ export default function ContactSection() {
               marginBottom: 16,
             }}
           >
-            Get in touch
+            Custom projects
           </div>
           <h2
             style={{
@@ -109,7 +109,7 @@ export default function ContactSection() {
               marginBottom: 16,
             }}
           >
-            Tell us about your business.
+            Got a complex project?
           </h2>
           <p
             style={{
@@ -120,7 +120,8 @@ export default function ContactSection() {
               marginBottom: 48,
             }}
           >
-            No commitment. We&apos;ll come back within 24 hours with a clear quote.
+            For custom builds, e-commerce, or anything that doesn&apos;t fit a standard
+            package — tell us about it and we&apos;ll put together a quote.
           </p>
         </motion.div>
 

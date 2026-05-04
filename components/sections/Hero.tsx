@@ -140,7 +140,7 @@ export default function Hero() {
           }}
         >
           <Link
-            href="/contact"
+            href="/pricing"
             style={{
               fontFamily: "var(--font-dm-sans), sans-serif",
               fontSize: 15,
@@ -168,7 +168,7 @@ export default function Hero() {
               (e.currentTarget as HTMLAnchorElement).style.transform = "none";
             }}
           >
-            Get a quote
+            See pricing
           </Link>
           <Link
             href="/work"

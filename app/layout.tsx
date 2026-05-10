@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant, DM_Sans, DM_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import "./globals.css";
 
@@ -62,6 +63,20 @@ export default function RootLayout({
       lang="en-GB"
       className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}
     >
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-18152477897"
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-18152477897');
+          `}
+        </Script>
+      </head>
       <body
         className="min-h-full"
         style={{ fontFamily: "var(--font-dm-sans), Helvetica Neue, Arial, sans-serif" }}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import Script from "next/script";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 
@@ -11,6 +12,14 @@ export const metadata: Metadata = {
 export default function SuccessPage() {
   return (
     <>
+      <Script id="google-ads-conversion" strategy="afterInteractive">
+        {`
+          gtag('event', 'conversion', {
+            'send_to': 'AW-18152477897/AdUTCNCJjKscEMmp489D',
+            'transaction_id': ''
+          });
+        `}
+      </Script>
       <Nav />
       <main
         style={{

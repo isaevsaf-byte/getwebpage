@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Stale duplicate of the source tree — linting it reports phantom errors.
+    ".claude/**",
+    // One-off Puppeteer script, run by hand with node.
+    "scripts/**",
+    "telegram-bots/**",
   ]),
 ]);
 

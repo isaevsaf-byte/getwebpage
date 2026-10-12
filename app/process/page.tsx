@@ -67,23 +67,23 @@ export default function ProcessPage() {
   return (
     <>
       <Nav />
-      <main>
+      <main id="main">
         {/* Header */}
         <section
           style={{
-            background: "#f7f3ec",
+            background: "#eaece7",
             padding: "140px 40px 80px",
-            borderBottom: "1px solid #e8e3d8",
+            borderBottom: "1px solid #d5d9d2",
           }}
         >
           <div style={{ maxWidth: 1200, margin: "0 auto" }}>
             <div
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 11,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: "#c87850",
+                color: "#8f3446",
                 marginBottom: 20,
               }}
             >
@@ -91,12 +91,12 @@ export default function ProcessPage() {
             </div>
             <h1
               style={{
-                fontFamily: "var(--font-cormorant), serif",
+                fontFamily: "var(--font-display), serif",
                 fontSize: "clamp(2.8rem, 7vw, 5.5rem)",
                 fontWeight: 300,
                 lineHeight: 1.05,
                 letterSpacing: "-0.025em",
-                color: "#1a1612",
+                color: "#14181a",
                 maxWidth: 640,
                 marginBottom: 28,
               }}
@@ -105,11 +105,11 @@ export default function ProcessPage() {
             </h1>
             <p
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: "clamp(1rem, 1.6vw, 1.125rem)",
                 lineHeight: 1.75,
                 fontWeight: 300,
-                color: "#6b6358",
+                color: "#5a6360",
                 maxWidth: 520,
               }}
             >
@@ -123,7 +123,7 @@ export default function ProcessPage() {
         {/* Steps */}
         <section
           style={{
-            background: "#f7f3ec",
+            background: "#eaece7",
             padding: "100px 40px",
           }}
         >
@@ -135,7 +135,7 @@ export default function ProcessPage() {
                   display: "grid",
                   gridTemplateColumns: "60px 1fr 1fr",
                   gap: "0 64px",
-                  borderTop: "1px solid #e8e3d8",
+                  borderTop: "1px solid #d5d9d2",
                   paddingTop: 56,
                   paddingBottom: 56,
                   alignItems: "start",
@@ -144,10 +144,10 @@ export default function ProcessPage() {
                 {/* Number */}
                 <div
                   style={{
-                    fontFamily: "var(--font-cormorant), serif",
+                    fontFamily: "var(--font-display), serif",
                     fontSize: "3.5rem",
                     fontWeight: 300,
-                    color: "#d8d0c8",
+                    color: "#c3c8c0",
                     lineHeight: 1,
                     paddingTop: 4,
                   }}
@@ -159,11 +159,11 @@ export default function ProcessPage() {
                 <div>
                   <div
                     style={{
-                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontFamily: "var(--font-sans), sans-serif",
                       fontSize: 11,
                       letterSpacing: "0.10em",
                       textTransform: "uppercase",
-                      color: "#c87850",
+                      color: "#8f3446",
                       marginBottom: 8,
                     }}
                   >
@@ -171,10 +171,10 @@ export default function ProcessPage() {
                   </div>
                   <h2
                     style={{
-                      fontFamily: "var(--font-cormorant), serif",
+                      fontFamily: "var(--font-display), serif",
                       fontSize: "clamp(1.8rem, 3vw, 2.4rem)",
                       fontWeight: 400,
-                      color: "#1a1612",
+                      color: "#14181a",
                       lineHeight: 1.1,
                       marginBottom: 20,
                     }}
@@ -183,10 +183,10 @@ export default function ProcessPage() {
                   </h2>
                   <p
                     style={{
-                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontFamily: "var(--font-sans), sans-serif",
                       fontSize: 15,
                       lineHeight: 1.75,
-                      color: "#6b6358",
+                      color: "#5a6360",
                     }}
                   >
                     {step.body}
@@ -214,7 +214,7 @@ export default function ProcessPage() {
                         height="12"
                         viewBox="0 0 24 24"
                         fill="none"
-                        stroke="#c87850"
+                        stroke="#8f3446"
                         strokeWidth="2"
                         strokeLinecap="round"
                         style={{ flexShrink: 0, marginTop: 3 }}
@@ -223,9 +223,9 @@ export default function ProcessPage() {
                       </svg>
                       <span
                         style={{
-                          fontFamily: "var(--font-dm-sans), sans-serif",
+                          fontFamily: "var(--font-sans), sans-serif",
                           fontSize: 13,
-                          color: "#6b6358",
+                          color: "#5a6360",
                           lineHeight: 1.6,
                         }}
                       >
@@ -242,9 +242,9 @@ export default function ProcessPage() {
         {/* CTA strip */}
         <section
           style={{
-            background: "#f0ece4",
+            background: "#e3e6e0",
             padding: "80px 40px",
-            borderTop: "1px solid #e8e3d8",
+            borderTop: "1px solid #d5d9d2",
           }}
         >
           <div
@@ -261,10 +261,10 @@ export default function ProcessPage() {
             <div>
               <h2
                 style={{
-                  fontFamily: "var(--font-cormorant), serif",
+                  fontFamily: "var(--font-display), serif",
                   fontSize: "clamp(1.8rem, 3vw, 2.6rem)",
                   fontWeight: 300,
-                  color: "#1a1612",
+                  color: "#14181a",
                   lineHeight: 1.1,
                   letterSpacing: "-0.015em",
                 }}
@@ -273,9 +273,9 @@ export default function ProcessPage() {
               </h2>
               <p
                 style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: 14,
-                  color: "#6b6358",
+                  color: "#5a6360",
                   marginTop: 8,
                 }}
               >

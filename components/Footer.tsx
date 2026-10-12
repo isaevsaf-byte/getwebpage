@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 
 export default function Footer() {
@@ -7,6 +5,7 @@ export default function Footer() {
     { label: "Work", href: "/work" },
     { label: "Process", href: "/process" },
     { label: "Pricing", href: "/pricing" },
+    { label: "Free audit", href: "/audit" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ];
@@ -14,7 +13,7 @@ export default function Footer() {
   return (
     <footer
       style={{
-        background: "#1a1612",
+        background: "#14181a",
         padding: "80px 40px 52px",
       }}
     >
@@ -22,19 +21,19 @@ export default function Footer() {
         {/* Manifest statement */}
         <div
           style={{
-            borderBottom: "1px solid #2e2820",
+            borderBottom: "1px solid #242a2c",
             paddingBottom: 48,
             marginBottom: 48,
           }}
         >
           <p
             style={{
-              fontFamily: "var(--font-cormorant), Georgia, serif",
+              fontFamily: "var(--font-display), Georgia, serif",
               fontSize: "clamp(1.8rem, 4vw, 3rem)",
               fontWeight: 300,
               lineHeight: 1.2,
               letterSpacing: "-0.015em",
-              color: "#f0ece4",
+              color: "#e3e6e0",
               maxWidth: 700,
               fontStyle: "italic",
             }}
@@ -62,10 +61,10 @@ export default function Footer() {
           >
             <span
               style={{
-                fontFamily: "var(--font-cormorant), Georgia, serif",
+                fontFamily: "var(--font-display), Georgia, serif",
                 fontSize: 18,
                 fontWeight: 400,
-                color: "#f0ece4",
+                color: "#e3e6e0",
                 letterSpacing: "-0.02em",
               }}
             >
@@ -74,44 +73,11 @@ export default function Footer() {
           </Link>
 
           <div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "center" }}>
-            <a
-              href="mailto:saf@safarisaev.ai"
-              style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
-                fontSize: 13,
-                color: "#6b6358",
-                textDecoration: "none",
-                transition: "color 200ms",
-              }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.color = "#9a9188")
-              }
-              onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.color = "#6b6358")
-              }
-            >
+            <a href="mailto:saf@safarisaev.ai" className="footer-link">
               saf@safarisaev.ai
             </a>
             {navLinks.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
-                  fontSize: 13,
-                  color: "#6b6358",
-                  textDecoration: "none",
-                  transition: "color 200ms",
-                }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLAnchorElement).style.color =
-                    "#9a9188")
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLAnchorElement).style.color =
-                    "#6b6358")
-                }
-              >
+              <Link key={l.href} href={l.href} className="footer-link">
                 {l.label}
               </Link>
             ))}
@@ -121,21 +87,21 @@ export default function Footer() {
         {/* Legal */}
         <div
           style={{
-            borderTop: "1px solid #2e2820",
+            borderTop: "1px solid #242a2c",
             paddingTop: 24,
           }}
         >
           <p
             style={{
-              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: 11,
-              color: "#3a3430",
+              color: "#8a918d",
               lineHeight: 1.7,
             }}
           >
             GetWebPage is a trading name of OPTIFLOW LABS LTD, Registered in
             England and Wales
-            <br />© 2026 OPTIFLOW LABS LTD. All rights reserved.
+            <br />© {new Date().getFullYear()} OPTIFLOW LABS LTD. All rights reserved.
           </p>
         </div>
       </div>

@@ -42,23 +42,23 @@ export default function PricingPage() {
   return (
     <>
       <Nav />
-      <main>
+      <main id="main">
         {/* Header */}
         <section
           style={{
-            background: "#f7f3ec",
+            background: "#eaece7",
             padding: "140px 40px 80px",
-            borderBottom: "1px solid #e8e3d8",
+            borderBottom: "1px solid #d5d9d2",
           }}
         >
           <div style={{ maxWidth: 1200, margin: "0 auto" }}>
             <div
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 11,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: "#c87850",
+                color: "#8f3446",
                 marginBottom: 20,
               }}
             >
@@ -66,12 +66,12 @@ export default function PricingPage() {
             </div>
             <h1
               style={{
-                fontFamily: "var(--font-cormorant), serif",
+                fontFamily: "var(--font-display), serif",
                 fontSize: "clamp(2.8rem, 7vw, 5.5rem)",
                 fontWeight: 300,
                 lineHeight: 1.05,
                 letterSpacing: "-0.025em",
-                color: "#1a1612",
+                color: "#14181a",
                 maxWidth: 640,
                 marginBottom: 24,
               }}
@@ -80,11 +80,11 @@ export default function PricingPage() {
             </h1>
             <p
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: "clamp(1rem, 1.6vw, 1.125rem)",
                 lineHeight: 1.75,
                 fontWeight: 300,
-                color: "#6b6358",
+                color: "#5a6360",
                 maxWidth: 480,
               }}
             >
@@ -103,19 +103,19 @@ export default function PricingPage() {
         {/* FAQ */}
         <section
           style={{
-            background: "#f7f3ec",
+            background: "#eaece7",
             padding: "100px 40px",
-            borderTop: "1px solid #e8e3d8",
+            borderTop: "1px solid #d5d9d2",
           }}
         >
           <div style={{ maxWidth: 800, margin: "0 auto" }}>
             <div
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 11,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: "#c87850",
+                color: "#8f3446",
                 marginBottom: 16,
               }}
             >
@@ -123,12 +123,12 @@ export default function PricingPage() {
             </div>
             <h2
               style={{
-                fontFamily: "var(--font-cormorant), serif",
+                fontFamily: "var(--font-display), serif",
                 fontSize: "clamp(2rem, 4vw, 2.8rem)",
                 fontWeight: 300,
                 lineHeight: 1.1,
                 letterSpacing: "-0.02em",
-                color: "#1a1612",
+                color: "#14181a",
                 marginBottom: 64,
               }}
             >
@@ -140,7 +140,7 @@ export default function PricingPage() {
                 <div
                   key={faq.q}
                   style={{
-                    borderTop: "1px solid #e8e3d8",
+                    borderTop: "1px solid #d5d9d2",
                     padding: "28px 0",
                     display: "grid",
                     gridTemplateColumns: "1fr 1.4fr",
@@ -149,10 +149,10 @@ export default function PricingPage() {
                 >
                   <div
                     style={{
-                      fontFamily: "var(--font-cormorant), serif",
+                      fontFamily: "var(--font-display), serif",
                       fontSize: "1.15rem",
                       fontWeight: 400,
-                      color: "#1a1612",
+                      color: "#14181a",
                       lineHeight: 1.4,
                     }}
                   >
@@ -160,17 +160,17 @@ export default function PricingPage() {
                   </div>
                   <p
                     style={{
-                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontFamily: "var(--font-sans), sans-serif",
                       fontSize: 14,
                       lineHeight: 1.75,
-                      color: "#6b6358",
+                      color: "#5a6360",
                     }}
                   >
                     {faq.a}
                   </p>
                 </div>
               ))}
-              <div style={{ borderTop: "1px solid #e8e3d8", height: 1 }} />
+              <div style={{ borderTop: "1px solid #d5d9d2", height: 1 }} />
             </div>
           </div>
         </section>
@@ -178,18 +178,18 @@ export default function PricingPage() {
         {/* CTA */}
         <section
           style={{
-            background: "#f0ece4",
+            background: "#e3e6e0",
             padding: "80px 40px",
-            borderTop: "1px solid #e8e3d8",
+            borderTop: "1px solid #d5d9d2",
           }}
         >
           <div style={{ maxWidth: 580, margin: "0 auto", textAlign: "center" }}>
             <h2
               style={{
-                fontFamily: "var(--font-cormorant), serif",
+                fontFamily: "var(--font-display), serif",
                 fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)",
                 fontWeight: 300,
-                color: "#1a1612",
+                color: "#14181a",
                 lineHeight: 1.1,
                 letterSpacing: "-0.015em",
                 marginBottom: 16,
@@ -199,9 +199,9 @@ export default function PricingPage() {
             </h2>
             <p
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 14,
-                color: "#6b6358",
+                color: "#5a6360",
                 marginBottom: 32,
               }}
             >

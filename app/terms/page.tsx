@@ -12,10 +12,10 @@ const section: React.CSSProperties = {
 };
 
 const h2Style: React.CSSProperties = {
-  fontFamily: "var(--font-cormorant), Georgia, serif",
+  fontFamily: "var(--font-display), Georgia, serif",
   fontSize: "1.4rem",
   fontWeight: 400,
-  color: "#1a1612",
+  color: "#14181a",
   marginBottom: 16,
   letterSpacing: "-0.01em",
 };
@@ -30,9 +30,9 @@ const listStyle: React.CSSProperties = {
 };
 
 const itemStyle: React.CSSProperties = {
-  fontFamily: "var(--font-dm-sans), sans-serif",
+  fontFamily: "var(--font-sans), sans-serif",
   fontSize: 14,
-  color: "#4a443e",
+  color: "#4c534f",
   lineHeight: 1.72,
   paddingLeft: 20,
   position: "relative",
@@ -45,7 +45,7 @@ const bullet: React.CSSProperties = {
   width: 4,
   height: 4,
   borderRadius: "50%",
-  background: "#c87850",
+  background: "#8f3446",
 };
 
 function Item({ children }: { children: React.ReactNode }) {
@@ -61,18 +61,18 @@ export default function TermsPage() {
   return (
     <>
       <Nav />
-      <main style={{ background: "#f7f3ec", minHeight: "100vh", padding: "100px 40px 120px" }}>
+      <main id="main" style={{ background: "#eaece7", minHeight: "100vh", padding: "100px 40px 120px" }}>
         <div style={{ maxWidth: 680, margin: "0 auto" }}>
 
           {/* Header */}
           <div style={{ marginBottom: 64 }}>
             <div
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 11,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: "#c87850",
+                color: "#8f3446",
                 marginBottom: 16,
               }}
             >
@@ -80,12 +80,12 @@ export default function TermsPage() {
             </div>
             <h1
               style={{
-                fontFamily: "var(--font-cormorant), Georgia, serif",
+                fontFamily: "var(--font-display), Georgia, serif",
                 fontSize: "clamp(2.2rem, 5vw, 3.2rem)",
                 fontWeight: 300,
                 lineHeight: 1.1,
                 letterSpacing: "-0.02em",
-                color: "#1a1612",
+                color: "#14181a",
                 marginBottom: 16,
               }}
             >
@@ -93,9 +93,9 @@ export default function TermsPage() {
             </h1>
             <p
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 13,
-                color: "#9a9188",
+                color: "#636b67",
                 lineHeight: 1.7,
               }}
             >
@@ -105,7 +105,7 @@ export default function TermsPage() {
 
           <div
             style={{
-              borderTop: "1px solid #e8e3d8",
+              borderTop: "1px solid #d5d9d2",
               paddingTop: 48,
               display: "flex",
               flexDirection: "column",
@@ -197,7 +197,7 @@ export default function TermsPage() {
                   All communication via{" "}
                   <a
                     href="mailto:saf@safarisaev.ai"
-                    style={{ color: "#a04020", textDecoration: "none" }}
+                    style={{ color: "#7d2436", textDecoration: "none" }}
                   >
                     saf@safarisaev.ai
                   </a>
@@ -209,16 +209,16 @@ export default function TermsPage() {
             {/* Legal footer */}
             <div
               style={{
-                borderTop: "1px solid #e8e3d8",
+                borderTop: "1px solid #d5d9d2",
                 paddingTop: 32,
                 marginTop: 8,
               }}
             >
               <p
                 style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: 12,
-                  color: "#9a9188",
+                  color: "#636b67",
                   lineHeight: 1.7,
                 }}
               >

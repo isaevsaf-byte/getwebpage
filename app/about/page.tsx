@@ -48,13 +48,13 @@ export default function AboutPage() {
   return (
     <>
       <Nav />
-      <main>
+      <main id="main">
         {/* Header */}
         <section
           style={{
-            background: "#f7f3ec",
+            background: "#eaece7",
             padding: "140px 40px 80px",
-            borderBottom: "1px solid #e8e3d8",
+            borderBottom: "1px solid #d5d9d2",
           }}
         >
           <div
@@ -70,11 +70,11 @@ export default function AboutPage() {
             <div>
               <div
                 style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: 11,
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
-                  color: "#c87850",
+                  color: "#8f3446",
                   marginBottom: 20,
                 }}
               >
@@ -82,12 +82,12 @@ export default function AboutPage() {
               </div>
               <h1
                 style={{
-                  fontFamily: "var(--font-cormorant), serif",
+                  fontFamily: "var(--font-display), serif",
                   fontSize: "clamp(2.8rem, 7vw, 5.5rem)",
                   fontWeight: 300,
                   lineHeight: 1.05,
                   letterSpacing: "-0.025em",
-                  color: "#1a1612",
+                  color: "#14181a",
                   marginBottom: 28,
                 }}
               >
@@ -97,11 +97,11 @@ export default function AboutPage() {
               </h1>
               <p
                 style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: "clamp(1rem, 1.6vw, 1.125rem)",
                   lineHeight: 1.75,
                   fontWeight: 300,
-                  color: "#6b6358",
+                  color: "#5a6360",
                   maxWidth: 440,
                 }}
               >
@@ -122,6 +122,7 @@ export default function AboutPage() {
                 src="/about-hero.jpg"
                 alt="GetWebPage studio workspace"
                 fill
+                sizes="(max-width: 900px) 100vw, 50vw"
                 style={{ objectFit: "cover", objectPosition: "center" }}
                 priority
               />
@@ -132,9 +133,9 @@ export default function AboutPage() {
         {/* What we do */}
         <section
           style={{
-            background: "#f7f3ec",
+            background: "#eaece7",
             padding: "100px 40px",
-            borderTop: "1px solid #e8e3d8",
+            borderTop: "1px solid #d5d9d2",
           }}
         >
           <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -149,11 +150,11 @@ export default function AboutPage() {
               <div>
                 <div
                   style={{
-                    fontFamily: "var(--font-dm-sans), sans-serif",
+                    fontFamily: "var(--font-sans), sans-serif",
                     fontSize: 11,
                     letterSpacing: "0.12em",
                     textTransform: "uppercase",
-                    color: "#c87850",
+                    color: "#8f3446",
                     marginBottom: 16,
                   }}
                 >
@@ -161,12 +162,12 @@ export default function AboutPage() {
                 </div>
                 <h2
                   style={{
-                    fontFamily: "var(--font-cormorant), serif",
+                    fontFamily: "var(--font-display), serif",
                     fontSize: "clamp(2rem, 4vw, 3rem)",
                     fontWeight: 300,
                     lineHeight: 1.1,
                     letterSpacing: "-0.02em",
-                    color: "#1a1612",
+                    color: "#14181a",
                     marginBottom: 32,
                   }}
                 >
@@ -176,10 +177,10 @@ export default function AboutPage() {
                 </h2>
                 <p
                   style={{
-                    fontFamily: "var(--font-dm-sans), sans-serif",
+                    fontFamily: "var(--font-sans), sans-serif",
                     fontSize: 15,
                     lineHeight: 1.75,
-                    color: "#6b6358",
+                    color: "#5a6360",
                     marginBottom: 24,
                   }}
                 >
@@ -191,10 +192,10 @@ export default function AboutPage() {
                 </p>
                 <p
                   style={{
-                    fontFamily: "var(--font-dm-sans), sans-serif",
+                    fontFamily: "var(--font-sans), sans-serif",
                     fontSize: 15,
                     lineHeight: 1.75,
-                    color: "#6b6358",
+                    color: "#5a6360",
                   }}
                 >
                   We handle everything from design to copy to code to launch. You
@@ -205,11 +206,11 @@ export default function AboutPage() {
               <div>
                 <div
                   style={{
-                    fontFamily: "var(--font-dm-sans), sans-serif",
+                    fontFamily: "var(--font-sans), sans-serif",
                     fontSize: 11,
                     letterSpacing: "0.12em",
                     textTransform: "uppercase",
-                    color: "#c87850",
+                    color: "#8f3446",
                     marginBottom: 20,
                   }}
                 >
@@ -231,9 +232,9 @@ export default function AboutPage() {
                     >
                       <span
                         style={{
-                          fontFamily: "var(--font-dm-sans), sans-serif",
+                          fontFamily: "var(--font-sans), sans-serif",
                           fontSize: 13,
-                          color: "#c87850",
+                          color: "#8f3446",
                           flexShrink: 0,
                           lineHeight: 1.6,
                         }}
@@ -242,9 +243,9 @@ export default function AboutPage() {
                       </span>
                       <span
                         style={{
-                          fontFamily: "var(--font-dm-sans), sans-serif",
+                          fontFamily: "var(--font-sans), sans-serif",
                           fontSize: 13,
-                          color: "#6b6358",
+                          color: "#5a6360",
                           lineHeight: 1.6,
                         }}
                       >
@@ -261,19 +262,19 @@ export default function AboutPage() {
         {/* Values */}
         <section
           style={{
-            background: "#efeae0",
+            background: "#e0e3dd",
             padding: "100px 40px",
-            borderTop: "1px solid #e8e3d8",
+            borderTop: "1px solid #d5d9d2",
           }}
         >
           <div style={{ maxWidth: 1200, margin: "0 auto" }}>
             <div
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 11,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: "#9a9188",
+                color: "#636b67",
                 marginBottom: 16,
               }}
             >
@@ -281,12 +282,12 @@ export default function AboutPage() {
             </div>
             <h2
               style={{
-                fontFamily: "var(--font-cormorant), serif",
+                fontFamily: "var(--font-display), serif",
                 fontSize: "clamp(2rem, 4vw, 3rem)",
                 fontWeight: 300,
                 lineHeight: 1.1,
                 letterSpacing: "-0.02em",
-                color: "#1a1612",
+                color: "#14181a",
                 marginBottom: 64,
               }}
             >
@@ -303,9 +304,9 @@ export default function AboutPage() {
                 <div key={v.title}>
                   <div
                     style={{
-                      fontFamily: "var(--font-cormorant), serif",
+                      fontFamily: "var(--font-display), serif",
                       fontSize: "1rem",
-                      color: "#d8d0c8",
+                      color: "#c3c8c0",
                       marginBottom: 16,
                     }}
                   >
@@ -313,10 +314,10 @@ export default function AboutPage() {
                   </div>
                   <h3
                     style={{
-                      fontFamily: "var(--font-cormorant), serif",
+                      fontFamily: "var(--font-display), serif",
                       fontSize: "1.3rem",
                       fontWeight: 400,
-                      color: "#1a1612",
+                      color: "#14181a",
                       lineHeight: 1.3,
                       marginBottom: 12,
                     }}
@@ -325,10 +326,10 @@ export default function AboutPage() {
                   </h3>
                   <p
                     style={{
-                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontFamily: "var(--font-sans), sans-serif",
                       fontSize: 13,
                       lineHeight: 1.75,
-                      color: "#6b6358",
+                      color: "#5a6360",
                     }}
                   >
                     {v.body}
@@ -342,9 +343,9 @@ export default function AboutPage() {
         {/* CTA */}
         <section
           style={{
-            background: "#f7f3ec",
+            background: "#eaece7",
             padding: "80px 40px",
-            borderTop: "1px solid #e8e3d8",
+            borderTop: "1px solid #d5d9d2",
           }}
         >
           <div
@@ -360,10 +361,10 @@ export default function AboutPage() {
           >
             <h2
               style={{
-                fontFamily: "var(--font-cormorant), serif",
+                fontFamily: "var(--font-display), serif",
                 fontSize: "clamp(1.8rem, 3vw, 2.6rem)",
                 fontWeight: 300,
-                color: "#1a1612",
+                color: "#14181a",
                 lineHeight: 1.1,
                 letterSpacing: "-0.015em",
               }}

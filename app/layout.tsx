@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Cormorant, DM_Sans, DM_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/react";
-import Script from "next/script";
+import { Literata, DM_Sans, DM_Mono } from "next/font/google";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import ConsentBanner from "@/components/ConsentBanner";
+import SiteAnalytics from "@/components/SiteAnalytics";
 import "./globals.css";
 
-const cormorant = Cormorant({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
+const literata = Literata({
+  variable: "--font-display",
+  subsets: ["latin", "cyrillic"],
+  weight: ["300", "400", "500", "600"],
   style: ["normal", "italic"],
   display: "swap",
 });
 
 const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+  variable: "--font-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
   style: ["normal", "italic"],
@@ -22,13 +22,16 @@ const dmSans = DM_Sans({
 });
 
 const dmMono = DM_Mono({
-  variable: "--font-dm-mono",
+  variable: "--font-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
   display: "swap",
 });
 
+const SITE = "https://getwebpage.co.uk";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE),
   title: "GetWebPage — Serious websites for UK small businesses",
   description:
     "A UK web studio building fast, beautiful websites for salons, studios, hospitality and trades. From £500, delivered in 7 days. Full ownership guaranteed.",
@@ -39,18 +42,55 @@ export const metadata: Metadata = {
   openGraph: {
     title: "GetWebPage — Serious websites for UK small businesses",
     description: "From £500. Delivered in 7 days. Full ownership yours.",
-    url: "https://getwebpage.co.uk",
+    url: SITE,
     siteName: "GetWebPage",
     locale: "en_GB",
     type: "website",
-    images: [{ url: "https://getwebpage.co.uk/og-image.jpg", width: 1200, height: 630 }],
+    images: [{ url: `${SITE}/og-image.jpg`, width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "GetWebPage — Serious websites for UK small businesses",
     description: "From £500. Delivered in 7 days. Full ownership yours.",
-    images: ["https://getwebpage.co.uk/og-image.jpg"],
+    images: [`${SITE}/og-image.jpg`],
   },
+};
+
+// Structured data — helps Google understand what the business is and
+// what it sells, which plain marketing copy cannot communicate.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ProfessionalService",
+      "@id": `${SITE}/#business`,
+      name: "GetWebPage",
+      description:
+        "UK web studio building websites for salons, studios, hospitality and trades. From £500, delivered in 7 days.",
+      url: SITE,
+      email: "saf@safarisaev.ai",
+      telephone: "+447729741116",
+      image: `${SITE}/og-image.jpg`,
+      priceRange: "££",
+      areaServed: { "@type": "Country", name: "United Kingdom" },
+      parentOrganization: {
+        "@type": "Organization",
+        name: "OPTIFLOW LABS LTD",
+      },
+    },
+    {
+      "@type": "Service",
+      "@id": `${SITE}/#service`,
+      serviceType: "Website design and build",
+      provider: { "@id": `${SITE}/#business` },
+      areaServed: { "@type": "Country", name: "United Kingdom" },
+      offers: [
+        { "@type": "Offer", name: "Starter", price: "500", priceCurrency: "GBP" },
+        { "@type": "Offer", name: "Standard", price: "800", priceCurrency: "GBP" },
+        { "@type": "Offer", name: "Identity", price: "1200", priceCurrency: "GBP" },
+      ],
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -61,30 +101,24 @@ export default function RootLayout({
   return (
     <html
       lang="en-GB"
-      className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}
+      className={`${literata.variable} ${dmSans.variable} ${dmMono.variable}`}
     >
       <head>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-QDFPJCSKEY"
-          strategy="afterInteractive"
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <Script id="google-tags" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-QDFPJCSKEY');
-            gtag('config', 'AW-18152477897');
-          `}
-        </Script>
       </head>
-      <body
-        className="min-h-full"
-        style={{ fontFamily: "var(--font-dm-sans), Helvetica Neue, Arial, sans-serif" }}
-      >
+      <body className="min-h-full">
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
         {children}
         <WhatsAppButton />
-        <Analytics />
+        {/* Google Analytics and Google Ads load only after the visitor
+            accepts — see ConsentBanner. Vercel Analytics is cookieless. */}
+        <ConsentBanner />
+        <SiteAnalytics />
       </body>
     </html>
   );

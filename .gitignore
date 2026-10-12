@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# env examples document required variables — keep them in git
+!.env.example
+!telegram-bots/**/.env.example
+
+# local Claude Code state (stale worktree copies, local-only launch config)
+.claude/worktrees/
+.claude/settings.local.json
+.claude/launch.json

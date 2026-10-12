@@ -27,9 +27,9 @@ export default function OwnershipSection() {
     <section
       ref={ref}
       style={{
-        background: "#1a1612",
+        background: "#14181a",
         padding: "120px 40px",
-        borderTop: "1px solid #2e2820",
+        borderTop: "1px solid #242a2c",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -38,17 +38,17 @@ export default function OwnershipSection() {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           style={{
-            fontFamily: "var(--font-cormorant), serif",
+            fontFamily: "var(--font-display), serif",
             fontSize: "clamp(2rem, 3.5vw, 3rem)",
             fontWeight: 300,
             lineHeight: 1.1,
-            color: "#f0ece4",
+            color: "#e3e6e0",
             marginBottom: 56,
             letterSpacing: "-0.01em",
           }}
         >
           Your site.{" "}
-          <em style={{ fontStyle: "italic", color: "#c87850" }}>Your rules.</em>
+          <em style={{ fontStyle: "italic", color: "#cf8794" }}>Your rules.</em>
         </motion.h2>
 
         <div
@@ -73,18 +73,18 @@ export default function OwnershipSection() {
                 paddingLeft: i > 0 ? 48 : 0,
                 borderRight:
                   i < pillars.length - 1
-                    ? "1px solid oklch(0.26 0.010 62)"
+                    ? "1px solid #242a2c"
                     : "none",
               }}
             >
               <div
                 style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: 10,
                   fontWeight: 500,
                   letterSpacing: "0.12em",
                   textTransform: "uppercase" as const,
-                  color: "oklch(0.60 0.010 68)",
+                  color: "#7e8683",
                   marginBottom: 12,
                 }}
               >
@@ -92,10 +92,10 @@ export default function OwnershipSection() {
               </div>
               <p
                 style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: 16,
                   lineHeight: 1.6,
-                  color: "oklch(0.82 0.010 72)",
+                  color: "#c0c6c2",
                 }}
               >
                 {p.body}
@@ -112,7 +112,7 @@ export default function OwnershipSection() {
           style={{
             marginTop: 80,
             paddingTop: 64,
-            borderTop: "1px solid oklch(0.26 0.010 62)",
+            borderTop: "1px solid #242a2c",
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: "clamp(32px, 6vw, 80px)",
@@ -121,27 +121,27 @@ export default function OwnershipSection() {
         >
           <h3
             style={{
-              fontFamily: "var(--font-cormorant), serif",
+              fontFamily: "var(--font-display), serif",
               fontSize: "clamp(1.8rem, 3vw, 2.6rem)",
               fontWeight: 300,
               lineHeight: 1.1,
               letterSpacing: "-0.01em",
-              color: "#f0ece4",
+              color: "#e3e6e0",
               margin: 0,
             }}
           >
             Your site.{" "}
-            <em style={{ fontStyle: "italic", color: "#c87850" }}>
+            <em style={{ fontStyle: "italic", color: "#cf8794" }}>
               Your words.
             </em>
           </h3>
           <div>
             <p
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 16,
                 lineHeight: 1.72,
-                color: "oklch(0.82 0.010 72)",
+                color: "#c0c6c2",
                 marginBottom: 20,
               }}
             >
@@ -150,10 +150,10 @@ export default function OwnershipSection() {
             </p>
             <p
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 16,
                 lineHeight: 1.72,
-                color: "oklch(0.65 0.010 68)",
+                color: "#8b938f",
               }}
             >
               And when you want to change something? Edit it yourself. No

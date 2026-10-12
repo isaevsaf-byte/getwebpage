@@ -13,14 +13,14 @@ export default function ContactPage() {
   return (
     <>
       <Nav />
-      <main>
+      <main id="main">
         <ContactSection />
 
         {/* WhatsApp nudge */}
         <div
           style={{
-            background: "#f0ece4",
-            borderTop: "1px solid #e8e3d8",
+            background: "#e3e6e0",
+            borderTop: "1px solid #d5d9d2",
             padding: "28px 40px",
             textAlign: "center",
           }}
@@ -33,11 +33,11 @@ export default function ContactPage() {
               display: "inline-flex",
               alignItems: "center",
               gap: 10,
-              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: 14,
-              color: "#1a1612",
+              color: "#14181a",
               textDecoration: "none",
-              borderBottom: "1px solid #c8c0b6",
+              borderBottom: "1px solid #c3c8c0",
               paddingBottom: 2,
             }}
           >

@@ -1,6 +1,74 @@
 @import "tailwindcss";
 
-*, *::before, *::after {
+/* ─────────────────────────────────────────────────────────────
+   Design tokens.
+
+   Tailwind 4 reads its theme from CSS, not from tailwind.config.ts —
+   a JS config is ignored unless pointed at with @config. Everything
+   the site uses lives here so the tokens actually apply.
+   ───────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Ground and surfaces — cool bone, a green-grey bias */
+  --color-paper: #eaece7;
+  --color-surface: #e3e6e0;
+  --color-surface-alt: #e0e3dd;
+  --color-divider: #dfe3dc;
+
+  /* Rules */
+  --color-border: #d5d9d2;
+  --color-border-mid: #c3c8c0;
+
+  /* Ink */
+  --color-ink: #14181a;
+  --color-ink-mid: #242a2c;
+  --color-secondary: #5a6360;
+  --color-muted: #636b67;
+
+  /* Accent — oxblood */
+  --color-accent: #7d2436;
+  --color-accent-hover: #93293e;
+  --color-eyebrow: #8f3446;
+
+  /* On dark grounds */
+  --color-ink-bg: #14181a;
+  --color-ink-border: #242a2c;
+  --color-ink-text: #e3e6e0;
+  --color-ink-sub: #c0c6c2;
+  --color-ink-dim: #9aa19d;
+  --color-ink-faint: #8a918d;
+  --color-accent-on-dark: #cf8794;
+
+  /* Semantic — kept separate from the brand accent */
+  --color-good: #186449;
+  --color-good-bg: #e6f2ed;
+  --color-good-border: #a9cfc0;
+  --color-critical: #7a1a0a;
+  --color-critical-bg: #fdf2f0;
+  --color-critical-border: #f0c0b0;
+  --color-important: #6a4a0a;
+  --color-important-bg: #fdf8f0;
+  --color-important-border: #e8d0a0;
+
+  /* Type */
+  --font-display: var(--font-display), Georgia, serif;
+  --font-sans: var(--font-sans), "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-mono), "Courier New", monospace;
+
+  /* Fluid scale */
+  --text-fluid-sm: clamp(0.875rem, 0.82rem + 0.25vw, 0.9375rem);
+  --text-fluid-base: clamp(1rem, 0.95rem + 0.25vw, 1.0625rem);
+  --text-fluid-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+  --text-hero: clamp(3rem, 7.4vw, 6.6rem);
+  --text-display: clamp(2.2rem, 5vw, 3.8rem);
+
+  --radius-sm: 2px;
+  --radius-DEFAULT: 4px;
+}
+
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -11,9 +79,231 @@ html {
 }
 
 body {
-  background: #f7f3ec;
-  color: #1a1612;
+  background: #eaece7;
+  color: #14181a;
+  font-family: var(--font-sans), "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* ── Focus ────────────────────────────────────────────────────
+   Inputs across the site set outline:none inline. This restores a
+   visible focus ring for keyboard users without bringing it back
+   for mouse clicks. */
+
+:focus-visible {
+  outline: 2px solid #7d2436;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #7d2436 !important;
+  outline-offset: 2px;
+}
+
+/* ── Skip link ───────────────────────────────────────────────── */
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 1000;
+  background: #14181a;
+  color: #e3e6e0;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-family: var(--font-sans), sans-serif;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* ── Consent banner ──────────────────────────────────────────── */
+
+.consent {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: #14181a;
+  border-top: 1px solid #242a2c;
+  padding: 18px 24px;
+}
+
+.consent-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.consent-text {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #c0c6c2;
+  max-width: 62ch;
+}
+
+.consent-link {
+  color: #cf8794;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.consent-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.consent-btn {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 200ms, border-color 200ms;
+}
+
+.consent-btn-ghost {
+  background: transparent;
+  color: #c0c6c2;
+  border: 1px solid #3a4245;
+}
+
+.consent-btn-ghost:hover {
+  border-color: #5a6360;
+  color: #e3e6e0;
+}
+
+.consent-btn-solid {
+  background: #7d2436;
+  color: #ffffff;
+  border: 1px solid #7d2436;
+}
+
+.consent-btn-solid:hover {
+  background: #93293e;
+  border-color: #93293e;
+}
+
+@media (max-width: 560px) {
+  .consent-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .consent-actions {
+    justify-content: stretch;
+  }
+  .consent-btn {
+    flex: 1;
+  }
+}
+
+/* ── Motion ──────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Brief button (success page) ─────────────────────────────── */
+
+.brief-btn {
+  display: inline-block;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #14181a;
+  border: 1px solid #c3c8c0;
+  border-radius: 4px;
+  padding: 11px 28px;
+  text-decoration: none;
+  margin-bottom: 40px;
+  transition: border-color 200ms;
+}
+
+.brief-btn:hover {
+  border-color: #7d2436;
+}
+
+/* ── Link hovers ──────────────────────────────────────────────
+   These replaced onMouseEnter/onMouseLeave handlers, which forced
+   Footer and ButtonLink to be client components on every page. */
+
+.footer-link {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 13px;
+  color: #9aa19d;
+  text-decoration: none;
+  transition: color 200ms;
+}
+
+.footer-link:hover {
+  color: #e3e6e0;
+}
+
+.btn {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 4px;
+  padding: 13px 28px;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  display: inline-block;
+  cursor: pointer;
+  transition: background 220ms, border-color 220ms, color 220ms;
+}
+
+.btn-primary {
+  background: #7d2436;
+  color: #fff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: #93293e;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #14181a;
+  border: 1px solid #c3c8c0;
+}
+
+.btn-outline:hover {
+  border-color: #7d2436;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #14181a;
+  border: none;
+  padding: 0;
+  border-bottom: 1px solid #c3c8c0;
+}
+
+.btn-ghost:hover {
+  border-bottom-color: #7d2436;
 }

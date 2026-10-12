@@ -7,12 +7,12 @@ const inputStyle: React.CSSProperties = {
   width: "100%",
   background: "transparent",
   border: "none",
-  borderBottom: "1px solid #c8c0b6",
+  borderBottom: "1px solid #c3c8c0",
   padding: "10px 0",
-  fontFamily: "var(--font-cormorant), Georgia, serif",
+  fontFamily: "var(--font-display), Georgia, serif",
   fontSize: "1.05rem",
   fontStyle: "italic",
-  color: "#1a1612",
+  color: "#14181a",
   outline: "none",
   transition: "border-color 200ms",
 };
@@ -36,6 +36,7 @@ export default function ContactSection() {
       email: (form.elements.namedItem("email") as HTMLInputElement).value,
       businessType: (form.elements.namedItem("businessType") as HTMLInputElement).value,
       brief: (form.elements.namedItem("brief") as HTMLTextAreaElement).value,
+      company: (form.elements.namedItem("company") as HTMLInputElement).value,
     };
 
     try {
@@ -59,12 +60,12 @@ export default function ContactSection() {
   }, []);
 
   const labelStyle: React.CSSProperties = {
-    fontFamily: "var(--font-dm-sans), sans-serif",
+    fontFamily: "var(--font-sans), sans-serif",
     fontSize: 11,
     fontWeight: 500,
     letterSpacing: "0.06em",
     textTransform: "uppercase",
-    color: "#9a9188",
+    color: "#636b67",
     display: "block",
     marginBottom: 8,
   };
@@ -74,9 +75,9 @@ export default function ContactSection() {
       id="contact"
       ref={ref}
       style={{
-        background: "#f7f3ec",
+        background: "#eaece7",
         padding: "120px 40px",
-        borderTop: "1px solid #e8e3d8",
+        borderTop: "1px solid #d5d9d2",
       }}
     >
       <div style={{ maxWidth: 580, margin: "0 auto", textAlign: "center" }}>
@@ -88,11 +89,11 @@ export default function ContactSection() {
         >
           <div
             style={{
-              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: 11,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              color: "#c87850",
+              color: "#8f3446",
               marginBottom: 16,
             }}
           >
@@ -100,12 +101,12 @@ export default function ContactSection() {
           </div>
           <h2
             style={{
-              fontFamily: "var(--font-cormorant), serif",
+              fontFamily: "var(--font-display), serif",
               fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
               fontWeight: 300,
               lineHeight: 1.1,
               letterSpacing: "-0.02em",
-              color: "#1a1612",
+              color: "#14181a",
               marginBottom: 16,
             }}
           >
@@ -113,9 +114,9 @@ export default function ContactSection() {
           </h2>
           <p
             style={{
-              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: 14,
-              color: "#6b6358",
+              color: "#5a6360",
               lineHeight: 1.72,
               marginBottom: 48,
             }}
@@ -143,7 +144,7 @@ export default function ContactSection() {
             >
               <div
                 style={{
-                  fontFamily: "var(--font-cormorant), serif",
+                  fontFamily: "var(--font-display), serif",
                   fontSize: "1.6rem",
                   fontStyle: "italic",
                   color: "#2a5040",
@@ -154,9 +155,9 @@ export default function ContactSection() {
               </div>
               <div
                 style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: 13,
-                  color: "#6b6358",
+                  color: "#5a6360",
                 }}
               >
                 Expect a reply within 24 hours.
@@ -178,8 +179,8 @@ export default function ContactSection() {
                   placeholder="Jane Smith"
                   required
                   style={inputStyle}
-                  onFocus={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#1a1612")}
-                  onBlur={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#c8c0b6")}
+                  onFocus={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#14181a")}
+                  onBlur={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#c3c8c0")}
                 />
               </div>
 
@@ -193,8 +194,8 @@ export default function ContactSection() {
                   placeholder="jane@yourbusiness.co.uk"
                   required
                   style={inputStyle}
-                  onFocus={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#1a1612")}
-                  onBlur={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#c8c0b6")}
+                  onFocus={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#14181a")}
+                  onBlur={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#c3c8c0")}
                 />
               </div>
 
@@ -208,8 +209,8 @@ export default function ContactSection() {
                   placeholder="e.g. beauty salon, café, joinery"
                   required
                   style={inputStyle}
-                  onFocus={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#1a1612")}
-                  onBlur={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#c8c0b6")}
+                  onFocus={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#14181a")}
+                  onBlur={(e) => ((e.target as HTMLInputElement).style.borderBottomColor = "#c3c8c0")}
                 />
               </div>
 
@@ -223,10 +224,20 @@ export default function ContactSection() {
                   placeholder="Tell us what you need..."
                   required
                   style={{ ...inputStyle, resize: "none" }}
-                  onFocus={(e) => ((e.target as HTMLTextAreaElement).style.borderBottomColor = "#1a1612")}
-                  onBlur={(e) => ((e.target as HTMLTextAreaElement).style.borderBottomColor = "#c8c0b6")}
+                  onFocus={(e) => ((e.target as HTMLTextAreaElement).style.borderBottomColor = "#14181a")}
+                  onBlur={(e) => ((e.target as HTMLTextAreaElement).style.borderBottomColor = "#c3c8c0")}
                 />
               </div>
+
+              {/* Honeypot — hidden from people, irresistible to bots */}
+              <input
+                type="text"
+                name="company"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ position: "absolute", left: -9999, width: 1, height: 1 }}
+              />
 
               {/* Error message */}
               {status === "error" && (
@@ -236,9 +247,9 @@ export default function ContactSection() {
                     border: "1px solid #e8b8a8",
                     borderRadius: 4,
                     padding: "12px 16px",
-                    fontFamily: "var(--font-dm-sans), sans-serif",
+                    fontFamily: "var(--font-sans), sans-serif",
                     fontSize: 13,
-                    color: "#a04020",
+                    color: "#7d2436",
                     textAlign: "left",
                   }}
                 >
@@ -252,12 +263,12 @@ export default function ContactSection() {
                   type="submit"
                   disabled={status === "loading"}
                   style={{
-                    background: status === "loading" ? "#c8a090" : "#a04020",
+                    background: status === "loading" ? "#b8949c" : "#7d2436",
                     color: "#fff",
                     border: "none",
                     borderRadius: 4,
                     padding: "13px 28px",
-                    fontFamily: "var(--font-dm-sans), sans-serif",
+                    fontFamily: "var(--font-sans), sans-serif",
                     fontSize: 14,
                     fontWeight: 500,
                     cursor: status === "loading" ? "not-allowed" : "pointer",
@@ -267,11 +278,11 @@ export default function ContactSection() {
                   }}
                   onMouseEnter={(e) => {
                     if (status !== "loading")
-                      (e.currentTarget as HTMLButtonElement).style.background = "#b84a28";
+                      (e.currentTarget as HTMLButtonElement).style.background = "#93293e";
                   }}
                   onMouseLeave={(e) => {
                     if (status !== "loading")
-                      (e.currentTarget as HTMLButtonElement).style.background = "#a04020";
+                      (e.currentTarget as HTMLButtonElement).style.background = "#7d2436";
                   }}
                 >
                   {status === "loading" ? "Sending…" : "Send brief"}

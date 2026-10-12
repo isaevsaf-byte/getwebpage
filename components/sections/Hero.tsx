@@ -19,7 +19,7 @@ export default function Hero() {
     <section
       style={{
         minHeight: "100vh",
-        background: "#f7f3ec",
+        background: "#eaece7",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -56,12 +56,12 @@ export default function Hero() {
           custom={0}
           variants={fadeUp}
           style={{
-            fontFamily: "var(--font-dm-sans), sans-serif",
+            fontFamily: "var(--font-sans), sans-serif",
             fontSize: 11,
             fontWeight: 500,
             letterSpacing: "0.12em",
             textTransform: "uppercase" as const,
-            color: "#c87850",
+            color: "#8f3446",
             marginBottom: 28,
           }}
         >
@@ -75,12 +75,12 @@ export default function Hero() {
           custom={0.1}
           variants={fadeUp}
           style={{
-            fontFamily: "var(--font-cormorant), Georgia, serif",
+            fontFamily: "var(--font-display), Georgia, serif",
             fontSize: "clamp(3.4rem, 8vw, 7.5rem)",
             fontWeight: 300,
             lineHeight: 0.97,
             letterSpacing: "-0.025em",
-            color: "#1a1612",
+            color: "#14181a",
             margin: 0,
           }}
         >
@@ -92,18 +92,18 @@ export default function Hero() {
           custom={0.18}
           variants={fadeUp}
           style={{
-            fontFamily: "var(--font-cormorant), Georgia, serif",
+            fontFamily: "var(--font-display), Georgia, serif",
             fontSize: "clamp(3.4rem, 8vw, 7.5rem)",
             fontWeight: 300,
             lineHeight: 0.97,
             letterSpacing: "-0.025em",
-            color: "#1a1612",
+            color: "#14181a",
             marginBottom: 44,
             marginTop: 8,
           }}
         >
           Built in{" "}
-          <span style={{ color: "#a04020" }}>7 days.</span>
+          <span style={{ color: "#7d2436" }}>7 days.</span>
         </motion.h1>
 
         {/* Subheading */}
@@ -113,11 +113,11 @@ export default function Hero() {
           custom={0.28}
           variants={fadeUp}
           style={{
-            fontFamily: "var(--font-dm-sans), sans-serif",
+            fontFamily: "var(--font-sans), sans-serif",
             fontSize: "clamp(1rem, 1.8vw, 1.125rem)",
             lineHeight: 1.72,
             fontWeight: 300,
-            color: "#6b6358",
+            color: "#5a6360",
             maxWidth: 460,
             marginBottom: 48,
           }}
@@ -142,10 +142,10 @@ export default function Hero() {
           <Link
             href="/pricing"
             style={{
-              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: 15,
               fontWeight: 500,
-              background: "#a04020",
+              background: "#7d2436",
               color: "#fff",
               border: "none",
               borderRadius: 4,
@@ -158,13 +158,13 @@ export default function Hero() {
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLAnchorElement).style.background =
-                "#b84a28";
+                "#93293e";
               (e.currentTarget as HTMLAnchorElement).style.transform =
                 "translateY(-1px)";
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLAnchorElement).style.background =
-                "#a04020";
+                "#7d2436";
               (e.currentTarget as HTMLAnchorElement).style.transform = "none";
             }}
           >
@@ -173,27 +173,27 @@ export default function Hero() {
           <Link
             href="/work"
             style={{
-              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: 14,
               fontWeight: 500,
-              color: "#1a1612",
+              color: "#14181a",
               textDecoration: "none",
               display: "flex",
               alignItems: "center",
               gap: 6,
               transition: "color 200ms",
-              borderBottom: "1px solid #c8c0b6",
+              borderBottom: "1px solid #c3c8c0",
               paddingBottom: "1px",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.color = "#a04020";
+              (e.currentTarget as HTMLAnchorElement).style.color = "#7d2436";
               (e.currentTarget as HTMLAnchorElement).style.borderBottomColor =
-                "#a04020";
+                "#7d2436";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.color = "#1a1612";
+              (e.currentTarget as HTMLAnchorElement).style.color = "#14181a";
               (e.currentTarget as HTMLAnchorElement).style.borderBottomColor =
-                "#c8c0b6";
+                "#c3c8c0";
             }}
           >
             See our work
@@ -221,7 +221,7 @@ export default function Hero() {
             display: "flex",
             gap: "clamp(24px, 5vw, 56px)",
             marginTop: 80,
-            borderTop: "1px solid #e8e3d8",
+            borderTop: "1px solid #d5d9d2",
             paddingTop: 36,
             flexWrap: "wrap",
           }}
@@ -234,10 +234,10 @@ export default function Hero() {
             <div key={val}>
               <div
                 style={{
-                  fontFamily: "var(--font-cormorant), serif",
+                  fontFamily: "var(--font-display), serif",
                   fontSize: "2.1rem",
                   fontWeight: 400,
-                  color: "#1a1612",
+                  color: "#14181a",
                   lineHeight: 1,
                 }}
               >
@@ -245,11 +245,11 @@ export default function Hero() {
               </div>
               <div
                 style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: 11,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase" as const,
-                  color: "#9a9188",
+                  color: "#636b67",
                   marginTop: 6,
                 }}
               >

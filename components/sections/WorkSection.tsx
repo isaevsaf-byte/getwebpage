@@ -50,9 +50,9 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
       id="work"
       ref={ref}
       style={{
-        background: "#f7f3ec",
+        background: "#eaece7",
         padding: "120px 40px",
-        borderTop: "1px solid #e8e3d8",
+        borderTop: "1px solid #d5d9d2",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -72,11 +72,11 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
           <div>
             <div
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 11,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase" as const,
-                color: "#c87850",
+                color: "#8f3446",
                 marginBottom: 14,
               }}
             >
@@ -84,12 +84,12 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
             </div>
             <h2
               style={{
-                fontFamily: "var(--font-cormorant), serif",
+                fontFamily: "var(--font-display), serif",
                 fontSize: "clamp(2rem, 4.5vw, 3.2rem)",
                 fontWeight: 300,
                 lineHeight: 1.1,
                 letterSpacing: "-0.02em",
-                color: "#1a1612",
+                color: "#14181a",
               }}
             >
               Built for real businesses.
@@ -99,20 +99,20 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
             <Link
               href="/work"
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 13,
                 fontWeight: 500,
-                color: "#1a1612",
+                color: "#14181a",
                 textDecoration: "none",
-                borderBottom: "1px solid #c8c0b6",
+                borderBottom: "1px solid #c3c8c0",
                 paddingBottom: 2,
                 transition: "border-color 200ms",
               }}
               onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.borderBottomColor = "#a04020")
+                ((e.currentTarget as HTMLAnchorElement).style.borderBottomColor = "#7d2436")
               }
               onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.borderBottomColor = "#c8c0b6")
+                ((e.currentTarget as HTMLAnchorElement).style.borderBottomColor = "#c3c8c0")
               }
             >
               View all
@@ -142,7 +142,7 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
               }}
               style={{
                 background: "#fff",
-                border: "1px solid #e8e3d8",
+                border: "1px solid #d5d9d2",
                 borderRadius: 6,
                 overflow: "hidden",
                 cursor: "pointer",
@@ -155,10 +155,10 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
                 boxShadow: "0 8px 32px rgba(26,22,18,0.09)",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.borderColor = "#c8c0b6";
+                (e.currentTarget as HTMLAnchorElement).style.borderColor = "#c3c8c0";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.borderColor = "#e8e3d8";
+                (e.currentTarget as HTMLAnchorElement).style.borderColor = "#d5d9d2";
               }}
             >
               {/* 4:3 screenshot */}
@@ -167,7 +167,7 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
                   position: "relative",
                   paddingTop: "75%",
                   overflow: "hidden",
-                  background: "#ede8e0",
+                  background: "#dfe3dc",
                 }}
               >
                 <Image
@@ -182,11 +182,11 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
               <div style={{ padding: "22px 26px 24px" }}>
                 <div
                   style={{
-                    fontFamily: "var(--font-dm-sans), sans-serif",
+                    fontFamily: "var(--font-sans), sans-serif",
                     fontSize: 10,
                     letterSpacing: "0.10em",
                     textTransform: "uppercase" as const,
-                    color: "#c87850",
+                    color: "#8f3446",
                     marginBottom: 6,
                   }}
                 >
@@ -194,19 +194,19 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
                 </div>
                 <div
                   style={{
-                    fontFamily: "var(--font-cormorant), serif",
+                    fontFamily: "var(--font-display), serif",
                     fontSize: "1.45rem",
                     fontWeight: 400,
-                    color: "#1a1612",
+                    color: "#14181a",
                   }}
                 >
                   {p.title}
                 </div>
                 <div
                   style={{
-                    fontFamily: "var(--font-dm-sans), sans-serif",
+                    fontFamily: "var(--font-sans), sans-serif",
                     fontSize: 12,
-                    color: "#6b6358",
+                    color: "#5a6360",
                     marginTop: 4,
                   }}
                 >
@@ -220,7 +220,7 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
           <div
             style={{
               background: "#fff",
-              border: "1px dashed #ddd8ce",
+              border: "1px dashed #c3c8c0",
               borderRadius: 6,
               overflow: "hidden",
               opacity: 0.5,
@@ -230,7 +230,7 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
               style={{
                 position: "relative",
                 paddingTop: "75%",
-                background: "#f0ece4",
+                background: "#e3e6e0",
               }}
             >
               <div
@@ -244,9 +244,9 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
               >
                 <span
                   style={{
-                    fontFamily: "var(--font-dm-mono), monospace",
+                    fontFamily: "var(--font-mono), monospace",
                     fontSize: 9,
-                    color: "#9a9188",
+                    color: "#636b67",
                     letterSpacing: "0.10em",
                     textTransform: "uppercase",
                   }}
@@ -258,11 +258,11 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
             <div style={{ padding: "22px 26px 24px" }}>
               <div
                 style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: 10,
                   letterSpacing: "0.10em",
                   textTransform: "uppercase" as const,
-                  color: "#9a9188",
+                  color: "#636b67",
                   marginBottom: 6,
                 }}
               >
@@ -270,19 +270,19 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
               </div>
               <div
                 style={{
-                  fontFamily: "var(--font-cormorant), serif",
+                  fontFamily: "var(--font-display), serif",
                   fontSize: "1.45rem",
                   fontWeight: 400,
-                  color: "#9a9188",
+                  color: "#636b67",
                 }}
               >
                 In progress
               </div>
               <div
                 style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: 12,
-                  color: "#9a9188",
+                  color: "#636b67",
                   marginTop: 4,
                 }}
               >

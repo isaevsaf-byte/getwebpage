@@ -13,23 +13,23 @@ export default function WorkPage() {
   return (
     <>
       <Nav />
-      <main>
+      <main id="main">
         {/* Page header */}
         <section
           style={{
-            background: "#f7f3ec",
+            background: "#eaece7",
             padding: "140px 40px 0",
-            borderBottom: "1px solid #e8e3d8",
+            borderBottom: "1px solid #d5d9d2",
           }}
         >
           <div style={{ maxWidth: 1200, margin: "0 auto", paddingBottom: 64 }}>
             <div
               style={{
-                fontFamily: "var(--font-dm-sans), sans-serif",
+                fontFamily: "var(--font-sans), sans-serif",
                 fontSize: 11,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase" as const,
-                color: "#c87850",
+                color: "#8f3446",
                 marginBottom: 20,
               }}
             >
@@ -37,12 +37,12 @@ export default function WorkPage() {
             </div>
             <h1
               style={{
-                fontFamily: "var(--font-cormorant), serif",
+                fontFamily: "var(--font-display), serif",
                 fontSize: "clamp(2.8rem, 7vw, 5.5rem)",
                 fontWeight: 300,
                 lineHeight: 1.05,
                 letterSpacing: "-0.025em",
-                color: "#1a1612",
+                color: "#14181a",
                 maxWidth: 640,
               }}
             >

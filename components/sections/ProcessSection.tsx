@@ -31,9 +31,9 @@ export default function ProcessSection() {
       id="process"
       ref={ref}
       style={{
-        background: "#f7f3ec",
+        background: "#eaece7",
         padding: "120px 40px",
-        borderTop: "1px solid #e8e3d8",
+        borderTop: "1px solid #d5d9d2",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -45,11 +45,11 @@ export default function ProcessSection() {
         >
           <div
             style={{
-              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: 11,
               letterSpacing: "0.12em",
               textTransform: "uppercase" as const,
-              color: "#c87850",
+              color: "#8f3446",
               marginBottom: 16,
             }}
           >
@@ -57,12 +57,12 @@ export default function ProcessSection() {
           </div>
           <h2
             style={{
-              fontFamily: "var(--font-cormorant), serif",
+              fontFamily: "var(--font-display), serif",
               fontSize: "clamp(2.2rem, 5vw, 3.8rem)",
               fontWeight: 300,
               lineHeight: 1.1,
               letterSpacing: "-0.02em",
-              color: "#1a1612",
+              color: "#14181a",
               maxWidth: 500,
             }}
           >
@@ -90,18 +90,18 @@ export default function ProcessSection() {
               style={{
                 padding: "48px 40px",
                 background: "transparent",
-                borderTop: "1px solid #e8e3d8",
-                borderBottom: "1px solid #e8e3d8",
-                borderLeft: "1px solid #e8e3d8",
-                borderRight: i === steps.length - 1 ? "1px solid #e8e3d8" : "none",
+                borderTop: "1px solid #d5d9d2",
+                borderBottom: "1px solid #d5d9d2",
+                borderLeft: "1px solid #d5d9d2",
+                borderRight: i === steps.length - 1 ? "1px solid #d5d9d2" : "none",
               }}
             >
               <div
                 style={{
-                  fontFamily: "var(--font-cormorant), serif",
+                  fontFamily: "var(--font-display), serif",
                   fontSize: "3.5rem",
                   fontWeight: 300,
-                  color: "#b8a898",
+                  color: "#adb5af",
                   lineHeight: 1,
                   marginBottom: 28,
                 }}
@@ -110,10 +110,10 @@ export default function ProcessSection() {
               </div>
               <h3
                 style={{
-                  fontFamily: "var(--font-cormorant), serif",
+                  fontFamily: "var(--font-display), serif",
                   fontSize: "1.6rem",
                   fontWeight: 400,
-                  color: "#1a1612",
+                  color: "#14181a",
                   marginBottom: 12,
                 }}
               >
@@ -121,10 +121,10 @@ export default function ProcessSection() {
               </h3>
               <p
                 style={{
-                  fontFamily: "var(--font-dm-sans), sans-serif",
+                  fontFamily: "var(--font-sans), sans-serif",
                   fontSize: 16,
                   lineHeight: 1.75,
-                  color: "#6b6358",
+                  color: "#5a6360",
                 }}
               >
                 {s.body}

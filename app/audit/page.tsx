@@ -1,0 +1,28 @@
+import type { Metadata } from "next";
+import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
+import AuditTool from "./AuditTool";
+
+export const metadata: Metadata = {
+  title: "Free AI website audit — GetWebPage",
+  description:
+    "Paste your URL and get a free AI audit of your website in about 30 seconds. See the SEO, trust and conversion problems costing you customers, and exactly how to fix them.",
+  alternates: { canonical: "/audit" },
+  openGraph: {
+    title: "Free AI website audit — GetWebPage",
+    description:
+      "See what's costing you customers. A free AI audit of your site in about 30 seconds.",
+    url: "https://getwebpage.co.uk/audit",
+    type: "website",
+  },
+};
+
+export default function AuditPage() {
+  return (
+    <>
+      <Nav />
+      <AuditTool />
+      <Footer />
+    </>
+  );
+}

@@ -1,8 +1,13 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 const WA_LINK = "https://wa.me/447729741116";
 
 export default function WhatsAppButton() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
+
   return (
     <>
       <a

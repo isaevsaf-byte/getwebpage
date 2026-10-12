@@ -106,9 +106,9 @@ export default function PricingSection() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tier: tierId }),
       });
-      const json = await res.json();
+      const json = await res.json().catch(() => ({}));
       if (json.url) {
-        window.location.href = json.url;
+        window.location.assign(json.url);
       } else {
         setCheckoutError(tierId);
         setLoading(null);
@@ -124,9 +124,9 @@ export default function PricingSection() {
       id="pricing"
       ref={ref}
       style={{
-        background: "#f7f3ec",
+        background: "#eaece7",
         padding: "120px 40px",
-        borderTop: "1px solid #e8e3d8",
+        borderTop: "1px solid #d5d9d2",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -138,11 +138,11 @@ export default function PricingSection() {
         >
           <div
             style={{
-              fontFamily: "var(--font-dm-sans), sans-serif",
+              fontFamily: "var(--font-sans), sans-serif",
               fontSize: 11,
               letterSpacing: "0.12em",
               textTransform: "uppercase" as const,
-              color: "#c87850",
+              color: "#8f3446",
               marginBottom: 14,
             }}
           >
@@ -150,12 +150,12 @@ export default function PricingSection() {
           </div>
           <h2
             style={{
-              fontFamily: "var(--font-cormorant), serif",
+              fontFamily: "var(--font-display), serif",
               fontSize: "clamp(2rem, 4.5vw, 3.2rem)",
               fontWeight: 300,
               lineHeight: 1.1,
               letterSpacing: "-0.02em",
-              color: "#1a1612",
+              color: "#14181a",
             }}
           >
             From £500. No surprises.
@@ -193,7 +193,7 @@ export default function PricingSection() {
               <div
                 style={{
                   height: 3,
-                  background: t.popular ? "#a04020" : "transparent",
+                  background: t.popular ? "#7d2436" : "transparent",
                 }}
               />
 
@@ -209,11 +209,11 @@ export default function PricingSection() {
                 <div style={{ marginBottom: 20 }}>
                   <div
                     style={{
-                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontFamily: "var(--font-sans), sans-serif",
                       fontSize: 11,
                       letterSpacing: "0.10em",
                       textTransform: "uppercase" as const,
-                      color: "#9a9188",
+                      color: "#636b67",
                       marginBottom: t.popular ? 4 : 0,
                     }}
                   >
@@ -222,10 +222,10 @@ export default function PricingSection() {
                   {t.popular && (
                     <div
                       style={{
-                        fontFamily: "var(--font-cormorant), Georgia, serif",
+                        fontFamily: "var(--font-display), Georgia, serif",
                         fontSize: 13,
                         fontStyle: "italic",
-                        color: "#a04020",
+                        color: "#7d2436",
                         letterSpacing: "0.02em",
                       }}
                     >
@@ -244,10 +244,10 @@ export default function PricingSection() {
                 >
                   <span
                     style={{
-                      fontFamily: "var(--font-cormorant), serif",
+                      fontFamily: "var(--font-display), serif",
                       fontSize: "2.4rem",
                       fontWeight: 400,
-                      color: "#1a1612",
+                      color: "#14181a",
                       lineHeight: 1,
                     }}
                   >
@@ -255,9 +255,9 @@ export default function PricingSection() {
                   </span>
                   <span
                     style={{
-                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontFamily: "var(--font-sans), sans-serif",
                       fontSize: 11,
-                      color: "#9a9188",
+                      color: "#636b67",
                     }}
                   >
                     {t.time}
@@ -266,9 +266,9 @@ export default function PricingSection() {
 
                 <p
                   style={{
-                    fontFamily: "var(--font-dm-sans), sans-serif",
+                    fontFamily: "var(--font-sans), sans-serif",
                     fontSize: 15,
-                    color: "#6b6358",
+                    color: "#5a6360",
                     lineHeight: 1.65,
                     marginBottom: 24,
                   }}
@@ -297,7 +297,7 @@ export default function PricingSection() {
                         height="12"
                         viewBox="0 0 24 24"
                         fill="none"
-                        stroke="#9a9188"
+                        stroke="#636b67"
                         strokeWidth="2.5"
                         strokeLinecap="round"
                         style={{ flexShrink: 0, marginTop: 2 }}
@@ -306,9 +306,9 @@ export default function PricingSection() {
                       </svg>
                       <span
                         style={{
-                          fontFamily: "var(--font-dm-sans), sans-serif",
+                          fontFamily: "var(--font-sans), sans-serif",
                           fontSize: 14,
-                          color: "#6b6358",
+                          color: "#5a6360",
                           lineHeight: 1.5,
                         }}
                       >
@@ -322,9 +322,9 @@ export default function PricingSection() {
                 {checkoutError === t.id && (
                   <div
                     style={{
-                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontFamily: "var(--font-sans), sans-serif",
                       fontSize: 12,
-                      color: "#a04020",
+                      color: "#7d2436",
                       marginBottom: 10,
                       textAlign: "center",
                     }}
@@ -341,10 +341,10 @@ export default function PricingSection() {
                       width: "100%",
                       padding: "11px 16px",
                       background: "transparent",
-                      color: "#1a1612",
-                      border: "1px solid #c8c0b6",
+                      color: "#14181a",
+                      border: "1px solid #c3c8c0",
                       borderRadius: 4,
-                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontFamily: "var(--font-sans), sans-serif",
                       fontSize: 13,
                       fontWeight: 500,
                       cursor: "pointer",
@@ -355,10 +355,10 @@ export default function PricingSection() {
                       transition: "border-color 200ms",
                     }}
                     onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "#9a9188";
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "#636b67";
                     }}
                     onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "#c8c0b6";
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "#c3c8c0";
                     }}
                   >
                     Get in touch
@@ -373,15 +373,15 @@ export default function PricingSection() {
                       background:
                         loading === t.id
                           ? t.popular
-                            ? "#c8a090"
-                            : "#e8e3d8"
+                            ? "#b8949c"
+                            : "#d5d9d2"
                           : t.popular
-                          ? "#a04020"
+                          ? "#7d2436"
                           : "transparent",
-                      color: t.popular ? "#ffffff" : "#1a1612",
-                      border: `1px solid ${t.popular ? (loading === t.id ? "#c8a090" : "#a04020") : "#c8c0b6"}`,
+                      color: t.popular ? "#ffffff" : "#14181a",
+                      border: `1px solid ${t.popular ? (loading === t.id ? "#b8949c" : "#7d2436") : "#c3c8c0"}`,
                       borderRadius: 4,
-                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      fontFamily: "var(--font-sans), sans-serif",
                       fontSize: 13,
                       fontWeight: 500,
                       cursor: loading === t.id ? "not-allowed" : "pointer",
@@ -395,18 +395,18 @@ export default function PricingSection() {
                     onMouseEnter={(e) => {
                       if (loading !== t.id) {
                         if (t.popular) {
-                          (e.currentTarget as HTMLButtonElement).style.background = "#b84a28";
+                          (e.currentTarget as HTMLButtonElement).style.background = "#93293e";
                         } else {
-                          (e.currentTarget as HTMLButtonElement).style.borderColor = "#9a9188";
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = "#636b67";
                         }
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (loading !== t.id) {
                         if (t.popular) {
-                          (e.currentTarget as HTMLButtonElement).style.background = "#a04020";
+                          (e.currentTarget as HTMLButtonElement).style.background = "#7d2436";
                         } else {
-                          (e.currentTarget as HTMLButtonElement).style.borderColor = "#c8c0b6";
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = "#c3c8c0";
                         }
                       }
                     }}
@@ -448,8 +448,8 @@ export default function PricingSection() {
         }
         .pricing-spotlight, .pricing-spotlight-muted {
           background:
-            linear-gradient(#f0ece4, #f0ece4) padding-box,
-            radial-gradient(circle 220px at var(--mx, 50%) var(--my, 200%), #c04828 0%, #a04020 28%, transparent 62%) border-box;
+            linear-gradient(#e3e6e0, #e3e6e0) padding-box,
+            radial-gradient(circle 220px at var(--mx, 50%) var(--my, 200%), #93293e 0%, #7d2436 28%, transparent 62%) border-box;
           border: 1px solid transparent;
         }
       `}</style>

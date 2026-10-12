@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Nav from "@/components/Nav";
+import SiteHeader from "@/components/showcase/SiteHeader";
 import Footer from "@/components/Footer";
 import AuditTool from "./AuditTool";
 
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default function AuditPage() {
   return (
     <>
-      <Nav />
+      <SiteHeader />
       <AuditTool />
       <Footer />
     </>

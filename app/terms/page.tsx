@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Nav from "@/components/Nav";
+import SiteHeader from "@/components/showcase/SiteHeader";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
@@ -60,8 +60,8 @@ function Item({ children }: { children: React.ReactNode }) {
 export default function TermsPage() {
   return (
     <>
-      <Nav />
-      <main id="main" style={{ background: "#eaece7", minHeight: "100vh", padding: "100px 40px 120px" }}>
+      <SiteHeader />
+      <main data-ground="paper" id="main" style={{ background: "#eaece7", minHeight: "100svh", padding: "100px 40px 120px" }}>
         <div style={{ maxWidth: 680, margin: "0 auto" }}>
 
           {/* Header */}

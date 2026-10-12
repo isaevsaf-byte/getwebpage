@@ -16,6 +16,7 @@ const LABELS: Record<EventName, { title: string; hint: string; tone: "warm" | "h
   checkout_started: { title: "Открыли оплату", hint: "нажали Get started", tone: "warm" },
   order_paid: { title: "Оплатили депозит", hint: "деньги пришли", tone: "money" },
   checkout_abandoned: { title: "Бросили оплату", hint: "дошли до Stripe и ушли", tone: "cold" },
+  ai_copy: { title: "ИИ написал тексты", hint: "нажали ✦ в hero", tone: "warm" },
 };
 
 interface AuditLead { email: string; url: string; ts: number }

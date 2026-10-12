@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Nav from "@/components/Nav";
+import SiteHeader from "@/components/showcase/SiteHeader";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
@@ -66,8 +66,8 @@ function Item({ children }: { children: React.ReactNode }) {
 export default function PrivacyPage() {
   return (
     <>
-      <Nav />
-      <main id="main" style={{ background: "#eaece7", minHeight: "100vh", padding: "100px 40px 120px" }}>
+      <SiteHeader />
+      <main data-ground="paper" id="main" style={{ background: "#eaece7", minHeight: "100svh", padding: "100px 40px 120px" }}>
         <div style={{ maxWidth: 680, margin: "0 auto" }}>
 
           {/* Header */}
@@ -178,7 +178,8 @@ export default function PrivacyPage() {
                 </Item>
                 <Item>
                   <strong>Anthropic</strong> — our free AI audit sends the public content of the web page you ask us to check to
-                  Anthropic&apos;s Claude for analysis. Your email address is never sent to Anthropic.{" "}
+                  Anthropic&apos;s Claude for analysis. Your email address is never sent to Anthropic. If you ask our AI to write
+                  your homepage, your business name and type are sent to Anthropic&apos;s Claude to write it; we don&apos;t store them.{" "}
                   <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "#7d2436", textDecoration: "none" }}>anthropic.com/legal/privacy</a>
                 </Item>
                 <Item>We do not sell, rent or share your personal data with any third parties for marketing purposes.</Item>

@@ -18,7 +18,7 @@ export default function Error({
       id="main"
       style={{
         background: "#eaece7",
-        minHeight: "100vh",
+        minHeight: "100svh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

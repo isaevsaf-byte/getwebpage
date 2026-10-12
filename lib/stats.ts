@@ -11,6 +11,7 @@ export const EVENTS = {
   checkout_started: "Checkout started",
   order_paid: "Deposit paid",
   checkout_abandoned: "Checkout abandoned",
+  ai_copy: "AI copy written",
 } as const;
 
 export type EventName = keyof typeof EVENTS;

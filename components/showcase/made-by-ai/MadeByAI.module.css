@@ -1,0 +1,1218 @@
+/* ─────────────────────────────────────────────────────────────────
+   Made by AI — on ink.
+
+   Two layouts, decided by CSS from the first paint:
+   - FLOW (default): phones, tablets, touch desktops, reduced motion,
+     no JS. A vertical graph: a spine, one small fan per phase, the
+     log lines beside it. ≥1024px also shows the static graph.
+   - SCENE (html.motion-ok.fine-desktop at ≥1024px): a sticky 100svh
+     stage — phase title, graph, replayed ledger, running meters —
+     inside a tall wrapper. No pins: CSS sticky only.
+
+   Colours on ink: #e3e6e0 primary, #c0c6c2 secondary, #9aa19d meta,
+   #8a918d faint (5.6:1), #cf8794 accent. Oxblood #7d2436 is light only.
+   ───────────────────────────────────────────────────────────────── */
+
+.section {
+  position: relative;
+  background: #14181a;
+  color: #e3e6e0;
+  padding-block: clamp(96px, 12vw, 176px);
+  overflow-x: clip;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Intro ──────────────────────────────────────────────────────── */
+
+.intro {
+  max-width: calc(1320px + 2 * clamp(16px, 5vw, 64px));
+  margin-inline: auto;
+  padding-inline: clamp(16px, 5vw, 64px);
+}
+
+.kicker {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: #9aa19d;
+  margin-bottom: clamp(16px, 2vw, 24px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kicker::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #cf8794;
+  box-shadow: 0 0 0 4px rgba(207, 135, 148, 0.14);
+  flex: none;
+}
+
+/* A slow "recording" pulse on the dot — a ring that grows and fades. */
+.kicker {
+  position: relative;
+}
+
+:global(html.motion-ok) .kicker::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  border: 1px solid #cf8794;
+  animation: mbai-rec 2.4s var(--ease-studio-out) infinite;
+  pointer-events: none;
+}
+
+@keyframes mbai-rec {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  70%,
+  100% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+.h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.125rem, 1.1rem + 3.4vw, 4rem);
+  font-weight: 520;
+  font-variation-settings: "wght" 520;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  max-width: 17ch;
+  text-wrap: balance;
+  color: #e3e6e0;
+}
+
+/* RevealHeading's line masks use padding + negative margins (globals.css),
+   but as block siblings those margins collapse, so the split heading grows
+   ~19px and jumps back on revert (a layout shift). Inline-block masks never
+   collapse margins: the split heading is exactly as tall as the plain one. */
+.h2 :global(.rh-line-mask) {
+  display: inline-block !important;
+  width: 100%;
+  vertical-align: top;
+}
+
+.lead {
+  margin-top: clamp(20px, 2.4vw, 32px);
+  max-width: 54ch;
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  line-height: 1.55;
+  color: #c0c6c2;
+}
+
+/* ── Stage (flow defaults) ──────────────────────────────────────── */
+
+.scene {
+  position: relative;
+  margin-top: clamp(48px, 7vw, 96px);
+}
+
+.stage {
+  position: relative;
+  max-width: calc(1320px + 2 * clamp(16px, 5vw, 64px));
+  margin-inline: auto;
+  padding-inline: clamp(16px, 5vw, 64px);
+}
+
+.glow {
+  display: none;
+}
+
+.head,
+.log {
+  display: none;
+}
+
+.graphCell {
+  display: none;
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 1024px) {
+  .graphCell {
+    display: block;
+    margin-bottom: clamp(56px, 6vw, 88px);
+  }
+}
+
+/* ── Graph ──────────────────────────────────────────────────────── */
+
+.graphBox {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1200 / 640;
+  /* Labels size against the graph itself, not the window. */
+  container-type: inline-size;
+}
+
+.svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  z-index: 1;
+}
+
+.pulses {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.labels {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* The build head (JS only): a thin light trailing a soft wash. */
+.scan {
+  position: absolute;
+  z-index: 0;
+  left: 0;
+  top: 8%;
+  bottom: 0;
+  width: 100%;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+}
+
+.scan::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 100%;
+  width: 140px;
+  background: linear-gradient(to right, rgba(207, 135, 148, 0), rgba(207, 135, 148, 0.09));
+}
+
+.scan::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: rgba(207, 135, 148, 0.55);
+}
+
+.bloom {
+  position: absolute;
+  z-index: 0;
+  width: 70%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(207, 135, 148, 0.42),
+    rgba(125, 36, 54, 0.18) 45%,
+    rgba(125, 36, 54, 0) 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+.edge {
+  fill: none;
+  stroke: #cf8794;
+  stroke-opacity: 0.42;
+  stroke-width: 1;
+  transition: stroke-opacity 500ms ease;
+}
+
+/* Earlier phases step back while a later one is being built. */
+.edge[data-past] {
+  stroke-opacity: 0.2;
+}
+
+.halo {
+  transition: opacity 500ms ease;
+}
+
+.lit[data-past] .halo {
+  opacity: 0.3;
+}
+
+/* Finale: every edge flares, then settles slowly. */
+.svg[data-flare] .edge {
+  stroke-opacity: 0.95;
+  transition: none;
+}
+
+.svg[data-afterglow] .edge {
+  transition-duration: 1.4s;
+}
+
+/* Hover: the node's own wires light, the rest step back. */
+.edge[data-hot] {
+  stroke-opacity: 0.95;
+}
+
+.graphBox[data-hovering] .edge:not([data-hot]) {
+  stroke-opacity: 0.12;
+}
+
+.hit {
+  fill: transparent;
+  pointer-events: none;
+}
+
+:global(html.fine-desktop) .hit {
+  pointer-events: all;
+}
+
+.tip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  translate: -50% -100%;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: #14181a;
+  background: #e3e6e0;
+  padding: 4px 8px;
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 100ms ease;
+  pointer-events: none;
+}
+
+.tip[data-show] {
+  opacity: 1;
+  transition-duration: 150ms;
+}
+
+.busBase {
+  fill: none;
+  stroke: #3a4346;
+  stroke-width: 1;
+  stroke-dasharray: 2 5;
+}
+
+.busLit {
+  fill: none;
+  stroke: #e3e6e0;
+  stroke-opacity: 0.4;
+  stroke-width: 1;
+}
+
+.ghost {
+  fill: #14181a;
+  stroke: #3a4346;
+  stroke-width: 1;
+}
+
+.ring {
+  fill: #14181a;
+  stroke: #cf8794;
+  stroke-width: 1.25;
+}
+
+.lit[data-kind="anchor"] .ring {
+  stroke-width: 1.6;
+}
+
+.core {
+  fill: #f4eef0;
+}
+
+.ping {
+  fill: none;
+  stroke: #cf8794;
+  stroke-width: 1;
+  opacity: 0;
+}
+
+.gateRing {
+  fill: #14181a;
+  stroke: #e3e6e0;
+  stroke-width: 1.25;
+}
+
+.gateCore {
+  fill: #cf8794;
+}
+
+.paneBody {
+  fill: #1b2124;
+  stroke: #e3e6e0;
+  stroke-width: 1.2;
+}
+
+.paneBar {
+  stroke: #e3e6e0;
+  stroke-opacity: 0.45;
+  stroke-width: 1;
+}
+
+.paneDot {
+  fill: #9aa19d;
+}
+
+.paneHead {
+  fill: #e3e6e0;
+}
+
+.paneText {
+  fill: #9aa19d;
+}
+
+.paneCta {
+  fill: #cf8794;
+}
+
+.personRing {
+  fill: #14181a;
+  stroke: #e3e6e0;
+  stroke-width: 1.25;
+}
+
+.personCore {
+  fill: #e3e6e0;
+}
+
+/* Column headers and node labels (HTML, so text stays crisp at any size). */
+
+.colHead {
+  position: absolute;
+  translate: -50% -50%;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #c0c6c2;
+  transition: color 180ms ease;
+}
+
+.colCount {
+  margin-left: 0.4em;
+  color: #9aa19d;
+}
+
+.colHead[data-state="future"],
+.colHead[data-state="future"] .colCount {
+  color: #8a918d;
+}
+
+.colHead[data-state="active"],
+.colHead[data-state="active"] .colCount {
+  color: #cf8794;
+}
+
+.nodeLabel {
+  position: absolute;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 11.5px;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: #c0c6c2;
+  background: rgba(20, 24, 26, 0.86);
+  padding: 1px 5px;
+  border-radius: 2px;
+  /* SSR / no-JS / reduced: the finished picture — sticky labels + the last phase. */
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+.nodeLabel[data-sticky],
+.nodeLabel[data-phase="8"] {
+  opacity: 1;
+}
+
+.nodeLabel[data-sticky] {
+  color: #e3e6e0;
+}
+
+.nodeLabel[data-label="live"] {
+  color: #cf8794;
+}
+
+/* Once JS drives the graph, it decides who shows. */
+.graphBox[data-js] .nodeLabel {
+  opacity: 0;
+}
+
+.graphBox[data-js] .nodeLabel[data-show] {
+  opacity: 1;
+}
+
+.nodeLabel[data-side="right"] {
+  translate: 0 -50%;
+}
+
+.nodeLabel[data-side="left"] {
+  translate: -100% -50%;
+}
+
+.nodeLabel[data-side="below"] {
+  translate: -50% 0;
+}
+
+.nodeLabel[data-side="above"] {
+  translate: -50% -100%;
+}
+
+.nodeLabel[data-side="aboveRight"] {
+  translate: 0 -100%;
+  background: none;
+  padding-left: 0;
+}
+
+/* Headers and labels are fixed-size text over a scaling drawing, so they
+   step down with the graph and the counts go when columns get tight. */
+.colHead {
+  font-size: clamp(10px, 1.33cqi, 12px);
+}
+
+.nodeLabel {
+  font-size: clamp(9.5px, 1.27cqi, 11.5px);
+}
+
+@container (max-width: 860px) {
+  .colCount {
+    display: none;
+  }
+}
+
+/* ── Flow timeline (the vertical graph) ─────────────────────────── */
+
+.timeline {
+  position: relative;
+}
+
+.spine {
+  position: absolute;
+  left: 13px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: #2a3134;
+}
+
+.spineLit {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, #cf8794, #7d2436 85%, rgba(125, 36, 54, 0.4));
+  transform-origin: 50% 0;
+}
+
+.phases {
+  list-style: none;
+  display: grid;
+  gap: clamp(40px, 6vw, 72px);
+}
+
+.phase {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: clamp(12px, 2vw, 24px);
+  row-gap: 18px;
+}
+
+@media (min-width: 768px) {
+  .phase {
+    grid-template-columns: 28px minmax(0, 5fr) minmax(0, 6fr);
+    column-gap: clamp(20px, 3vw, 48px);
+  }
+}
+
+.railNode {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: center;
+  margin-top: 5px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #14181a;
+  border: 1.5px solid #cf8794;
+  position: relative;
+  z-index: 1;
+  transition: border-color 300ms ease, background-color 300ms ease;
+}
+
+.railNode::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(207, 135, 148, 0.45), rgba(207, 135, 148, 0));
+  opacity: 1;
+  transition: opacity 500ms ease;
+}
+
+.phase[data-off] .railNode {
+  border-color: #3a4346;
+}
+
+.phase[data-off] .railNode::after {
+  opacity: 0;
+}
+
+.phaseHead {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.phaseNum {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: #9aa19d;
+}
+
+.phaseTitle {
+  margin-top: 8px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  font-weight: 520;
+  font-variation-settings: "wght" 520;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: #e3e6e0;
+  text-wrap: balance;
+}
+
+.phaseSub {
+  margin-top: 10px;
+  max-width: 44ch;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #c0c6c2;
+}
+
+/* Mini fan: this phase as a small top-to-bottom graph. */
+.fan {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  margin-top: 14px;
+  overflow: visible;
+}
+
+.fanEdge {
+  fill: none;
+  stroke: #cf8794;
+  stroke-opacity: 0.5;
+  stroke-width: 1;
+}
+
+.fanEdgeDashed {
+  fill: none;
+  stroke: #9aa19d;
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.fanPrev {
+  opacity: 0.45;
+}
+
+.fanDot {
+  fill: #f4eef0;
+  stroke: #cf8794;
+  stroke-width: 1.2;
+}
+
+.fanRing {
+  fill: #14181a;
+  stroke: #cf8794;
+  stroke-width: 1.4;
+}
+
+.fanBone {
+  fill: #14181a;
+  stroke: #e3e6e0;
+  stroke-width: 1.2;
+}
+
+.fanBoneFill {
+  fill: #e3e6e0;
+}
+
+.fanAccentFill {
+  fill: #cf8794;
+}
+
+.fanGate {
+  fill: #cf8794;
+  stroke: #e3e6e0;
+  stroke-width: 1.1;
+}
+
+.fanPane {
+  fill: #1b2124;
+  stroke: #e3e6e0;
+  stroke-width: 1.1;
+}
+
+/* Phones get the key lines, each on one run (who, then what); the full
+   log lives on wider screens. */
+@media (max-width: 767.98px) {
+  .line:not([data-key]) {
+    display: none;
+  }
+
+  .line .who {
+    display: inline;
+    margin-right: 0.7em;
+  }
+}
+
+.lines {
+  grid-column: 2;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .lines {
+    grid-column: 3;
+    grid-row: 1;
+    padding-top: 26px;
+  }
+}
+
+.lineVis {
+  display: block;
+}
+
+.who {
+  display: block;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  color: #9aa19d;
+}
+
+.msg {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #e3e6e0;
+  overflow-wrap: anywhere;
+}
+
+.line[data-tone="critical"] .who,
+.entry[data-tone="critical"] .who {
+  color: #cf8794;
+}
+
+.line[data-tone="live"] .msg,
+.entry[data-tone="live"] .msg {
+  color: #cf8794;
+}
+
+/* Typing: the caret is one absolutely positioned block that follows the
+   text by transform (so it never shifts layout); untyped text is ghosted. */
+.caret {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  background: #cf8794;
+  pointer-events: none;
+}
+
+:global(html.motion-ok) .caret {
+  animation: mbai-blink 1.05s steps(2, jump-none) infinite;
+}
+
+@keyframes mbai-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.ghostText {
+  color: transparent;
+}
+
+/* ── Meters ─────────────────────────────────────────────────────── */
+
+.meters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px clamp(16px, 3vw, 32px);
+  margin-top: clamp(64px, 9vw, 112px);
+  padding-top: clamp(20px, 2.4vw, 28px);
+  border-top: 1px solid #242a2c;
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .meters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.meter {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.meterValue {
+  order: 1;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.5rem, 1.6rem + 2.6vw, 4rem);
+  font-weight: 400;
+  font-variation-settings: "wght" 400;
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #e3e6e0;
+  white-space: nowrap;
+  transition: opacity 300ms ease;
+}
+
+.meterPlus {
+  color: #cf8794;
+  margin-left: 0.04em;
+}
+
+.meterPlus[hidden] {
+  display: none;
+}
+
+.meterLabel {
+  order: 2;
+  margin-top: 10px;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: #c0c6c2;
+}
+
+.meterScope {
+  order: 3;
+  margin-top: 4px;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  color: #9aa19d;
+}
+
+.meter[data-zero] .meterValue {
+  opacity: 0.32;
+}
+
+/* ── Outro ──────────────────────────────────────────────────────── */
+
+.outro {
+  max-width: calc(1320px + 2 * clamp(16px, 5vw, 64px));
+  margin-inline: auto;
+  margin-top: clamp(80px, 11vw, 144px);
+  padding-inline: clamp(16px, 5vw, 64px);
+}
+
+.closing {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.125rem, 1.1rem + 3.4vw, 4rem);
+  font-weight: 520;
+  font-variation-settings: "wght" 520;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #e3e6e0;
+}
+
+.closeMask {
+  display: block;
+  overflow: clip;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.closeLine {
+  display: block;
+}
+
+.closeLine[data-last] {
+  color: #cf8794;
+}
+
+.outroBody {
+  margin-top: clamp(24px, 3vw, 40px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px clamp(24px, 4vw, 56px);
+}
+
+.claim {
+  max-width: 46ch;
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  line-height: 1.55;
+  color: #c0c6c2;
+}
+
+.claim strong {
+  font-weight: 500;
+  color: #e3e6e0;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 2px;
+  background: #7d2436;
+  color: #eaece7;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow:
+    inset 0 0 0 1px rgba(207, 135, 148, 0.38),
+    0 0 0 1px rgba(125, 36, 54, 0.6);
+  transition:
+    background-color 180ms ease,
+    transform 120ms cubic-bezier(0.2, 0.9, 0.1, 1);
+}
+
+.cta:hover {
+  background: #93293e;
+}
+
+.cta:active {
+  transform: scale(0.97);
+}
+
+.cta:focus-visible {
+  outline: 2px solid #cf8794;
+  outline-offset: 3px;
+}
+
+.ctaArrow {
+  display: inline-block;
+  transition: translate 180ms ease;
+}
+
+.cta:hover .ctaArrow {
+  translate: 0 2px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   SCENE — desktop, fine pointer, motion allowed.
+   ───────────────────────────────────────────────────────────────── */
+
+@media (min-width: 1024px) {
+  :global(html.motion-ok.fine-desktop) .scene {
+    height: 340svh;
+    margin-top: clamp(24px, 3vw, 48px);
+  }
+
+  :global(html.motion-ok.fine-desktop) .stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    max-width: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 25vw, 380px);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "head log"
+      "graph log"
+      "meters log";
+    column-gap: clamp(28px, 3vw, 48px);
+    row-gap: 10px;
+    padding-top: 92px;
+    padding-bottom: 28px;
+    padding-inline: max(clamp(16px, 5vw, 64px), calc((100% - 1320px) / 2));
+    overflow: hidden;
+  }
+
+  /* A faint circuit-board dot grid, vignetted. Static. */
+  :global(html.motion-ok.fine-desktop) .stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 1px 1px, rgba(227, 230, 224, 0.075) 1px, transparent 1.6px) 0 0 / 24px 24px;
+    mask-image: radial-gradient(70% 70% at 45% 55%, #000 30%, transparent 100%);
+    pointer-events: none;
+  }
+
+  :global(html.motion-ok.fine-desktop) .glow {
+    display: block;
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(48% 52% at 42% 58%, rgba(125, 36, 54, 0.32), rgba(125, 36, 54, 0) 70%),
+      radial-gradient(30% 36% at 80% 50%, rgba(207, 135, 148, 0.08), rgba(207, 135, 148, 0) 70%);
+    pointer-events: none;
+  }
+
+  :global(html.motion-ok.fine-desktop) .head {
+    grid-area: head;
+    display: grid;
+    position: relative;
+    z-index: 1;
+  }
+
+  :global(html.motion-ok.fine-desktop) .headItem {
+    grid-area: 1 / 1;
+  }
+
+  /* SSR (before JS): only the finished phase shows. */
+  :global(html.motion-ok.fine-desktop) .headItem:not(:last-child) {
+    visibility: hidden;
+  }
+
+  :global(html.motion-ok.fine-desktop) .graphCell {
+    grid-area: graph;
+    display: grid;
+    place-items: center;
+    min-height: 0;
+    margin: 0;
+    container-type: size;
+  }
+
+  :global(html.motion-ok.fine-desktop) .graphBox {
+    width: min(100cqw, calc(100cqh * 1200 / 640));
+    height: auto;
+  }
+
+  :global(html.motion-ok.fine-desktop) .log {
+    grid-area: log;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    position: relative;
+    z-index: 1;
+    margin-top: 2px;
+    border: 1px solid #242a2c;
+    border-radius: 10px;
+    background: rgba(23, 28, 30, 0.92);
+    overflow: hidden;
+  }
+
+  :global(html.motion-ok.fine-desktop) .timeline {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  :global(html.motion-ok.fine-desktop) .meters {
+    grid-area: meters;
+    margin-top: 0;
+    padding-top: 14px;
+    gap: 20px clamp(16px, 2vw, 28px);
+  }
+
+  :global(html.motion-ok.fine-desktop) .meterValue {
+    font-size: clamp(2rem, 1rem + 2.1vw, 3.25rem);
+  }
+
+  :global(html.motion-ok.fine-desktop) .meterLabel {
+    margin-top: 8px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279.98px) {
+  :global(html.motion-ok.fine-desktop) .meterLabel {
+    font-size: 0.8125rem;
+  }
+
+  :global(html.motion-ok.fine-desktop) .meterScope {
+    font-size: 11px;
+  }
+
+  :global(html.motion-ok.fine-desktop) .stage {
+    padding-top: 84px;
+  }
+}
+
+/* Phase title block (scene). */
+
+.headNum {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: #9aa19d;
+}
+
+.headIdx {
+  color: #cf8794;
+}
+
+.headTitle {
+  margin-top: 6px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.75rem, 0.9rem + 1.7vw, 2.75rem);
+  font-weight: 520;
+  font-variation-settings: "wght" 520;
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  color: #e3e6e0;
+}
+
+.headSub {
+  margin-top: 8px;
+  max-width: 60ch;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #c0c6c2;
+}
+
+/* Ledger (scene). */
+
+.logBar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 14px;
+  border-bottom: 1px solid #242a2c;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: #9aa19d;
+}
+
+.logDots {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.logDots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2e3538;
+}
+
+.logName {
+  color: #c0c6c2;
+}
+
+/* A fixed-width box, left-aligned: changing words never move anything. */
+.logState {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: 16.5ch;
+  white-space: nowrap;
+}
+
+.logState::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cf8794;
+  box-shadow: 0 0 8px rgba(207, 135, 148, 0.8);
+}
+
+.logState[data-done]::before {
+  background: #9aa19d;
+  box-shadow: none;
+}
+
+.logScroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 72px);
+}
+
+/* Bottom-anchored: without JS the finished log shows. JS glides it on y. */
+.logList {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 16px 14px;
+}
+
+.logPrompt {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  color: #9aa19d;
+  margin-bottom: 6px;
+}
+
+.logPhase[data-future] {
+  visibility: hidden;
+}
+
+.logSep {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: #8a918d;
+  margin: 14px 0 8px;
+}
+
+.entry {
+  margin-bottom: 9px;
+}
+
+.entry .who {
+  font-size: 11.5px;
+}
+
+.entry .msg {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.45;
+  min-height: 1.45em;
+}

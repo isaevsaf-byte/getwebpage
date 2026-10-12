@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Nav from "@/components/Nav";
+import SiteHeader from "@/components/showcase/SiteHeader";
 import Footer from "@/components/Footer";
 import ButtonLink from "@/components/ButtonLink";
 
@@ -47,8 +47,8 @@ const industries = [
 export default function AboutPage() {
   return (
     <>
-      <Nav />
-      <main id="main">
+      <SiteHeader />
+      <main data-ground="paper" id="main">
         {/* Header */}
         <section
           style={{

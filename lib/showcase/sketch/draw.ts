@@ -428,7 +428,6 @@ function drawSub(e: Env) {
 function drawButton(e: Env, id: "cta" | "cta2") {
   const b = e.R[id];
   const primary = id === "cta";
-  const spec = SECTORS[e.sector];
   const { ctx, pal } = e;
   const r = Math.min(z(e, BTN_RADIUS[e.sector]), b.h / 2);
   const band = onBand(e, id);

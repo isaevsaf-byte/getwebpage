@@ -29,9 +29,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
   try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       currency: "gbp",

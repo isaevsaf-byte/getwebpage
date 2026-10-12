@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Nav from "@/components/Nav";
+import SiteHeader from "@/components/showcase/SiteHeader";
 import Footer from "@/components/Footer";
+import FramerReducedMotion from "@/components/motion/FramerReducedMotion";
 import ContactSection from "@/components/sections/ContactSection";
 
 export const metadata: Metadata = {
@@ -12,9 +13,11 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <>
-      <Nav />
-      <main id="main">
-        <ContactSection />
+      <SiteHeader />
+      <main data-ground="paper" id="main">
+        <FramerReducedMotion>
+          <ContactSection />
+        </FramerReducedMotion>
 
         {/* WhatsApp nudge */}
         <div

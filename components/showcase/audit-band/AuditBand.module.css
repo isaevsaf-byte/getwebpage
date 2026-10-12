@@ -1,0 +1,441 @@
+/* AuditBand (#audit) — surface ground. The form never moves for style:
+   only colour, the :active press and the focus underline transition. The
+   reader pane renders its final, marked-up state on the server; the scan's
+   from-states come from GSAP (useReaderScan). */
+
+.section {
+  position: relative;
+  background: #e3e6e0;
+  color: #14181a;
+  padding-block: clamp(80px, 10vw, 144px);
+  overflow-x: clip;
+}
+
+.inner {
+  display: grid;
+  gap: clamp(40px, 8vw, 80px);
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 5vw, 64px);
+}
+
+.copy,
+.readerCol {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .inner {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(16px, 2.5vw, 32px);
+    align-items: center;
+  }
+
+  .copy {
+    grid-column: 1 / span 6;
+  }
+
+  .readerCol {
+    grid-column: 7 / -1;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Copy ──────────────────────────────────────────────────────── */
+
+.kicker {
+  margin: 0 0 clamp(18px, 2vw, 24px);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  color: #5a6360;
+}
+
+.title {
+  margin: 0;
+  max-width: 15ch;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.125rem, 1.1rem + 3.4vw, 4rem);
+  font-weight: 520;
+  font-variation-settings: "wght" 520;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.em {
+  display: block;
+  font-style: normal;
+  color: #7d2436;
+}
+
+.body {
+  margin: clamp(18px, 2vw, 24px) 0 0;
+  max-width: 44ch;
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  line-height: 1.55;
+  color: #5a6360;
+  text-wrap: pretty;
+}
+
+/* ── Form ──────────────────────────────────────────────────────── */
+
+.form {
+  margin-top: clamp(28px, 3.5vw, 40px);
+  max-width: 600px;
+}
+
+.row {
+  display: grid;
+  gap: 10px;
+}
+
+@media (min-width: 640px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+.field {
+  position: relative;
+  min-width: 0;
+}
+
+.input {
+  display: block;
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  border: 1px solid #c3c8c0;
+  border-bottom-color: #636b67;
+  border-radius: 2px;
+  background: #eaece7;
+  color: #14181a;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 17px;
+  line-height: 1.2;
+  transition: border-color 180ms ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input::placeholder {
+  color: #636b67;
+  opacity: 1;
+}
+
+.input[aria-invalid="true"] {
+  border-color: #7a1a0a;
+}
+
+/* Focus underline: grows from the left, 250ms in, 150ms out. */
+.underline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: #7d2436;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 150ms var(--ease-studio-out);
+  pointer-events: none;
+}
+
+.field:focus-within .underline {
+  transform: scaleX(1);
+  transition-duration: 250ms;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  height: 52px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 2px;
+  background: #7d2436;
+  color: #eaece7;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    transform 120ms var(--ease-studio-snap);
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.arrow {
+  display: inline-block;
+  transition: transform 180ms var(--ease-studio-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:hover {
+    background: #93293e;
+  }
+
+  .button:hover .arrow {
+    transform: translateX(3px);
+  }
+}
+
+@media (min-width: 768px) {
+  .input,
+  .button {
+    height: 56px;
+  }
+}
+
+.note {
+  margin: 12px 0 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: #5a6360;
+}
+
+/* Space is reserved so the message never shifts the layout. */
+.error {
+  min-height: 1.5em;
+  margin: 6px 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #7a1a0a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .underline,
+  .field:focus-within .underline,
+  .arrow {
+    transition: none;
+  }
+}
+
+/* ── Reader pane ───────────────────────────────────────────────── */
+
+.reader {
+  margin: 0;
+}
+
+.caption {
+  margin: 18px 0 0;
+  max-width: none;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  color: #5a6360;
+  overflow-wrap: anywhere;
+}
+
+/* Everything inside the pane's 16:10 screen. Sizes scale with it (cqi). */
+.stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  background: #f4f5f2;
+}
+
+.block {
+  position: absolute;
+  border-radius: 1px;
+}
+
+.tH {
+  background: #8a918d;
+}
+
+.tM {
+  background: #b3b9b2;
+}
+
+.tL {
+  background: #cfd3cd;
+}
+
+.tCard {
+  background: #eceee9;
+  box-shadow: inset 0 0 0 1px #dde1da;
+  border-radius: 2px;
+}
+
+.tCard::before,
+.tCard::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  height: 7%;
+  border-radius: 1px;
+  background: #cfd3cd;
+}
+
+.tCard::before {
+  top: 24%;
+  width: 70%;
+}
+
+.tCard::after {
+  top: 44%;
+  width: 48%;
+}
+
+.tFoot {
+  background: #e2e5df;
+  border-radius: 0;
+}
+
+.img {
+  position: absolute;
+  left: 52%;
+  top: 17%;
+  width: 43%;
+  height: 42%;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #dfe2dc;
+}
+
+.img svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: #c9cec7;
+}
+
+.sun {
+  position: absolute;
+  left: 66%;
+  top: 16%;
+  width: 13%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #cfd3cd;
+}
+
+/* Red pen: oxblood, round caps. 0.75 units ≈ 2.6px at desktop size. */
+.marks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: #7d2436;
+  stroke-width: 0.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pen {
+  position: absolute;
+  font-family: var(--font-display), Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(8px, 2.55cqi, 15px);
+  line-height: 1;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  color: #7d2436;
+}
+
+/* X-ray band: ink, showing the HTML Claude is handed. Parked above the
+   screen; the code inside is counter-moved so it stays put while the band
+   travels. The top is masked soft so the page returns in the band's wake. */
+.band {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 30%;
+  overflow: hidden;
+  background: #14181a;
+  transform: translateY(-110%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 34%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 34%);
+}
+
+.code {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: calc(100% / 0.3);
+  display: grid;
+  grid-template-rows: repeat(12, 1fr);
+  align-items: center;
+  padding: 0 4.5%;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: clamp(7px, 2.1cqi, 12.5px);
+  line-height: 1;
+  white-space: nowrap;
+  color: #cf8794;
+  background:
+    repeating-linear-gradient(to bottom, rgba(227, 230, 224, 0.035) 0 1px, transparent 1px 3px),
+    #14181a;
+}
+
+.line {
+  display: block;
+}
+
+.ln {
+  display: inline-block;
+  width: 3.2ch;
+  font-style: normal;
+  color: #4b5356;
+}
+
+.bar {
+  display: inline-block;
+  height: 0.7em;
+  vertical-align: -0.04em;
+  border-radius: 1px;
+  background: #3b4346;
+}
+
+/* The reading line: a lit hairline with a spill below. */
+.beam {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 2px;
+  background: #e8b3bd;
+  box-shadow:
+    0 0 6px 1px rgba(207, 135, 148, 0.9),
+    0 0 22px 5px rgba(125, 36, 54, 0.4);
+  transform: translateY(-24cqi);
+  pointer-events: none;
+}
+
+.beam::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 2px;
+  height: 9cqi;
+  background: linear-gradient(to bottom, rgba(207, 135, 148, 0.22), rgba(207, 135, 148, 0));
+}

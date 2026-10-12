@@ -1,0 +1,170 @@
+/* ✦ Let AI write your homepage — a dark glass button with a rose rim.
+   While Claude writes, a light runs round the rim (a rotating conic
+   gradient behind a 1px gap: transform only). */
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  min-height: 48px;
+  padding: 1px;
+  border: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  isolation: isolate;
+  background: rgba(207, 135, 148, 0.42);
+  color: #e3e6e0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    scale 120ms var(--ease-studio-snap);
+}
+
+.btn:active {
+  scale: 0.97;
+}
+
+.btn[aria-disabled="true"] {
+  cursor: default;
+}
+
+.btn[data-status="limited"] {
+  background: rgba(154, 161, 157, 0.35);
+  color: #c0c6c2;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #cf8794;
+  outline-offset: 3px;
+}
+
+.ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  width: 260%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(207, 135, 148, 0) 0deg,
+    rgba(207, 135, 148, 0) 200deg,
+    rgba(125, 36, 54, 0.9) 280deg,
+    #f3d9de 330deg,
+    rgba(207, 135, 148, 0) 360deg
+  );
+  opacity: 0;
+  transition: opacity 260ms var(--ease-studio-out);
+}
+
+.btn[data-status="writing"] .ring {
+  opacity: 1;
+}
+
+:global(html.motion-ok) .btn[data-status="writing"] .ring {
+  animation: ai-ring 1600ms linear infinite;
+}
+
+@keyframes ai-ring {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.face {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  border-radius: 1px;
+  background: linear-gradient(180deg, #1d2326 0%, #161a1c 100%);
+  overflow: hidden;
+}
+
+/* Hover: one soft light pass across the face. */
+.face::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 46%;
+  background: linear-gradient(
+    100deg,
+    rgba(207, 135, 148, 0) 0%,
+    rgba(207, 135, 148, 0.16) 45%,
+    rgba(255, 240, 242, 0.22) 50%,
+    rgba(207, 135, 148, 0) 100%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: rgba(207, 135, 148, 0.75);
+  }
+
+  :global(html.motion-ok) .btn:not([aria-disabled="true"]):hover .face::after {
+    transform: translateX(260%);
+    transition: transform 700ms var(--ease-studio-in-out);
+  }
+}
+
+.glyph {
+  color: #cf8794;
+  font-size: 1.05em;
+  text-shadow: 0 0 14px rgba(207, 135, 148, 0.75);
+}
+
+:global(html.motion-ok) .btn[data-status="writing"] .glyph {
+  animation: ai-glyph 900ms var(--ease-studio-in-out) infinite alternate;
+}
+
+@keyframes ai-glyph {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.35;
+  }
+}
+
+/* ── Disclosure + status ───────────────────────────────────────────── */
+
+.note {
+  margin: 10px 0 0;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  color: #9aa19d;
+}
+
+.status {
+  margin: 0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.problem {
+  display: block;
+  margin-top: 6px;
+  color: #e3b7bf;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

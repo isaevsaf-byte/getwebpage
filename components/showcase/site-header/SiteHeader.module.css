@@ -1,0 +1,649 @@
+/* Site header — tones itself from the ground under its bottom edge.
+   Ink: #e3e6e0 on rgba(20,24,26,.72). Paper: #14181a on rgba(234,236,231,.9).
+   Colours change over 200ms ease; never transition: all. */
+
+.sentinel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 8px;
+  pointer-events: none;
+}
+
+.root {
+  --c-ink: rgba(20, 24, 26, 0.72);
+  --c-paper: rgba(234, 236, 231, 0.9); /* .8 read as a muddy grey band over ink still under the bar */
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  height: calc(56px + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+  color: var(--fg);
+  transition: color 200ms ease;
+}
+
+.root[data-tone="ink"],
+.root[data-open="true"] {
+  --fg: #e3e6e0;
+  --fg-2: #c0c6c2;
+  --accent: #cf8794;
+  --tone-bg: var(--c-ink);
+  --rule: rgba(227, 230, 224, 0.1);
+  --fill: rgba(207, 135, 148, 0.85);
+  --focus: #cf8794;
+}
+
+.root[data-tone="paper"]:not([data-open="true"]) {
+  --fg: #14181a;
+  --fg-2: #5a6360;
+  --accent: #7d2436;
+  --tone-bg: var(--c-paper);
+  --rule: rgba(20, 24, 26, 0.1);
+  --fill: rgba(125, 36, 54, 0.75);
+  --focus: #7d2436;
+}
+
+@media (min-width: 1024px) {
+  .root {
+    height: calc(64px + env(safe-area-inset-top));
+  }
+}
+
+/* Legibility at the very top: invisible on the ink hero, protective over its
+   bright stage panes. */
+.root::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 -48px;
+  background: linear-gradient(
+    rgba(20, 24, 26, 0.86) 0%,
+    rgba(20, 24, 26, 0.7) 50%,
+    rgba(20, 24, 26, 0) 100%
+  );
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+.root[data-tone="ink"][data-scrolled="false"]::before {
+  opacity: 1;
+}
+
+/* ── Bar ground ─────────────────────────────────────────────────── */
+
+.bg {
+  --hdr-wipe: 100%;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    var(--wipe-dir, to top),
+    var(--tone-bg) var(--hdr-wipe),
+    var(--bg-old, var(--tone-bg)) var(--hdr-wipe)
+  );
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+:global(html:not(.motion-ok)) .bg {
+  background: var(--tone-bg);
+  transition:
+    opacity 200ms ease,
+    background-color 200ms ease;
+}
+
+.root[data-scrolled="true"] .bg {
+  opacity: 1;
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  backdrop-filter: blur(12px) saturate(1.15);
+}
+
+.root[data-open="true"] {
+  --c-ink: #14181a;
+}
+
+.root[data-open="true"] .bg {
+  opacity: 1;
+}
+
+/* Reading progress along the bottom edge — a CSS scroll timeline, no JS. */
+.progress {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: var(--rule);
+  transition: background-color 200ms ease;
+}
+
+.progress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--fill);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .progress::after {
+      animation: progress linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+}
+
+@keyframes progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .root {
+    --c-ink: #14181a;
+    --c-paper: #eaece7;
+  }
+
+  .root[data-scrolled="true"] .bg {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+
+.bar {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-inline: max(var(--gutter), (100% - 1320px) / 2);
+}
+
+.mark {
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.125rem;
+  font-weight: 560;
+  letter-spacing: -0.012em;
+  color: var(--fg);
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+.root :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── Desktop links + the ink hairline ───────────────────────────── */
+
+.nav {
+  position: relative;
+  display: none;
+  margin-right: 20px;
+}
+
+.links {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+}
+
+.link {
+  display: inline-block;
+  padding-block: 12px;
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  color: var(--fg-2);
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.link[aria-current] {
+  color: var(--fg);
+}
+
+/* Live-AI dot by "Made by AI" (only while Claude writes / has written). */
+.link {
+  position: relative;
+}
+
+.aiDot {
+  position: absolute;
+  top: 9px;
+  right: -8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  scale: 0.6;
+  transition:
+    opacity 300ms var(--ease-studio-out),
+    scale 300ms var(--ease-studio-out),
+    background-color 200ms ease;
+  pointer-events: none;
+}
+
+.root[data-ai="writing"] .aiDot,
+.root[data-ai="done"] .aiDot {
+  opacity: 1;
+  scale: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .root[data-ai="writing"] .aiDot {
+    animation: breathe 1100ms ease-in-out infinite alternate;
+  }
+}
+
+@keyframes breathe {
+  from {
+    opacity: 1;
+    scale: 1;
+  }
+  to {
+    opacity: 0.3;
+    scale: 0.75;
+  }
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--fg);
+  }
+}
+
+.ink {
+  position: absolute;
+  left: 0;
+  top: calc(100% - 8px);
+  width: 1px;
+  height: 1px;
+  background: var(--accent);
+  transform-origin: 0 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 450ms var(--ease-studio-out),
+    opacity 200ms ease,
+    background-color 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ink {
+    transition:
+      opacity 200ms ease,
+      background-color 200ms ease;
+  }
+}
+
+/* Before hydration (or without JS) the current link carries a plain underline. */
+:global(html:not(.js)) .link[aria-current] {
+  text-decoration: underline 1px var(--accent);
+  text-underline-offset: 6px;
+}
+
+/* ── See prices ─────────────────────────────────────────────────
+   The link is the 44px hit area; the visible pill (.face) is smaller. */
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  border-radius: 2px;
+  text-decoration: none;
+}
+
+.face {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 2px;
+  background: #7d2436;
+  color: #eaece7;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 180ms ease,
+    scale 120ms var(--ease-studio-snap);
+}
+
+/* Oxblood on ink reads as light: a faint rim. */
+.root[data-tone="ink"] .face,
+.root[data-open="true"] .face {
+  box-shadow: inset 0 0 0 1px rgba(207, 135, 148, 0.42);
+}
+
+.cta:active .face {
+  scale: 0.97;
+}
+
+/* Phones: while the bottom offer bar carries "See prices", the header copy
+   steps aside (space kept, so the bar never shifts). Not while the menu is open. */
+:global(html.offer-bar-visible) .root:not([data-open="true"]) .cta {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease, visibility 0s linear 200ms;
+}
+
+.root .cta:focus-visible {
+  outline: none;
+}
+
+.root .cta:focus-visible .face {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* The light-bar sweep, once per hover (studio-out: the feedback starts at once). */
+.face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 236, 240, 0.28) 50%,
+    transparent 70%
+  );
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cta:hover .face {
+    background: #93293e;
+  }
+
+  :global(html.motion-ok) .cta:hover .face::after {
+    transform: translateX(110%);
+    transition: transform 650ms var(--ease-studio-out);
+  }
+}
+
+.short {
+  display: none;
+}
+
+@media (max-width: 379.98px) {
+  .full {
+    display: none;
+  }
+
+  .short {
+    display: inline;
+  }
+}
+
+/* ── Menu button ────────────────────────────────────────────────── */
+
+.menuBtn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  background: none;
+  border: 0;
+  color: var(--fg);
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.burger {
+  position: relative;
+  width: 20px;
+  height: 10px;
+}
+
+.burger i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transition:
+    translate 300ms var(--ease-studio-out),
+    rotate 300ms var(--ease-studio-out);
+}
+
+.burger i:first-child {
+  top: 0;
+}
+
+.burger i:last-child {
+  bottom: 0;
+}
+
+.menuBtn[aria-expanded="true"] .burger i:first-child {
+  translate: 0 4.25px;
+  rotate: 45deg;
+}
+
+.menuBtn[aria-expanded="true"] .burger i:last-child {
+  translate: 0 -4.25px;
+  rotate: -45deg;
+}
+
+.root[data-open="true"] {
+  z-index: 1002;
+}
+
+@media (min-width: 1024px) {
+  .face {
+    height: 40px;
+    padding: 0 18px;
+  }
+
+  .nav {
+    display: block;
+  }
+
+  .menuBtn {
+    display: none;
+  }
+}
+
+/* ── Sheet (under 1024px) ───────────────────────────────────────── */
+
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  display: block;
+  transition: display 450ms allow-discrete;
+}
+
+.layer[hidden] {
+  display: none;
+  transition-duration: 300ms;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0.5;
+  transition: opacity 300ms ease;
+}
+
+.sheet {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: min(100%, 28rem);
+  display: flex;
+  flex-direction: column;
+  padding: calc(56px + env(safe-area-inset-top) + 16px) var(--gutter)
+    calc(28px + env(safe-area-inset-bottom));
+  background: #14181a;
+  color: #e3e6e0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition: translate 450ms var(--ease-studio-drawer);
+}
+
+.sheetLinks {
+  list-style: none;
+}
+
+.sheetLinks li {
+  border-bottom: 1px solid #242a2c;
+  transition:
+    opacity 500ms var(--ease-studio-out),
+    translate 600ms var(--ease-studio-out);
+  transition-delay: calc(110ms + var(--i, 0) * 45ms);
+}
+
+.sheetLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 68px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.875rem, 1.3rem + 2.6vw, 2.5rem);
+  font-weight: 480;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: #e3e6e0;
+  text-decoration: none;
+}
+
+.sheetLink::after {
+  content: "→" / "";
+  font-family: var(--font-mono), monospace;
+  font-size: 1rem;
+  color: #9aa19d;
+  transition: translate 200ms var(--ease-studio-out);
+}
+
+.sheetLink[aria-current] {
+  color: #cf8794;
+}
+
+.sheetLink .aiDot {
+  position: static;
+  align-self: flex-start;
+  margin: 0.35em auto 0 8px;
+  width: 7px;
+  height: 7px;
+  background: #cf8794;
+}
+
+.sheetLink[aria-current]::after {
+  color: #cf8794;
+}
+
+.sheetLink:active::after {
+  translate: 4px 0;
+}
+
+.mail {
+  margin-top: auto;
+  padding-top: 32px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  align-self: flex-start;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: #9aa19d;
+  text-decoration: none;
+}
+
+.sheet :focus-visible {
+  outline: 2px solid #cf8794;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Enter: sheet slides in on the drawer curve, links follow in a stagger. */
+@starting-style {
+  .backdrop {
+    opacity: 0;
+  }
+
+  .sheet {
+    translate: 100% 0;
+  }
+
+  .sheetLinks li {
+    opacity: 0;
+    translate: 40px 0;
+  }
+}
+
+/* Exit: faster than the enter, on studio-out, no stagger. */
+.layer[hidden] .backdrop {
+  opacity: 0;
+}
+
+.layer[hidden] .sheet {
+  translate: 100% 0;
+  transition: translate 300ms var(--ease-studio-out);
+}
+
+.layer[hidden] .sheetLinks li {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer,
+  .layer[hidden] {
+    transition-duration: 150ms;
+  }
+
+  .backdrop,
+  .layer[hidden] .backdrop {
+    transition-duration: 150ms;
+  }
+
+  .sheet {
+    opacity: 1;
+    transition: opacity 150ms ease;
+  }
+
+  .layer[hidden] .sheet {
+    translate: none;
+    opacity: 0;
+    transition: opacity 150ms ease;
+  }
+
+  .sheetLinks li,
+  .layer[hidden] .sheetLinks li {
+    opacity: 1;
+    translate: none;
+    transition: none;
+  }
+
+  @starting-style {
+    .sheet {
+      translate: none;
+      opacity: 0;
+    }
+
+    .sheetLinks li {
+      opacity: 1;
+      translate: none;
+    }
+  }
+
+  .burger i {
+    transition: none;
+  }
+}

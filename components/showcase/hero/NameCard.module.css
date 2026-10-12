@@ -1,0 +1,262 @@
+/* Name card: label, field + commit, chips, helper, then the way forward. */
+
+.card {
+  width: 100%;
+  max-width: 520px;
+  margin-top: 32px;
+}
+
+@media (min-width: 1024px) {
+  .card {
+    margin-top: clamp(26px, 4svh, 40px);
+  }
+}
+
+.card :focus-visible {
+  outline-color: #cf8794;
+}
+
+.label {
+  display: block;
+  margin-bottom: 10px;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.125rem;
+  font-variation-settings: "wght" 470;
+  font-weight: 470;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  color: #e3e6e0;
+}
+
+.field {
+  display: flex;
+  align-items: stretch;
+  height: 56px;
+  border: 1px solid rgba(227, 230, 224, 0.28);
+  border-radius: 2px;
+  background: rgba(227, 230, 224, 0.035);
+  transition: border-color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .field:hover {
+    border-color: rgba(227, 230, 224, 0.45);
+  }
+}
+
+.field:focus-within {
+  border-color: #cf8794;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #e3e6e0;
+  caret-color: #cf8794;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.2;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input::placeholder {
+  color: #9aa19d;
+  opacity: 1;
+}
+
+.input:focus,
+.input:focus-visible {
+  outline: none !important;
+}
+
+.go {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  border: 0;
+  border-left: 1px solid rgba(227, 230, 224, 0.16);
+  background: transparent;
+  color: #e3e6e0;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.go svg {
+  width: 20px;
+  height: 20px;
+  transition: translate 180ms var(--ease-studio-out);
+}
+
+.go:active svg {
+  translate: 2px 0;
+}
+
+.go:focus-visible {
+  outline-offset: -4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .go:hover {
+    background: rgba(227, 230, 224, 0.09);
+  }
+}
+
+/* A web address typed into the name field: offer the audit. */
+.audit {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 2px;
+  background: #cf8794;
+  color: #14181a;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    scale 120ms var(--ease-studio-snap);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.audit:active {
+  scale: 0.97;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .audit:hover {
+    background: #dda1ab;
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chip {
+  min-height: 44px;
+  padding: 0 15px;
+  border: 1px solid rgba(227, 230, 224, 0.22);
+  border-radius: 2px;
+  background: transparent;
+  color: #c0c6c2;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    scale 120ms var(--ease-studio-snap);
+}
+
+.chip:active {
+  scale: 0.97;
+}
+
+.chip[aria-checked="true"] {
+  border-color: #e3e6e0;
+  background: #e3e6e0;
+  color: #14181a;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chip[aria-checked="false"]:hover {
+    border-color: rgba(227, 230, 224, 0.5);
+    color: #e3e6e0;
+  }
+}
+
+.help {
+  margin: 10px 0 0;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  color: #9aa19d;
+}
+
+/* After commit the caption says it all ("drawn in your browser"). */
+.help[data-committed="1"] {
+  display: none;
+}
+
+/* ── After commit ─────────────────────────────────────────────────── */
+
+.after {
+  margin-top: 16px;
+}
+
+.caption {
+  margin: 0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #c0c6c2;
+}
+
+.captionText {
+  display: block;
+}
+
+.committed {
+  margin-top: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+.real {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 2px;
+  background: #7d2436;
+  color: #eaece7;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color 180ms ease,
+    scale 120ms var(--ease-studio-snap);
+}
+
+.real:active {
+  scale: 0.97;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .real:hover {
+    background: #93293e;
+  }
+}
+
+@media (max-width: 1023px) {
+  .card {
+    max-width: none;
+  }
+}

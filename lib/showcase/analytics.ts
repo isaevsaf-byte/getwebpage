@@ -16,6 +16,7 @@ export type TrackEvent =
   | "audit_handoff"
   | "pricing_from_hero"
   | "pricing_from_sketch"
+  | "pricing_from_ai"
   | "skip_week"
   | "site_opened";
 

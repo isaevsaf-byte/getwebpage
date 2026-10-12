@@ -1,0 +1,798 @@
+/* Pricing (#pricing) — paper ground, surface cards.
+   Nothing here hides content before JS: from-states come from GSAP at
+   ScrollTrigger creation. Prices, features and the Stripe buttons never move
+   for style; the only transitions are named-property colour changes, the
+   :active press and the spotlight ring's opacity. */
+
+.section {
+  position: relative;
+  background: #eaece7;
+  color: #14181a;
+  padding-block: clamp(96px, 12vw, 176px);
+  overflow-x: clip;
+}
+
+.inner {
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 5vw, 64px);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+
+.head {
+  display: grid;
+  gap: clamp(32px, 5vw, 48px);
+}
+
+.headText {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  max-width: 12ch;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.125rem, 1.1rem + 3.4vw, 4rem);
+  font-weight: 520;
+  font-variation-settings: "wght" 520;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.lede {
+  margin: clamp(16px, 2vw, 24px) 0 0;
+  max-width: 44ch;
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  line-height: 1.55;
+  color: #5a6360;
+  text-wrap: pretty;
+}
+
+/* Side by side only when the strip's text column can breathe; below this the
+   strip sits under the lede (it is client-only and below the fold, so this
+   adds height without moving anything already on screen). */
+@media (min-width: 1280px) {
+  .head {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(16px, 2.5vw, 32px);
+    align-items: end;
+  }
+
+  .headText {
+    grid-column: 1 / span 5;
+  }
+
+  .strip {
+    grid-column: 6 / -1;
+    justify-self: end;
+    width: min(100%, 640px);
+  }
+}
+
+/* ── Personal strip: the visitor's sketch as a deck of pages ────── */
+
+.strip {
+  --pane-w: min(248px, 100vw - 140px);
+  --dx: 10px;
+  --dy: 8px;
+  --fan: 0.55deg;
+  display: grid;
+  gap: 20px;
+  align-items: center;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .strip {
+    --pane-w: 220px;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(20px, 2.4vw, 32px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .strip {
+    --pane-w: clamp(212px, 16vw, 252px);
+    --dx: clamp(7px, 0.6vw, 9px);
+    --dy: clamp(6px, 0.5vw, 8px);
+  }
+}
+
+.deck {
+  /* Room for the deepest sheet, reserved up front so fanning never reflows. */
+  padding-top: calc(var(--dy) * 9 + 6px);
+  padding-right: calc(var(--dx) * 9 + 4px);
+  justify-self: start;
+}
+
+.deckInner {
+  position: relative;
+  width: var(--pane-w);
+}
+
+.thumbPane {
+  position: relative;
+  /* Above the sheets, which are absolutely positioned siblings. */
+  z-index: 1;
+}
+
+/* CssPane internals, scoped to this small pane: lighter shadow, and a chrome
+   sized for a ~250px window so long domains ellipsize instead of crowding. */
+.thumbPane > div {
+  --pane-shadow: 0.55;
+}
+
+.thumbPane > div > div:first-child {
+  grid-template-columns: 31px minmax(0, 1fr) 31px;
+  gap: 6px;
+  height: 24px;
+  font-size: 11px;
+}
+
+.thumbPane > div > div:first-child > span:nth-child(2) {
+  max-width: 100%;
+}
+
+.thumbBox {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.thumbCanvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+}
+
+/* One sheet per extra page — the other pages of the visitor's site.
+   Off: tucked behind the pane. On: fanned up and right by depth --k, each one
+   turned a hair further, like pages pulled from a pile. */
+.sheet {
+  --k: 1;
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background:
+    linear-gradient(to bottom, rgba(20, 24, 26, 0.08) 0 24px, rgba(20, 24, 26, 0) 24px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 40%),
+    var(--sheet-bg, #f3ece8);
+  box-shadow:
+    inset 0 0 0 1px rgba(20, 24, 26, 0.2),
+    0 2px 6px -2px rgba(20, 24, 26, 0.18);
+  opacity: 0;
+  transform-origin: 0% 100%;
+  transform: translate3d(0, 0, 0) rotate(0deg);
+  transition:
+    transform 420ms var(--ease-studio-out),
+    opacity 180ms ease;
+  transition-delay: calc((9 - var(--k)) * 12ms);
+  pointer-events: none;
+}
+
+.sheet[data-on] {
+  opacity: calc(1 - var(--k) * 0.06);
+  transform: translate3d(calc(var(--k) * var(--dx)), calc(var(--k) * var(--dy) * -1), 0)
+    rotate(calc(var(--k) * var(--fan)));
+  transition-duration: 620ms, 220ms;
+  transition-delay: calc(var(--k) * 28ms);
+}
+
+.stripText {
+  min-width: 0;
+}
+
+.stripLine {
+  margin: 0;
+  max-width: 24ch;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.25rem, 1rem + 0.75vw, 1.625rem);
+  font-weight: 500;
+  font-variation-settings: "wght" 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+/* Each sentence on its own line; a long name simply wraps inside line one. */
+.stripLine > span {
+  display: block;
+}
+
+.stripName {
+  overflow-wrap: anywhere;
+}
+
+/* Long names (over 18 graphemes) step down, like the hero's name slot. */
+.strip[data-long] .stripLine {
+  font-size: clamp(1.125rem, 0.95rem + 0.5vw, 1.375rem);
+}
+
+.stripMeta {
+  margin: 12px 0 0;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: #5a6360;
+}
+
+.stripTier {
+  color: #7d2436;
+}
+
+/* ── Tier cards ─────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  gap: 24px;
+  margin: clamp(56px, 7vw, 88px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 959px) {
+  .grid {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 960px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+}
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.card {
+  --mx: 50%;
+  --my: -200px;
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(24px, 2.4vw, 36px);
+  padding-bottom: clamp(40px, 3.2vw, 48px);
+  background: #e3e6e0;
+  border: 1px solid #d5d9d2;
+  border-radius: 4px;
+}
+
+.card[data-recommended] {
+  border-top: 2px solid #7d2436;
+}
+
+@media (min-width: 960px) {
+  /* Raised: 12px taller upward, so the three buttons still share a baseline. */
+  .card[data-recommended] {
+    margin-top: -12px;
+    box-shadow: 0 30px 50px -36px rgba(20, 24, 26, 0.45);
+  }
+}
+
+/* Cursor spotlight: a 1px ring that follows the pointer (fine pointers only). */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: 4px;
+  background: radial-gradient(
+    240px circle at var(--mx) var(--my),
+    rgba(125, 36, 54, 0.72),
+    rgba(125, 36, 54, 0) 70%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+.card[data-recommended]::after {
+  top: -2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover::after {
+    opacity: 1;
+  }
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tierName {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.375rem, 1.1rem + 0.9vw, 1.75rem);
+  font-weight: 500;
+  font-variation-settings: "wght" 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.badge {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: #7d2436;
+  white-space: nowrap;
+}
+
+.price {
+  margin: clamp(20px, 2vw, 28px) 0 0;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: clamp(2rem, 1.4rem + 2vw, 2.75rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.time {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: #14181a;
+}
+
+/* The day strip: 7 cells, the working days filled in oxblood. */
+.days {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.cell {
+  position: relative;
+  display: block;
+  width: 12px;
+  height: 4px;
+  border-radius: 1px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(20, 24, 26, 0.32);
+}
+
+.fill {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: #7d2436;
+  transform-origin: left center;
+}
+
+.deposit {
+  margin: 8px 0 0;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: #5a6360;
+}
+
+.depositToday {
+  color: #14181a;
+  font-weight: 500;
+}
+
+/* The line may wrap at the middot, never inside "go-live". */
+.depositToday,
+.depositRest {
+  white-space: nowrap;
+}
+
+.desc {
+  margin: 22px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid #d3d7d0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #14181a;
+  text-wrap: pretty;
+}
+
+.features {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feature {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #14181a;
+}
+
+.check {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  color: #7d2436;
+}
+
+.foot {
+  position: relative;
+  margin-top: auto;
+  padding-top: 28px;
+}
+
+/* Stripe buttons: plain, no transforms except the press. */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1px solid #7d2436;
+  border-radius: 2px;
+  background: transparent;
+  color: #7d2436;
+  font-family: var(--font-sans), "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    transform 120ms var(--ease-studio-snap);
+}
+
+.cta[data-primary] {
+  background: #7d2436;
+  color: #eaece7;
+}
+
+@media (hover: hover) {
+  .cta:hover:not(:disabled) {
+    border-color: #93293e;
+    background: rgba(125, 36, 54, 0.07);
+    color: #93293e;
+  }
+
+  .cta[data-primary]:hover:not(:disabled) {
+    background: #93293e;
+    color: #eaece7;
+  }
+}
+
+.cta:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.cta:focus-visible {
+  outline: 2px solid #7d2436;
+  outline-offset: 3px;
+}
+
+.cta:disabled {
+  cursor: progress;
+}
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  animation: pricing-spin 0.8s linear infinite;
+}
+
+@keyframes pricing-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* Under the button, inside the card's bottom padding: no reflow on error. */
+.error {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #7d2436;
+  text-align: center;
+}
+
+/* ── Custom strip ───────────────────────────────────────────────── */
+
+.custom {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+  padding: clamp(24px, 2.4vw, 32px) clamp(24px, 2.4vw, 36px);
+  background: #e3e6e0;
+  border: 1px solid #d5d9d2;
+  border-radius: 4px;
+}
+
+@media (max-width: 959px) {
+  .custom {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 960px) {
+  .custom {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) auto;
+    align-items: center;
+    column-gap: clamp(24px, 3vw, 48px);
+  }
+}
+
+.customHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+
+.customPrice {
+  margin: 0;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.customBody {
+  min-width: 0;
+}
+
+.customDesc {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #14181a;
+}
+
+/* Middot-separated list; the separator that would start a wrapped line is
+   pushed into the clipped gutter on the left. */
+.customFeaturesClip {
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.customFeatures {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 0 0 -1.5em;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #5a6360;
+}
+
+.customFeatures li::before {
+  content: "·";
+  display: inline-block;
+  width: 1.5em;
+  text-align: center;
+  color: #5a6360;
+}
+
+.customCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 28px;
+  border: 1px solid #14181a;
+  border-radius: 2px;
+  color: #14181a;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 120ms var(--ease-studio-snap);
+}
+
+@media (max-width: 959px) {
+  .customCta {
+    justify-self: stretch;
+  }
+}
+
+@media (hover: hover) {
+  .customCta:hover {
+    background: #14181a;
+    color: #eaece7;
+  }
+}
+
+.customCta:active {
+  transform: scale(0.97);
+}
+
+.customCta:focus-visible {
+  outline: 2px solid #7d2436;
+  outline-offset: 3px;
+}
+
+/* ── Help + terms ───────────────────────────────────────────────── */
+
+.help {
+  display: grid;
+  gap: 12px 48px;
+  margin-top: clamp(40px, 5vw, 64px);
+}
+
+@media (min-width: 960px) {
+  .help {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}
+
+.helpText {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #5a6360;
+  text-wrap: pretty;
+}
+
+.helpText strong {
+  font-weight: 500;
+  color: #14181a;
+}
+
+.helpLinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 28px;
+}
+
+.helpCta,
+.auditLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition:
+    color 180ms ease,
+    text-decoration-color 180ms ease;
+}
+
+.helpCta {
+  color: #7d2436;
+  text-decoration-color: rgba(125, 36, 54, 0.45);
+}
+
+.auditLink {
+  color: #14181a;
+  text-decoration-color: rgba(20, 24, 26, 0.3);
+}
+
+@media (hover: hover) {
+  .helpCta:hover {
+    color: #93293e;
+    text-decoration-color: currentColor;
+  }
+
+  .auditLink:hover {
+    color: #7d2436;
+    text-decoration-color: currentColor;
+  }
+}
+
+.helpCta:focus-visible,
+.auditLink:focus-visible,
+.termsLink:focus-visible {
+  outline: 2px solid #7d2436;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.terms {
+  margin: clamp(20px, 3vw, 28px) 0 0;
+  padding-top: clamp(20px, 3vw, 28px);
+  border-top: 1px solid #d5d9d2;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  color: #636b67;
+}
+
+.termsLink {
+  color: #14181a;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(20, 24, 26, 0.35);
+  transition:
+    color 180ms ease,
+    text-decoration-color 180ms ease;
+}
+
+@media (hover: hover) {
+  .termsLink:hover {
+    color: #7d2436;
+    text-decoration-color: currentColor;
+  }
+}
+
+/* ── Reduced motion: the deck swaps with a short fade, no travel.
+   (The :active press is kept, per the reduced-motion policy.) ──── */
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .sheet[data-on] {
+    transition: opacity 150ms ease;
+    transition-delay: 0s;
+  }
+}

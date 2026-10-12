@@ -276,7 +276,7 @@ export default function AuditTool() {
   const showResults = audit.status === "done" || audit.status === "unlocked";
 
   return (
-    <main id="main" style={{ background: C.bg, minHeight: "100vh", color: C.text }}>
+    <main id="main" data-ground="paper" style={{ background: C.bg, minHeight: "100svh", color: C.text }}>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "80px 24px 120px" }}>
 
         {/* Lang toggle */}

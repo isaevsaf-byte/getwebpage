@@ -1,0 +1,162 @@
+/* The sketch inside a CssPane screen (CSS tier). */
+
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #f3ece8;
+  cursor: text;
+}
+
+/* SSR wireframe: always there underneath, never blank. */
+.placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Canvas crop: the sketch's own browser chrome (34/640) sits above the
+   screen's top edge; the sides lose 2.8% each to keep the aspect. */
+.crop {
+  position: absolute;
+  left: -2.836%;
+  bottom: 0;
+  width: 105.673%;
+  height: 105.673%;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+}
+
+.root[data-drawn="1"] .canvas[data-on="1"],
+.root[data-drawn="1"] .canvas[data-on="2"] {
+  opacity: 1;
+}
+
+.canvas[data-on="2"] {
+  z-index: 2;
+}
+
+.canvas[data-on="1"] {
+  z-index: 1;
+}
+
+/* First frame over the wireframe: a short crossfade, not a pop. */
+:global(html.motion-ok) .root .canvas[data-on="1"] {
+  transition: opacity 420ms var(--ease-studio-out);
+}
+
+/* ── Light bar ─────────────────────────────────────────────────────── */
+
+.sweepTrack {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sweep {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: -20%;
+  width: 40%;
+  opacity: 0;
+  transform: translateX(0%) skewX(-14deg);
+  background: linear-gradient(
+    90deg,
+    rgba(207, 135, 148, 0) 0%,
+    rgba(207, 135, 148, 0) 28%,
+    rgba(207, 135, 148, 0.3) 44%,
+    rgba(255, 246, 244, 0.85) 50%,
+    rgba(207, 135, 148, 0.34) 56%,
+    rgba(125, 36, 54, 0.12) 64%,
+    rgba(207, 135, 148, 0) 76%
+  );
+  will-change: transform, opacity;
+}
+
+/* ── Claude at work ────────────────────────────────────────────────────
+   A scanning light line with a rose wake, fine particles drifting up
+   through the glass, and an inner rim glow. Transform/opacity only. */
+
+.aiField {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 260ms var(--ease-studio-out);
+  box-shadow:
+    inset 0 0 0 1px rgba(207, 135, 148, 0.55),
+    inset 0 0 38px rgba(207, 135, 148, 0.28);
+  overflow: hidden;
+}
+
+.root[data-ai="writing"] .aiField {
+  opacity: 1;
+}
+
+/* The scan line drags a wake of fine particles behind it. */
+.aiScan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 38%;
+  transform: translateY(-100%);
+  background: linear-gradient(
+    180deg,
+    rgba(207, 135, 148, 0) 0%,
+    rgba(207, 135, 148, 0.14) 70%,
+    rgba(207, 135, 148, 0.5) 96%,
+    rgba(255, 250, 248, 0.95) 99%,
+    rgba(207, 135, 148, 0) 100%
+  );
+}
+
+.aiScan::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(125, 36, 54, 0.55) 0.8px, transparent 1.4px),
+    radial-gradient(rgba(255, 255, 255, 0.95) 0.7px, transparent 1.3px);
+  background-size:
+    11px 9px,
+    17px 13px;
+  background-position:
+    0 0,
+    6px 4px;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 82%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.9) 82%, transparent 100%);
+}
+
+:global(html.motion-ok) .root[data-ai="writing"] .aiScan {
+  animation: ai-scan 1500ms var(--ease-studio-in-out) infinite;
+}
+
+@keyframes ai-scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(265%);
+  }
+}
+
+/* Reduced motion: a still, faint field — the state is still visible. */
+@media (prefers-reduced-motion: reduce) {
+  .aiScan {
+    transform: translateY(120%);
+    opacity: 0.6;
+  }
+}

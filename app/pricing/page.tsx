@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Nav from "@/components/Nav";
+import SiteHeader from "@/components/showcase/SiteHeader";
 import Footer from "@/components/Footer";
-import PricingSection from "@/components/sections/PricingSection";
-import OwnershipSection from "@/components/sections/OwnershipSection";
+import Pricing from "@/components/showcase/Pricing";
+import Ownership from "@/components/showcase/Ownership";
 import ButtonLink from "@/components/ButtonLink";
 
 export const metadata: Metadata = {
@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: "How do revisions work?",
-    a: "Starter includes one revision round. Standard and Identity include two. We turn feedback around the same day, not the same week.",
+    a: "Starter includes one revision round, Standard two and Identity three. We turn feedback around the same day, not the same week.",
   },
   {
     q: "What if I need something not listed?",
@@ -41,64 +41,13 @@ const faqs = [
 export default function PricingPage() {
   return (
     <>
-      <Nav />
-      <main id="main">
-        {/* Header */}
-        <section
-          style={{
-            background: "#eaece7",
-            padding: "140px 40px 80px",
-            borderBottom: "1px solid #d5d9d2",
-          }}
-        >
-          <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-            <div
-              style={{
-                fontFamily: "var(--font-sans), sans-serif",
-                fontSize: 11,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: "#8f3446",
-                marginBottom: 20,
-              }}
-            >
-              Pricing
-            </div>
-            <h1
-              style={{
-                fontFamily: "var(--font-display), serif",
-                fontSize: "clamp(2.8rem, 7vw, 5.5rem)",
-                fontWeight: 300,
-                lineHeight: 1.05,
-                letterSpacing: "-0.025em",
-                color: "#14181a",
-                maxWidth: 640,
-                marginBottom: 24,
-              }}
-            >
-              From £500. No surprises.
-            </h1>
-            <p
-              style={{
-                fontFamily: "var(--font-sans), sans-serif",
-                fontSize: "clamp(1rem, 1.6vw, 1.125rem)",
-                lineHeight: 1.75,
-                fontWeight: 300,
-                color: "#5a6360",
-                maxWidth: 480,
-              }}
-            >
-              One fixed price per project. You own everything. No monthly
-              retainers, no lock-in, no surprises on invoice day.
-            </p>
-          </div>
-        </section>
+      <SiteHeader />
+      <main id="main" data-ground="paper">
+        {/* Pricing cards — the showcase section owns the page H1 (pricing-title morph) */}
+        <Pricing headingLevel="h1" />
 
-        {/* Pricing cards */}
-        <PricingSection />
-
-        {/* Ownership */}
-        <OwnershipSection />
+        {/* Ownership — the code-flip card */}
+        <Ownership />
 
         {/* FAQ */}
         <section

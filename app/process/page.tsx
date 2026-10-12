@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Nav from "@/components/Nav";
+import SiteHeader from "@/components/showcase/SiteHeader";
 import Footer from "@/components/Footer";
 import ButtonLink from "@/components/ButtonLink";
 
@@ -66,8 +66,8 @@ const steps = [
 export default function ProcessPage() {
   return (
     <>
-      <Nav />
-      <main id="main">
+      <SiteHeader />
+      <main data-ground="paper" id="main">
         {/* Header */}
         <section
           style={{

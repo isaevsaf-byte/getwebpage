@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import Nav from "@/components/Nav";
+import SiteHeader from "@/components/showcase/SiteHeader";
+import { SharedName } from "@/components/motion/PageTransition";
 import Footer from "@/components/Footer";
+import FramerReducedMotion from "@/components/motion/FramerReducedMotion";
 import WorkSection from "@/components/sections/WorkSection";
 
 export const metadata: Metadata = {
@@ -12,8 +14,8 @@ export const metadata: Metadata = {
 export default function WorkPage() {
   return (
     <>
-      <Nav />
-      <main id="main">
+      <SiteHeader />
+      <main id="main" data-ground="paper">
         {/* Page header */}
         <section
           style={{
@@ -35,7 +37,9 @@ export default function WorkPage() {
             >
               Portfolio
             </div>
+            <SharedName name="work-title">
             <h1
+              id="work-title"
               style={{
                 fontFamily: "var(--font-display), serif",
                 fontSize: "clamp(2.8rem, 7vw, 5.5rem)",
@@ -48,11 +52,14 @@ export default function WorkPage() {
             >
               Built for real businesses.
             </h1>
+            </SharedName>
           </div>
         </section>
 
         {/* Work grid — full portfolio */}
-        <WorkSection showAll={true} />
+        <FramerReducedMotion>
+          <WorkSection showAll={true} />
+        </FramerReducedMotion>
       </main>
       <Footer />
     </>

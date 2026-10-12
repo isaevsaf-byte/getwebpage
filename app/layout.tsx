@@ -5,7 +5,6 @@ import ConsentBanner from "@/components/ConsentBanner";
 import SiteAnalytics from "@/components/SiteAnalytics";
 import SmoothScroll from "@/components/motion/SmoothScroll";
 import PageTransition from "@/components/motion/PageTransition";
-import FramerReducedMotion from "@/components/motion/FramerReducedMotion";
 import { MOTION_GATE_SCRIPT } from "@/lib/showcase/tier";
 import "./globals.css";
 
@@ -142,7 +141,7 @@ export default function RootLayout({
         </a>
         <SmoothScroll>
           <PageTransition>
-            <FramerReducedMotion>{children}</FramerReducedMotion>
+            {children}
           </PageTransition>
         </SmoothScroll>
         <WhatsAppButton />

@@ -5,15 +5,14 @@
  * component imports from here, so plugins register exactly once and the
  * custom eases are shared. GSAP 3.13+ ships all former Club plugins free.
  *
- * Deliberately NOT registered: MorphSVG, ScrambleText, Inertia (unused) and
+ * Deliberately NOT registered: Flip, Observer, MorphSVG, ScrambleText, Inertia
+ * (unused — import and register locally if a section needs one) and
  * ScrollSmoother — Lenis owns the scroll, and the two must never run together.
  */
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
-import { Flip } from "gsap/Flip";
 import { CustomEase } from "gsap/CustomEase";
-import { Observer } from "gsap/Observer";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { useGSAP } from "@gsap/react";
 
@@ -21,9 +20,7 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(
     ScrollTrigger,
     SplitText,
-    Flip,
     CustomEase,
-    Observer,
     DrawSVGPlugin,
     useGSAP,
   );
@@ -96,9 +93,7 @@ export {
   gsap,
   ScrollTrigger,
   SplitText,
-  Flip,
   CustomEase,
-  Observer,
   DrawSVGPlugin,
   useGSAP,
 };

@@ -4,10 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { SharedName } from "@/components/motion/PageTransition";
 
 export const projects = [
   {
     label: "Lingerie & Atelier",
+    slug: "beautasy",
     title: "beautasy.co.uk",
     sub: "Luxury lingerie brand & bespoke atelier",
     href: "https://beautasy.co.uk",
@@ -16,6 +18,7 @@ export const projects = [
   },
   {
     label: "DJ & Artist",
+    slug: "bektothefuture",
     title: "bektothefuture.com",
     sub: "DJ artist portfolio & booking",
     href: "https://bektothefuture.com",
@@ -24,6 +27,7 @@ export const projects = [
   },
   {
     label: "Honey Import",
+    slug: "silkbees",
     title: "silkbees.co.uk",
     sub: "Premium honey import from Central Asia",
     href: "https://silkbees.co.uk",
@@ -32,6 +36,7 @@ export const projects = [
   },
   {
     label: "AI & Consulting",
+    slug: "safarisaev",
     title: "safarisaev.ai",
     sub: "AI strategy & consulting presence",
     href: "https://safarisaev.ai",
@@ -56,6 +61,8 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        {/* On /work the page H1 already says this — no second header. */}
+        {!showAll && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -119,6 +126,7 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
             </Link>
           )}
         </motion.div>
+        )}
 
         <div
           style={{
@@ -161,7 +169,8 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
                 (e.currentTarget as HTMLAnchorElement).style.borderColor = "#d5d9d2";
               }}
             >
-              {/* 4:3 screenshot */}
+              {/* 4:3 screenshot — morph twin of the home RealSites thumbnail */}
+              <SharedName name={`work-${p.slug}`}>
               <div
                 style={{
                   position: "relative",
@@ -178,6 +187,7 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
                   style={{ objectFit: "cover", objectPosition: p.imgPosition ?? "top" }}
                 />
               </div>
+              </SharedName>
 
               <div style={{ padding: "22px 26px 24px" }}>
                 <div

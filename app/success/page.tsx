@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import Stripe from "stripe";
-import Nav from "@/components/Nav";
+import SiteHeader from "@/components/showcase/SiteHeader";
 import Footer from "@/components/Footer";
 import ConversionEvent from "@/components/ConversionEvent";
 
@@ -56,12 +56,12 @@ export default async function SuccessPage({
           currency={order.currency}
         />
       )}
-      <Nav />
-      <main
+      <SiteHeader />
+      <main data-ground="paper"
         id="main"
         style={{
           background: "#eaece7",
-          minHeight: "100vh",
+          minHeight: "100svh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

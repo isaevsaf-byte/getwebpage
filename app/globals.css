@@ -6,9 +6,14 @@
    Tailwind 4 reads its theme from CSS, not from tailwind.config.ts —
    a JS config is ignored unless pointed at with @config. Everything
    the site uses lives here so the tokens actually apply.
+
+   `static`: Tailwind 4 otherwise drops every variable no utility class
+   uses, and most of the site reads tokens through var(--…) in inline
+   styles and CSS modules, which Tailwind cannot see. Static keeps them
+   all on :root.
    ───────────────────────────────────────────────────────────── */
 
-@theme {
+@theme static {
   /* Ground and surfaces — cool bone, a green-grey bias */
   --color-paper: #eaece7;
   --color-surface: #e3e6e0;
@@ -59,8 +64,20 @@
   --text-fluid-sm: clamp(0.875rem, 0.82rem + 0.25vw, 0.9375rem);
   --text-fluid-base: clamp(1rem, 0.95rem + 0.25vw, 1.0625rem);
   --text-fluid-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
-  --text-hero: clamp(3rem, 7.4vw, 6.6rem);
-  --text-display: clamp(2.2rem, 5vw, 3.8rem);
+  --text-hero: clamp(2.75rem, 1.2rem + 5.6vw, 6.25rem);
+  --text-display: clamp(2.125rem, 1.1rem + 3.4vw, 4rem);
+  --text-h3: clamp(1.375rem, 1.1rem + 0.9vw, 1.75rem);
+  --text-numeral: clamp(7rem, 4rem + 14vw, 16rem);
+
+  /* Motion — the same curves GSAP registers in lib/motion/gsap.ts */
+  --ease-studio-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-studio-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-studio-snap: cubic-bezier(0.2, 0.9, 0.1, 1);
+  --ease-studio-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Rhythm */
+  --space-section: clamp(96px, 12vw, 176px);
+  --gutter: clamp(16px, 5vw, 64px);
 
   --radius-sm: 2px;
   --radius-DEFAULT: 4px;
@@ -76,6 +93,8 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+  font-optical-sizing: auto;
 }
 
 body {
@@ -85,6 +104,26 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* ── Touch ────────────────────────────────────────────────────
+   No 300ms double-tap wait on controls, no grey flash on tap, no
+   accidental text selection on long-press, and no iOS zoom-on-focus
+   (it triggers below 16px). */
+
+:where(a, button, [role="button"]) {
+  touch-action: manipulation;
+}
+
+:where(button) {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+select,
+textarea {
+  font-size: max(16px, 1em);
 }
 
 /* ── Focus ────────────────────────────────────────────────────
@@ -174,7 +213,10 @@ textarea:focus-visible {
   padding: 10px 22px;
   border-radius: 4px;
   cursor: pointer;
-  transition: background 200ms, border-color 200ms;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
 }
 
 .consent-btn-ghost {
@@ -183,20 +225,22 @@ textarea:focus-visible {
   border: 1px solid #3a4245;
 }
 
-.consent-btn-ghost:hover {
-  border-color: #5a6360;
-  color: #e3e6e0;
-}
-
 .consent-btn-solid {
   background: #7d2436;
   color: #ffffff;
   border: 1px solid #7d2436;
 }
 
-.consent-btn-solid:hover {
-  background: #93293e;
-  border-color: #93293e;
+@media (hover: hover) and (pointer: fine) {
+  .consent-btn-ghost:hover {
+    border-color: #5a6360;
+    color: #e3e6e0;
+  }
+
+  .consent-btn-solid:hover {
+    background: #93293e;
+    border-color: #93293e;
+  }
 }
 
 @media (max-width: 560px) {
@@ -212,18 +256,249 @@ textarea:focus-visible {
   }
 }
 
-/* ── Motion ──────────────────────────────────────────────────── */
+/* ── Enter-up (CSS-only mount / unhide entrance) ─────────────────
+   Rises 12px and fades in when inserted or when [hidden] is removed;
+   no JS. Exit plays on [data-hidden] (200ms). Note: Tailwind's
+   preflight sets [hidden] to display:none !important, which outranks
+   transitions, so leaving via the hidden attribute is instant. */
+
+.enter-up {
+  transition:
+    opacity 300ms var(--ease-studio-out),
+    translate 300ms var(--ease-studio-out),
+    display 300ms allow-discrete;
+}
+
+.enter-up[hidden],
+.enter-up[data-hidden] {
+  display: none;
+  opacity: 0;
+  translate: 0 12px;
+  transition-duration: 200ms;
+}
+
+@starting-style {
+  .enter-up {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+
+/* ── Hero ink-in ─────────────────────────────────────────────────
+   Load-time weight swell on the hero lines. CSS keyframes, so it runs
+   while React hydrates. Starts only once Literata has loaded (the head
+   gate adds .fonts-ready), never under reduced motion (.motion-ok).
+   Each line sets style="--i: n" for its stagger. */
+
+html.motion-ok.fonts-ready .ink-in {
+  animation: ink-in 900ms var(--ease-studio-out) both;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+
+@keyframes ink-in {
+  from {
+    font-variation-settings: "wght" 240;
+  }
+  to {
+    font-variation-settings: "wght" 560;
+  }
+}
+
+/* ── Sticky stage heights ─────────────────────────────────────────
+   Set by CSS from the first paint (the head gate adds the classes), so
+   the SevenDays scene never shifts layout when JS arrives. Phones,
+   tablets and reduced motion get a plain stacked flow. */
+
+.sd-beat {
+  min-height: auto;
+}
+
+html.motion-ok.fine-desktop #seven-days .sd-beat {
+  min-height: 80svh;
+}
+
+html.motion-ok.fine-desktop #seven-days .sd-intro {
+  min-height: 30svh;
+}
+
+/* ── Scroll-driven utilities ──────────────────────────────────────
+   view() timelines — no JS, off the main thread for transform/opacity.
+   Gated twice: never under reduced motion (a scroll timeline ignores
+   duration overrides), and only where supported (Firefox shows the
+   final state). */
+
+.sd-ink-weight {
+  font-variation-settings: "wght" 700;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .sd-clip-reveal {
+      animation: sd-clip linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 40%;
+    }
+
+    .sd-ink-weight {
+      animation: sd-ink linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 45%;
+    }
+  }
+}
+
+@keyframes sd-clip {
+  from {
+    clip-path: inset(12% 8% round 10px);
+    scale: 1.06;
+  }
+  to {
+    clip-path: inset(0 round 10px);
+    scale: 1;
+  }
+}
+
+@keyframes sd-ink {
+  from {
+    font-variation-settings: "wght" 300;
+  }
+  to {
+    font-variation-settings: "wght" 700;
+  }
+}
+
+/* ── RevealHeading line masks ─────────────────────────────────────
+   SplitText wraps each line in a clipping mask (.rh-line-mask). The
+   padding lets descenders and accents breathe instead of being cut
+   mid-reveal; the negative margin keeps the layout identical. */
+
+.rh-line-mask {
+  padding-block: 0.1em;
+  margin-block: -0.1em;
+}
+
+/* ── View transitions ─────────────────────────────────────────────
+   React <ViewTransition> (components/motion/PageTransition.tsx).
+   The overlay lets clicks through to the live page, so a 450ms
+   transition never swallows a tap. */
+
+::view-transition {
+  pointer-events: none;
+}
+
+/* Shared-element morphs: thumbnail ↔ card, H2 ↔ H1, field ↔ field. */
+::view-transition-group(.morph) {
+  animation-duration: 450ms;
+  animation-timing-function: var(--ease-studio-in-out);
+}
+
+::view-transition-image-pair(.morph) {
+  animation-name: via-blur;
+}
+
+@keyframes via-blur {
+  40% {
+    filter: blur(3px);
+  }
+}
+
+/* Directional route slides: forward goes left, back goes right.
+   Exit is faster than enter, and the enter waits 60ms. */
+::view-transition-old(.nav-forward) {
+  --vt-dx: -24px;
+  animation: vt-out 200ms var(--ease-studio-out) both;
+}
+
+::view-transition-new(.nav-forward) {
+  --vt-dx: 24px;
+  animation: vt-in 320ms var(--ease-studio-out) 60ms both;
+}
+
+::view-transition-old(.nav-back) {
+  --vt-dx: 24px;
+  animation: vt-out 200ms var(--ease-studio-out) both;
+}
+
+::view-transition-new(.nav-back) {
+  --vt-dx: -24px;
+  animation: vt-in 320ms var(--ease-studio-out) 60ms both;
+}
+
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    translate: var(--vt-dx) 0;
+  }
+}
+
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    translate: var(--vt-dx) 0;
+  }
+}
+
+/* The header is the fixed reference point: never animates, and the old
+   snapshot is hidden so two headers never overlap. Declared after .morph
+   (and image-pair marked important) in case the header is also tagged
+   as a shared element. */
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(site-header) {
+  display: none;
+}
+
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+::view-transition-image-pair(site-header) {
+  animation: none !important;
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────
+   Fewer and gentler, not zero — each component decides its own reduced
+   variant (motionMedia's reduce branch, html.motion-ok gates). The old
+   blanket 0.01ms rule is gone: it could not reach view-transition
+   pseudo-elements and did not stop scroll timelines.
+   Here: view transitions become a quick 150ms crossfade. */
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 150ms !important;
+    animation-delay: 0s !important;
+  }
+
+  ::view-transition-image-pair(*) {
+    animation-name: none !important;
+  }
+
+  /* Directional slides keep their fade but lose the travel. */
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    --vt-dx: 0px !important;
+  }
+
+  .enter-up,
+  .enter-up[hidden],
+  .enter-up[data-hidden] {
+    translate: none;
+    transition-duration: 200ms;
+  }
+
+  @starting-style {
+    .enter-up {
+      translate: none;
+    }
   }
 }
 
@@ -240,11 +515,7 @@ textarea:focus-visible {
   padding: 11px 28px;
   text-decoration: none;
   margin-bottom: 40px;
-  transition: border-color 200ms;
-}
-
-.brief-btn:hover {
-  border-color: #7d2436;
+  transition: border-color 180ms ease;
 }
 
 /* ── Link hovers ──────────────────────────────────────────────
@@ -256,11 +527,7 @@ textarea:focus-visible {
   font-size: 13px;
   color: #9aa19d;
   text-decoration: none;
-  transition: color 200ms;
-}
-
-.footer-link:hover {
-  color: #e3e6e0;
+  transition: color 180ms ease;
 }
 
 .btn {
@@ -273,7 +540,10 @@ textarea:focus-visible {
   letter-spacing: 0.01em;
   display: inline-block;
   cursor: pointer;
-  transition: background 220ms, border-color 220ms, color 220ms;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
 }
 
 .btn-primary {
@@ -282,18 +552,10 @@ textarea:focus-visible {
   border: none;
 }
 
-.btn-primary:hover {
-  background: #93293e;
-}
-
 .btn-outline {
   background: transparent;
   color: #14181a;
   border: 1px solid #c3c8c0;
-}
-
-.btn-outline:hover {
-  border-color: #7d2436;
 }
 
 .btn-ghost {
@@ -304,6 +566,26 @@ textarea:focus-visible {
   border-bottom: 1px solid #c3c8c0;
 }
 
-.btn-ghost:hover {
-  border-bottom-color: #7d2436;
+/* Hover only where a real pointer hovers — a tap on a phone must not
+   leave a button stuck in its hover colour. */
+@media (hover: hover) and (pointer: fine) {
+  .brief-btn:hover {
+    border-color: #7d2436;
+  }
+
+  .footer-link:hover {
+    color: #e3e6e0;
+  }
+
+  .btn-primary:hover {
+    background: #93293e;
+  }
+
+  .btn-outline:hover {
+    border-color: #7d2436;
+  }
+
+  .btn-ghost:hover {
+    border-bottom-color: #7d2436;
+  }
 }

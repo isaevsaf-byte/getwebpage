@@ -1,0 +1,39 @@
+.stage {
+  position: relative;
+  isolation: isolate;
+}
+
+.poster {
+  position: relative;
+}
+
+.posterHidden {
+  visibility: hidden;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 500ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.canvasLive {
+  opacity: 1;
+}
+
+.canvasLeaving {
+  opacity: 0;
+  transition-duration: 300ms;
+}

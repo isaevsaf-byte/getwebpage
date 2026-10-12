@@ -1,0 +1,199 @@
+/* CSS-3D browser pane: mobile tier, WebGL poster, RealSites, Ownership.
+   Rotation lives in two unitless custom properties on .pane (degrees):
+   --rx and --ry. Tween them directly, e.g. gsap.to(pane, { "--ry": -4 }),
+   and the sheen follows. */
+
+.root {
+  --pane-perspective: 1400px;
+  position: relative;
+  perspective: var(--pane-perspective);
+}
+
+.pane {
+  --rx: 0;
+  --ry: 0;
+  --sheen: calc(var(--ry) * -0.8%);
+  --pane-radius: 10px;
+  --pane-shadow: 0.85;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0 2.5% 2.5%;
+  border-radius: var(--pane-radius);
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--rx) * 1deg)) rotateY(calc(var(--ry) * 1deg));
+  background: linear-gradient(160deg, #23292c 0%, #181c1e 55%, #131719 100%);
+  color: #9aa19d;
+}
+
+.paper {
+  background: linear-gradient(160deg, #eef0eb 0%, #e0e3dd 55%, #d6d9d3 100%);
+  color: #5a6360;
+}
+
+/* Shadow: a pseudo-element; only its opacity ever changes. */
+.pane::before {
+  content: "";
+  position: absolute;
+  inset: 12% 3% -9% 3%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
+  opacity: var(--pane-shadow);
+  transform: translateZ(-60px);
+  pointer-events: none;
+}
+
+.paper::before {
+  background: radial-gradient(closest-side, rgba(20, 24, 26, 0.3), rgba(20, 24, 26, 0));
+}
+
+/* Edge: an inset hairline ring above everything. */
+.pane::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(227, 230, 224, 0.14);
+  transform: translateZ(1px);
+  pointer-events: none;
+}
+
+.paper::after {
+  box-shadow: inset 0 0 0 1px rgba(20, 24, 26, 0.12);
+}
+
+.chrome {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  flex: none;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.dots {
+  display: flex;
+  gap: 5px;
+  justify-self: start;
+}
+
+.dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3b4346;
+}
+
+.paper .dots i {
+  background: #b7bcb6;
+}
+
+.domain {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  justify-self: center;
+}
+
+.domain span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.lock {
+  flex: none;
+  width: 9px;
+  height: 11px;
+}
+
+.label {
+  justify-self: end;
+  white-space: nowrap;
+  color: #cf8794;
+}
+
+.paper .label {
+  color: #7d2436;
+}
+
+.screen {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #0f1214;
+  aspect-ratio: 16 / 10;
+  transform: translateZ(0.5px);
+}
+
+.paper .screen {
+  background: #cfd3cd;
+}
+
+.a16x10 .screen {
+  aspect-ratio: 16 / 10;
+}
+
+.a9x19 .screen {
+  aspect-ratio: 9 / 19.5;
+}
+
+.a4x3 .screen {
+  aspect-ratio: 4 / 3;
+}
+
+.screen > :where(img, canvas, video, picture) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+/* Sheen: a soft diagonal highlight that slides with the rotation. */
+.glare {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  transform: translateZ(1.5px);
+  pointer-events: none;
+}
+
+.glare::after {
+  content: "";
+  position: absolute;
+  inset: 0 -60%;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  transform: translateX(var(--sheen));
+}
+
+.paper .glare::after {
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0) 60%
+  );
+}
+
+.draggable {
+  touch-action: pan-y;
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.dragging {
+  cursor: grabbing;
+}

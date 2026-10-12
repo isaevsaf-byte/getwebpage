@@ -1,0 +1,278 @@
+/* Day rail — progress through SevenDays.
+   Desktop (≥1024): a vertical rail fixed 24px from the right edge.
+   Below 1024: a 2px segmented bar under the header with a "Day n/7" label. */
+
+.rail {
+  --rail-text: #9aa19d;
+  --rail-strong: #e3e6e0;
+  --rail-accent: #cf8794;
+  --rail-track: rgba(227, 230, 224, 0.16);
+  --rail-ground: rgba(20, 24, 26, 0.88);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 200ms ease,
+    visibility 0s linear 200ms;
+}
+
+.paper {
+  --rail-text: #5a6360;
+  --rail-strong: #14181a;
+  --rail-accent: #7d2436;
+  --rail-track: rgba(20, 24, 26, 0.14);
+  --rail-ground: rgba(234, 236, 231, 0.9);
+}
+
+.visible {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 200ms ease,
+    visibility 0s linear 0s;
+}
+
+/* ── Desktop rail ─────────────────────────────────────────────────────── */
+
+.desk {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+  transform: translateY(-50%);
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: var(--rail-text);
+}
+
+.counter {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-right: 10px;
+}
+
+.counterCaption {
+  color: var(--rail-text);
+}
+
+.roll {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  height: 1.25em;
+  min-width: 1ch;
+  font-weight: 500;
+  font-size: 1.125rem;
+  line-height: 1.25em;
+  font-variant-numeric: tabular-nums;
+  color: var(--rail-accent);
+}
+
+.roll span {
+  display: block;
+}
+
+.roll span + span {
+  position: absolute;
+  inset: 0;
+  transform: translateY(100%);
+}
+
+.num {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.ticks {
+  position: relative;
+}
+
+.tickList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The track and the fill run through the centre of the tick marks. */
+.track,
+.fill {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  right: 15px;
+  width: 1px;
+  pointer-events: none;
+}
+
+.track {
+  background: var(--rail-track);
+}
+
+.fill {
+  background: var(--rail-accent);
+  transform: scaleY(0);
+  transform-origin: top;
+}
+
+.tick {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 44px;
+  height: 28px;
+  padding: 0 10px 0 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tickMark {
+  display: block;
+  width: 11px;
+  height: 1px;
+  background: var(--rail-text);
+  transform-origin: right;
+  transition:
+    background-color 180ms ease,
+    transform 180ms var(--ease-studio-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.tick[aria-current="step"] .tickMark {
+  background: var(--rail-accent);
+  transform: scaleX(1.8);
+}
+
+.tip {
+  position: absolute;
+  right: 48px;
+  top: 50%;
+  padding: 4px 8px;
+  border-radius: 2px;
+  background: var(--rail-ground);
+  color: var(--rail-strong);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(4px, -50%);
+  pointer-events: none;
+  transition:
+    opacity 100ms ease,
+    transform 100ms ease;
+}
+
+.tick:focus-visible {
+  outline: 2px solid var(--rail-accent);
+  outline-offset: -2px;
+  border-radius: 2px;
+}
+
+.tick:focus-visible .tip {
+  opacity: 1;
+  transform: translate(0, -50%);
+  transition-duration: 150ms;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tick:hover .tip {
+    opacity: 1;
+    transform: translate(0, -50%);
+    transition-duration: 150ms;
+  }
+
+  .tick:hover .tickMark {
+    background: var(--rail-strong);
+  }
+
+  .skip:hover {
+    color: var(--rail-accent);
+  }
+}
+
+.skip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 10px 0 0;
+  color: var(--rail-strong);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: color 180ms ease;
+}
+
+.skip:focus-visible {
+  outline: 2px solid var(--rail-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── Mobile segmented bar ─────────────────────────────────────────────── */
+
+.mob {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--header-h, 64px);
+  z-index: 40;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 6px clamp(16px, 5vw, 64px);
+  background: var(--rail-ground);
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: var(--rail-text);
+  pointer-events: none;
+}
+
+.bar {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  /* Seven segments with 3px gaps. */
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 calc(100% / 7 - 3px), transparent calc(100% / 7 - 3px) calc(100% / 7));
+  mask: repeating-linear-gradient(90deg, #000 0 calc(100% / 7 - 3px), transparent calc(100% / 7 - 3px) calc(100% / 7));
+  background: var(--rail-track);
+}
+
+.barFill {
+  position: absolute;
+  inset: 0;
+  background: var(--rail-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.mobLabel {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35em;
+  white-space: nowrap;
+  color: var(--rail-strong);
+}
+
+.mobLabel .roll {
+  font-size: inherit;
+  font-weight: 500;
+}
+
+@media (max-width: 1023.98px) {
+  .desk {
+    display: none;
+  }
+
+  .mob {
+    display: flex;
+  }
+}

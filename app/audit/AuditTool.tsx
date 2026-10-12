@@ -1,6 +1,16 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import {
+  startTransition,
+  useEffect,
+  useEffectEvent,
+  useState,
+  useSyncExternalStore,
+  ViewTransition,
+} from "react";
+import Link from "next/link";
+import { SharedName } from "@/components/motion/PageTransition";
+import { consumeAuditHandoff } from "@/lib/showcase/auditHandoff";
 
 type Lang = "en" | "ru";
 
@@ -45,6 +55,7 @@ const T = {
     ctaBlock: "Want us to fix it?",
     ctaSub: "We rebuild or repair small business sites from £500.",
     ctaBtn: "Get a free quote →",
+    seePrices: "See prices",
     hiddenBody: "████████ ████ ████████████ ████ ████ ██████ ████████ ██.",
     hiddenTitle: (i: number) => `Issue ${i} — hidden until email provided`,
     criticalBadge: (n: number) => `${n === 1 ? "critical issue" : "critical issues"}`,
@@ -82,6 +93,7 @@ const T = {
     ctaBlock: "Хотите, мы исправим?",
     ctaSub: "Мы перестраиваем и чиним сайты малого бизнеса от £500.",
     ctaBtn: "Получить расчёт →",
+    seePrices: "Посмотреть цены",
     hiddenBody: "████████ ████ ████████████ ████ ████ ██████ ████████ ██.",
     hiddenTitle: (i: number) => `Проблема ${i} — скрыта до ввода email`,
     criticalBadge: (n: number) =>
@@ -163,15 +175,17 @@ export default function AuditTool() {
     return t.errors.generic;
   }
 
-  async function runAudit() {
-    if (!url.trim() || audit.status === "loading") return;
+  /** `override` is the URL handed over from the home page (see the effect below). */
+  async function runAudit(override?: string) {
+    const target = (override ?? url).trim();
+    if (!target || audit.status === "loading") return;
     setAudit({ status: "loading" });
 
     try {
       const res = await fetch("/api/audit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url.trim(), lang }),
+        body: JSON.stringify({ url: target, lang }),
       });
 
       // A gateway timeout returns HTML, not JSON — never assume a parse succeeds.
@@ -187,12 +201,15 @@ export default function AuditTool() {
         return;
       }
 
-      setAudit({
-        status: "done",
-        good: data.good ?? [],
-        criticalCount: data.criticalCount ?? 0,
-        importantCount: data.importantCount ?? 0,
-        reportLang: lang,
+      // A transition so the report slides in (<ViewTransition enter="slide-up">).
+      startTransition(() => {
+        setAudit({
+          status: "done",
+          good: data.good ?? [],
+          criticalCount: data.criticalCount ?? 0,
+          importantCount: data.importantCount ?? 0,
+          reportLang: lang,
+        });
       });
     } catch {
       setAudit({ status: "error", error: t.errors.network });
@@ -228,12 +245,14 @@ export default function AuditTool() {
         return;
       }
 
-      setAudit({
-        status: "unlocked",
-        good: data.good ?? [],
-        critical: data.critical ?? [],
-        important: data.important ?? [],
-        reportLang: audit.reportLang,
+      startTransition(() => {
+        setAudit({
+          status: "unlocked",
+          good: data.good ?? [],
+          critical: data.critical ?? [],
+          important: data.important ?? [],
+          reportLang: audit.reportLang,
+        });
       });
     } catch {
       setAudit((prev) => ({ ...prev, error: t.errors.network }));
@@ -241,6 +260,18 @@ export default function AuditTool() {
       setUnlocking(false);
     }
   }
+
+  // Home-page handoff: a URL typed into the home AuditBand / hero runs once on
+  // arrival. Read-once, 120s expiry, never from the query string — see
+  // lib/showcase/auditHandoff. An effect event, so it sees the current lang.
+  const runHandoff = useEffectEvent((handedOver: string) => {
+    setUrl(handedOver);
+    runAudit(handedOver);
+  });
+  useEffect(() => {
+    const handedOver = consumeAuditHandoff();
+    if (handedOver) queueMicrotask(() => runHandoff(handedOver));
+  }, []);
 
   const showResults = audit.status === "done" || audit.status === "unlocked";
 
@@ -324,27 +355,29 @@ export default function AuditTool() {
           <label htmlFor="audit-url" style={{ position: "absolute", left: -9999 }}>
             {t.placeholder}
           </label>
-          <input
-            id="audit-url"
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && runAudit()}
-            placeholder={t.placeholder}
-            style={{
-              flex: 1,
-              minWidth: 220,
-              padding: "13px 16px",
-              borderRadius: 4,
-              border: `1px solid ${C.cardBorder}`,
-              background: "#fff",
-              color: C.text,
-              fontSize: 15,
-              fontFamily: "var(--font-sans)",
-            }}
-          />
+          <SharedName name="audit-field">
+            <input
+              id="audit-url"
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && runAudit()}
+              placeholder={t.placeholder}
+              style={{
+                flex: 1,
+                minWidth: 220,
+                padding: "13px 16px",
+                borderRadius: 4,
+                border: `1px solid ${C.cardBorder}`,
+                background: "#fff",
+                color: C.text,
+                fontSize: 16,
+                fontFamily: "var(--font-sans)",
+              }}
+            />
+          </SharedName>
           <button
-            onClick={runAudit}
+            onClick={() => runAudit()}
             disabled={audit.status === "loading"}
             style={{
               padding: "13px 24px",
@@ -386,6 +419,7 @@ export default function AuditTool() {
 
         {/* Results */}
         {showResults && (
+          <ViewTransition enter="slide-up" default="none">
           <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
 
             {/* Good — always visible */}
@@ -503,7 +537,7 @@ export default function AuditTool() {
                           border: `1px solid ${C.cardBorder}`,
                           background: C.bg,
                           color: C.text,
-                          fontSize: 15,
+                          fontSize: 16,
                           fontFamily: "var(--font-sans)",
                         }}
                       />
@@ -567,10 +601,12 @@ export default function AuditTool() {
               </>
             )}
           </div>
+          </ViewTransition>
         )}
 
         {/* CTA after unlock */}
         {audit.status === "unlocked" && (
+          <ViewTransition enter="slide-up" default="none">
           <div
             style={{
               marginTop: 56,
@@ -624,9 +660,39 @@ export default function AuditTool() {
             >
               {t.ctaBtn}
             </a>
+            <Link
+              href="/pricing"
+              transitionTypes={["nav-forward"]}
+              style={{
+                display: "inline-block",
+                marginLeft: 20,
+                padding: "13px 0",
+                color: C.text,
+                fontWeight: 500,
+                fontSize: 14,
+                textDecoration: "underline",
+                textUnderlineOffset: 4,
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              {t.seePrices}
+            </Link>
           </div>
+          </ViewTransition>
         )}
       </div>
+      {/* The report slides up as it appears (React <ViewTransition enter="slide-up">).
+          Reduced motion keeps the global ::view-transition crossfade override. */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          ::view-transition-new(.slide-up):only-child {
+            animation: audit-slide-up 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+          }
+        }
+        @keyframes audit-slide-up {
+          from { opacity: 0; transform: translateY(16px); }
+        }
+      `}</style>
     </main>
   );
 }

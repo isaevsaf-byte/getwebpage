@@ -49,12 +49,22 @@ export default function WhatsAppButton() {
           align-items: center;
           justify-content: center;
           box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4), 0 2px 6px rgba(0,0,0,0.15);
-          transition: transform 200ms ease, box-shadow 200ms ease;
+          transition: transform 200ms ease;
           text-decoration: none;
         }
-        .wa-btn:hover {
-          transform: scale(1.1);
-          box-shadow: 0 6px 24px rgba(37, 211, 102, 0.5), 0 2px 8px rgba(0,0,0,0.18);
+        @media (hover: hover) and (pointer: fine) {
+          .wa-btn:hover {
+            transform: scale(1.1);
+          }
+        }
+        /* Phones: the sticky offer bar carries its own WhatsApp link, and
+           an open keyboard leaves no room — so the FAB steps aside. Both
+           classes are set on <html> by StickyOfferBar. */
+        @media (max-width: 767px) {
+          html.offer-bar-visible .wa-btn,
+          html.input-focused .wa-btn {
+            display: none;
+          }
         }
         @media (max-width: 640px) {
           .wa-btn {

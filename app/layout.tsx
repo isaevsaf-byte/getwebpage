@@ -1,15 +1,24 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Literata, DM_Sans, DM_Mono } from "next/font/google";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ConsentBanner from "@/components/ConsentBanner";
 import SiteAnalytics from "@/components/SiteAnalytics";
+import SmoothScroll from "@/components/motion/SmoothScroll";
+import PageTransition from "@/components/motion/PageTransition";
+import FramerReducedMotion from "@/components/motion/FramerReducedMotion";
+import { MOTION_GATE_SCRIPT } from "@/lib/showcase/tier";
 import "./globals.css";
 
+// One variable file (wght 200–900 + optical size) instead of four static
+// weights, so display weights can animate smoothly. Upright only: the
+// italic file doubled the preload (+180 KB measured) for a style the
+// showcase does not use.
 const literata = Literata({
   variable: "--font-display",
   subsets: ["latin", "cyrillic"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
+  weight: "variable",
+  axes: ["opsz"],
+  style: ["normal"],
   display: "swap",
 });
 
@@ -54,6 +63,13 @@ export const metadata: Metadata = {
     description: "From £500. Delivered in 7 days. Full ownership yours.",
     images: [`${SITE}/og-image.jpg`],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#14181a",
+  viewportFit: "cover",
+  width: "device-width",
+  initialScale: 1,
 };
 
 // Structured data — helps Google understand what the business is and
@@ -102,8 +118,19 @@ export default function RootLayout({
     <html
       lang="en-GB"
       className={`${literata.variable} ${dmSans.variable} ${dmMono.variable}`}
+      // The motion gate adds classes to <html> before React hydrates.
+      suppressHydrationWarning
+      // Next 16 keeps CSS smooth scrolling during route changes unless told
+      // otherwise; this makes a new page start at the top instantly.
+      data-scroll-behavior="smooth"
     >
       <head>
+        {/* Runs before first paint: html.js / motion-ok / fine-desktop /
+            save-data / fonts-ready. The only script this layout adds. */}
+        <script
+          id="motion-gate"
+          dangerouslySetInnerHTML={{ __html: MOTION_GATE_SCRIPT }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -113,7 +140,11 @@ export default function RootLayout({
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        {children}
+        <SmoothScroll>
+          <PageTransition>
+            <FramerReducedMotion>{children}</FramerReducedMotion>
+          </PageTransition>
+        </SmoothScroll>
         <WhatsAppButton />
         {/* Google Analytics and Google Ads load only after the visitor
             accepts — see ConsentBanner. Vercel Analytics is cookieless. */}

@@ -72,7 +72,7 @@ export default function ConsentBanner() {
       )}
 
       {consent === null && (
-        <div className="consent" role="dialog" aria-label="Cookie choices">
+        <div className="consent enter-up" role="dialog" aria-label="Cookie choices">
           <div className="consent-inner">
             <p className="consent-text">
               We&apos;d like to set analytics and advertising cookies to see how

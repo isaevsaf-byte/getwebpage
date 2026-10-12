@@ -1,29 +1,31 @@
-import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import Hero from "@/components/sections/Hero";
-import ProcessSection from "@/components/sections/ProcessSection";
-import WorkSection from "@/components/sections/WorkSection";
-import AuditBand from "@/components/sections/AuditBand";
-import PricingSection from "@/components/sections/PricingSection";
-import OwnershipSection from "@/components/sections/OwnershipSection";
-import TestimonialsSection from "@/components/sections/TestimonialsSection";
-import ContactSection from "@/components/sections/ContactSection";
+import SiteHeader from "@/components/showcase/SiteHeader";
+import Hero from "@/components/showcase/Hero";
+import SevenDays from "@/components/showcase/SevenDays";
+import RealSites from "@/components/showcase/RealSites";
+import MadeByAI from "@/components/showcase/MadeByAI";
+import Pricing from "@/components/showcase/Pricing";
+import Ownership from "@/components/showcase/Ownership";
+import AuditBand from "@/components/showcase/AuditBand";
+import FinalCall from "@/components/showcase/FinalCall";
+import StickyOfferBar from "@/components/showcase/primitives/StickyOfferBar";
 
 export default function Home() {
   return (
     <>
-      <Nav />
+      <SiteHeader />
       <main id="main">
         <Hero />
-        <ProcessSection />
-        <WorkSection showAll={false} />
+        <SevenDays />
+        <RealSites />
+        <MadeByAI />
+        <Pricing />
+        <Ownership />
         <AuditBand />
-        <PricingSection />
-        <OwnershipSection />
-        <TestimonialsSection />
-        <ContactSection />
+        <FinalCall />
       </main>
       <Footer />
+      <StickyOfferBar />
     </>
   );
 }

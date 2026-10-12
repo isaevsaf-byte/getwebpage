@@ -6,7 +6,6 @@ const sites = [
   { url: 'https://beautasy.co.uk', file: 'beautasy.jpg' },
   { url: 'https://bektothefuture.com', file: 'bektothefuture.jpg' },
   { url: 'https://silkbees.co.uk', file: 'silkbees.jpg' },
-  { url: 'https://vedovec.vercel.app', file: 'vedovec.jpg' },
 ];
 
 const OUT = path.join(__dirname, '../public/portfolio');

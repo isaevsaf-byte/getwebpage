@@ -37,7 +37,9 @@ export async function consume(
     const used = await kv.incr(key);
     if (used === 1) await kv.expire(key, windowSeconds);
     return { ok: used <= limit, limit, remaining: Math.max(0, limit - used) };
-  } catch {
+  } catch (err) {
+    // Never silent: a dead KV store also means leads and stats are not being saved.
+    console.error("rate-limit: KV unavailable —", (err as Error)?.message ?? String(err));
     if (failClosed) return { ok: false, limit, remaining: 0, unavailable: true };
     // KV unavailable — fail open rather than taking the whole route down.
     return { ok: true, limit, remaining: limit };

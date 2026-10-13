@@ -509,8 +509,10 @@
 }
 
 /* ── Desktop sticky stage (motion allowed, ≥1024) ────────────────────── */
+/* Also phones held sideways ("side" in SevenDays.tsx — keep SIDE_Q in sync):
+   the same two columns, tuned further down. */
 
-@media (min-width: 1024px) {
+@media (min-width: 1024px), (max-width: 1023.98px) and (orientation: landscape) and (max-height: 600px) {
   :global(html.motion-ok) .root {
     padding-block: 0;
   }
@@ -612,6 +614,330 @@
   }
 }
 
+/* ── Phones and tablets in portrait: the stage on top ("top") ─────────── */
+/* Captions scroll under a stage stuck below the header. Every height is set
+   here from first paint (svh, so the iOS address bar never moves it), so
+   the scroll length does not shift when JS arrives. The run is split
+   between the beats in proportion to their share of the timeline. */
+
+@media (max-width: 1023.98px) and (orientation: portrait), (max-width: 1023.98px) and (min-height: 600.02px) {
+  :global(html.motion-ok) .root {
+    --sd-top: calc(56px + env(safe-area-inset-top, 0px));
+    --sd-stage: clamp(300px, 54svh, 620px);
+    --sd-run: 280svh;
+    padding-block: clamp(80px, 14vw, 128px) 0;
+    /* The stage runs edge to edge: nothing in it may widen the page.
+       clip, not hidden, so the sticky stage keeps the viewport. */
+    overflow-x: clip;
+  }
+
+  :global(html.motion-ok) .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto var(--sd-stage) repeat(4, auto) auto;
+  }
+
+  /* The captions' children join the grid so the intro sits above the stage. */
+  :global(html.motion-ok) .captions {
+    display: contents;
+  }
+
+  :global(html.motion-ok) .intro {
+    grid-row: 1;
+    grid-column: 1;
+    padding-bottom: clamp(28px, 7vw, 48px);
+  }
+
+  :global(html.motion-ok) .stageCol {
+    display: block;
+    grid-row: 2 / 7;
+    grid-column: 1;
+    position: relative;
+    z-index: 2;
+    /* Edge to edge; the track itself lets taps through to the captions. */
+    margin-inline: calc(-1 * var(--pad));
+    pointer-events: none;
+  }
+
+  :global(html.motion-ok) .sticky {
+    position: sticky;
+    top: var(--sd-top);
+    height: var(--sd-stage);
+    background: var(--ink);
+    pointer-events: auto;
+  }
+
+  /* Soft edge where the captions slide under the stage. */
+  :global(html.motion-ok) .sticky::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 28px;
+    background: linear-gradient(#14181a, rgba(20, 24, 26, 0));
+    pointer-events: none;
+  }
+
+  :global(html.motion-ok) .root[data-ground="paper"] .sticky::after {
+    background: linear-gradient(#eaece7, rgba(234, 236, 231, 0));
+  }
+
+  /* While the lights come on the circle crosses this edge; an ink fade on
+     top of it would read as a shadow. */
+  :global(html.motion-ok) .root[data-lights] .sticky::after {
+    opacity: 0;
+  }
+
+  /* Each caption reaches the reading line as its part of the build starts
+     (the title leads the action), then scrolls on under the stage. */
+  :global(html.motion-ok) .beat {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-block: 20px 32px;
+    border-top: 0;
+  }
+
+  :global(html.motion-ok) .beat[data-beat="0"] {
+    grid-row: 3;
+    min-height: calc(var(--sd-run) * 0.25);
+  }
+
+  :global(html.motion-ok) .beat[data-beat="1"] {
+    grid-row: 4;
+    min-height: calc(var(--sd-run) * 0.3);
+  }
+
+  :global(html.motion-ok) .beat[data-beat="2"] {
+    grid-row: 5;
+    min-height: calc(var(--sd-run) * 0.17);
+  }
+
+  :global(html.motion-ok) .beat[data-beat="3"] {
+    grid-row: 6;
+    min-height: calc(var(--sd-run) * 0.28);
+  }
+
+  /* Each caption rises into the window, holds just under the stage for the
+     rest of its beat, and is pushed up under the stage by the beat's end as
+     the next one arrives, so the window is never empty. Pure CSS: the beat
+     boxes (and so the scrub mapping) stay as they are. */
+  :global(html.motion-ok) .copy {
+    position: sticky;
+    top: calc(var(--sd-top) + var(--sd-stage) + 8px);
+  }
+
+  /* A focused link never lands under the stage. */
+  :global(html.motion-ok) .beat a,
+  :global(html.motion-ok) .end a {
+    scroll-margin-top: calc(var(--sd-top) + var(--sd-stage) + 24px);
+  }
+
+  :global(html.motion-ok) .card {
+    display: none;
+  }
+
+  /* The end block sits on the lights-on paper layer, as on the desk. */
+  :global(html.motion-ok) .end {
+    grid-row: 7;
+    grid-column: 1;
+    background: transparent;
+    box-shadow: none;
+    clip-path: none;
+  }
+
+  :global(html.motion-ok) .root:not([data-ground="paper"]) .end {
+    --tx: #e3e6e0;
+    --tx2: #c0c6c2;
+    --meta: #9aa19d;
+    --acc: #cf8794;
+  }
+
+  /* Lights on: one viewport-sized paper layer behind the captions … */
+  :global(html.motion-ok) .paper {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  :global(html.motion-ok) .paperSticky {
+    position: sticky;
+    top: 0;
+    /* The extra reach still covers the bottom once the iOS toolbar has
+       slid away (the small viewport grows by up to ~110px). */
+    height: calc(100svh + 120px);
+    background: var(--paperC);
+    clip-path: circle(calc(var(--wipe, 0) * var(--wmax, 1200px)) at var(--wx, 50%) var(--wy, 40%));
+  }
+
+  /* … and the same circle on the stage, which hides the captions under it. */
+  :global(html.motion-ok) .stagePaper {
+    display: block;
+    position: absolute;
+    inset: 0;
+    background: var(--paperC);
+    clip-path: circle(calc(var(--wipe, 0) * var(--wmax, 1200px)) at var(--wx, 50%) var(--wy, 60%));
+    pointer-events: none;
+  }
+
+  /* Top right, as on the desk: the 3/4 view tips the pane's far corner down
+     and away there, so the numeral and the model share the stage. */
+  :global(html.motion-ok) .stageNum {
+    --num-size: clamp(3.5rem, 1.5rem + 8vw, 5.5rem);
+    top: 30px;
+    right: var(--pad);
+  }
+
+  :global(html.motion-ok) .model {
+    padding-top: calc(var(--sd-stage) * 0.2);
+  }
+
+  /* Sized by the stage height first (tablets, short phones), the width
+     second. The 3/4 view pushes the far edge right: nudge it back. */
+  :global(html.motion-ok) .pane {
+    width: min(82%, calc((var(--sd-stage) - 170px) * 1.5));
+    translate: -3% 0;
+  }
+
+  :global(html.motion-ok) .bloom {
+    top: 60%;
+    width: 100%;
+  }
+
+  :global(html.motion-ok) .previewChip {
+    left: var(--pad);
+    top: auto;
+    bottom: 14px;
+  }
+
+  /* The status badge sits opposite the numeral, clear of the pane. */
+  :global(html.motion-ok) .liveChip {
+    top: 34px;
+    left: var(--pad);
+    translate: none;
+  }
+}
+
+/* Fully lit: no circle at all, so the paper ground reaches every corner
+   whatever the layer's size or the iOS toolbar does after the wipe. */
+:global(html.motion-ok) .root[data-lit] .paperSticky,
+:global(html.motion-ok) .root[data-lit] .stagePaper {
+  clip-path: none;
+}
+
+/* ── Phones held sideways ("side"): two columns under the header ──────── */
+
+@media (max-width: 1023.98px) and (orientation: landscape) and (max-height: 600px) {
+  /* Between the header and the phone offer bar (56px + the home indicator). */
+  :global(html.motion-ok) .sticky {
+    top: calc(56px + env(safe-area-inset-top, 0px));
+    height: calc(100svh - 112px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+
+  :global(html.motion-ok) .intro {
+    min-height: 0;
+    padding-top: 96px;
+    padding-bottom: 24px;
+  }
+
+  :global(html.motion-ok) .title {
+    font-size: clamp(1.875rem, 1rem + 3vw, 2.5rem);
+  }
+
+  :global(html.motion-ok) .beat {
+    min-height: 90svh;
+    padding-block: 32px;
+  }
+
+  :global(html.motion-ok) .stageNum {
+    --num-size: clamp(2.5rem, 12svh, 3.75rem);
+    top: 28px;
+    right: 4px;
+  }
+
+  :global(html.motion-ok) .model {
+    padding-top: 28px;
+  }
+
+  :global(html.motion-ok) .pane {
+    width: min(82%, calc((100svh - 190px) * 1.45));
+  }
+
+  :global(html.motion-ok) .previewChip {
+    top: auto;
+    bottom: 12px;
+  }
+
+  :global(html.motion-ok) .liveChip {
+    top: auto;
+    bottom: 12px;
+  }
+}
+
+/* ── Compact progress (inside the stage, below 1024) ─────────────────── */
+
+.stagePaper,
+.progress {
+  display: none;
+}
+
+@media (max-width: 1023.98px) {
+  /* The red pen redraws every frame while it is scrubbed: no filter to
+     re-rasterise under it on a phone GPU. */
+  :global(html.motion-ok) .annotLive {
+    filter: none;
+  }
+
+  :global(html.motion-ok) .progress {
+    position: absolute;
+    z-index: 3;
+    top: 10px;
+    left: var(--pad);
+    right: var(--pad);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+    font-size: 0.75rem;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    pointer-events: none;
+  }
+}
+
+.progBar {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  overflow: hidden;
+  /* Seven segments with 3px gaps, like the rail. */
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 calc(100% / 7 - 3px), transparent calc(100% / 7 - 3px) calc(100% / 7));
+  mask: repeating-linear-gradient(90deg, #000 0 calc(100% / 7 - 3px), transparent calc(100% / 7 - 3px) calc(100% / 7));
+  background: var(--hair);
+  transition: background-color 300ms ease;
+}
+
+.progFill {
+  position: absolute;
+  inset: 0;
+  background: var(--acc);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: background-color 300ms ease;
+}
+
+.progLabel {
+  min-width: 6.5em;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--tx2);
+  transition: color 300ms ease;
+}
+
 /* ── Stage box and overlays ──────────────────────────────────────────── */
 
 .stageBox {
@@ -697,17 +1023,6 @@
   --grid: 0;
   --bwp: -0.06;
   --chromeLive: 0;
-  /* Stage sweeps: soft diagonal edges travelling from the top-left corner. */
-  --sweep2: linear-gradient(
-    134deg,
-    #000 calc(var(--sw2) * 100% - 1.4%),
-    transparent calc(var(--sw2) * 100% + 1.4%)
-  );
-  --sweep3: linear-gradient(
-    134deg,
-    #000 calc(var(--sw3) * 100% - 1.4%),
-    transparent calc(var(--sw3) * 100% + 1.4%)
-  );
   position: relative;
   display: grid;
   place-items: center;
@@ -751,6 +1066,23 @@
   position: relative;
   aspect-ratio: 1024 / 640;
   transform-style: preserve-3d;
+}
+
+/* Stage sweeps: soft diagonal edges travelling from the top-left corner.
+   Declared (and their --sw2 / --sw3 written) only on the two subtrees that
+   use them, so a sweep frame restyles the faces, not the whole model. */
+.base,
+.blocks {
+  --sweep2: linear-gradient(
+    134deg,
+    #000 calc(var(--sw2) * 100% - 1.4%),
+    transparent calc(var(--sw2) * 100% + 1.4%)
+  );
+  --sweep3: linear-gradient(
+    134deg,
+    #000 calc(var(--sw3) * 100% - 1.4%),
+    transparent calc(var(--sw3) * 100% + 1.4%)
+  );
 }
 
 .base {

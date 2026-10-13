@@ -45,7 +45,15 @@ export default function Ownership() {
     <section id="ownership" data-ground="ink" aria-labelledby="own-title" className={s.section}>
       <div className={s.inner}>
         <h2 id="own-title" className={s.h2}>
-          Your site. <span className={`sd-ink-weight ${s.rules}`}>Your rules.</span>
+          Your site.{" "}
+          <span className={`sd-ink-weight ${s.rules}`}>
+            Your rules.
+            {/* Holds the width of the heaviest weight, so the scroll-driven
+                weight gain never re-wraps the heading (no layout shift). */}
+            <span className={s.rulesSizer} aria-hidden="true">
+              Your rules.
+            </span>
+          </span>
         </h2>
 
         <FlipCard />

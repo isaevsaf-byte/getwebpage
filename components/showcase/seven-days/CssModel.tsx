@@ -94,6 +94,34 @@ const HOVER_LIFT = 6;
 /** Extrusion scale, as in the scene: depth units × 0.85 of the page width. */
 const DEPTH = 0.85;
 
+/**
+ * sketchVisibleChars() for a progress value, without re-deriving the brief
+ * text on every scroll frame: the full count is computed once per input.
+ */
+function visibleChars(
+  s: { input: ModelInput; totals: { input: ModelInput | null; brief: number; chrome: number } },
+  sketch: Parameters<typeof sketchVisibleChars>[0],
+  stage: 0 | 4,
+  t: number,
+): number {
+  const tot = s.totals;
+  if (tot.input !== s.input) {
+    tot.input = s.input;
+    tot.brief = sketchVisibleChars({ ...sketch, stage: 0, progress: 1 });
+    tot.chrome = sketchVisibleChars({ ...sketch, stage: 4, progress: 1 });
+  }
+  const p = Math.max(0, Math.min(1, t));
+  return Math.round(p * (stage === 0 ? tot.brief : tot.chrome));
+}
+
+/** Drops the written-value caches so the next apply() writes everything. */
+function forget(s: { lastTransform: string[]; sw2: string; sw3: string; vals: Record<string, string> }) {
+  s.lastTransform = [];
+  s.sw2 = "";
+  s.sw3 = "";
+  for (const k of Object.keys(s.vals)) s.vals[k] = "";
+}
+
 function fmt(n: number) {
   return Math.abs(n) < 1e-4 ? "0" : n.toFixed(2);
 }
@@ -109,6 +137,10 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
   const briefRef = useRef<HTMLCanvasElement>(null);
   const chromeRef = useRef<HTMLCanvasElement>(null);
   const sheenRef = useRef<HTMLSpanElement>(null);
+  const shadowRef = useRef<HTMLSpanElement>(null);
+  const baseRef = useRef<HTMLDivElement>(null);
+  const blocksRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<SVGSVGElement>(null);
   const blockEls = useRef<(HTMLDivElement | null)[]>([]);
   const wallT = useRef<(HTMLSpanElement | null)[]>([]);
   const sockEls = useRef<(HTMLSpanElement | null)[]>([]);
@@ -127,6 +159,8 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
     phase: "",
     briefChars: -1,
     chromeChars: -1,
+    /** Full character counts per input (the scrub only scales them). */
+    totals: { input: null as ModelInput | null, brief: 0, chrome: 0 },
     fontsOk: false,
     hover: new Map<SketchBlockId, { v: number }>(),
     hovered: null as SketchBlockId | null,
@@ -135,6 +169,8 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
     blocks,
     plan,
     lastTransform: [] as string[],
+    /** Last value written per element, so unchanged frames write nothing. */
+    vals: { pane: "", persp: "", shadow: "", img: "", grid: "", bwp: "", chrome: "", lid: "", lidO: "" },
   });
 
   /* ── Atlas: redraw on input change, debounced, never mid-scroll ───── */
@@ -153,6 +189,13 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
     const onScroll = () => {
       lastScroll = performance.now();
     };
+    // Far from the screen a texture swap costs nothing visible: no need to wait.
+    const nearScreen = () => {
+      const r = rootRef.current?.getBoundingClientRect();
+      if (!r) return true;
+      const vh = window.innerHeight;
+      return r.bottom > -vh && r.top < vh * 2;
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     const run = () => {
       if (cancelled) return;
@@ -166,7 +209,7 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
           // Swapping 36 textured layers costs a frame: only while the page is still.
           const commit = () => {
             if (cancelled) return;
-            if (performance.now() - lastScroll < 160) {
+            if (performance.now() - lastScroll < 160 && nearScreen()) {
               timer = window.setTimeout(commit, 180);
               return;
             }
@@ -187,9 +230,24 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
           /* the model simply stays on the previous atlas */
         });
     };
-    timer = window.setTimeout(run, urlsKey.current ? 120 : 0);
+    // The first atlas is drawn once the page has loaded and the main thread
+    // is idle, so it never competes with hydration and the hero on a phone.
+    let idle = 0;
+    const first = () => {
+      if (cancelled) return;
+      if (typeof window.requestIdleCallback === "function") {
+        idle = window.requestIdleCallback(run, { timeout: 2000 });
+      } else {
+        timer = window.setTimeout(run, 200);
+      }
+    };
+    if (urlsKey.current) timer = window.setTimeout(run, 120);
+    else if (document.readyState === "complete") first();
+    else window.addEventListener("load", first, { once: true });
     return () => {
       cancelled = true;
+      window.removeEventListener("load", first);
+      if (idle && typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(idle);
       window.clearTimeout(timer);
       window.removeEventListener("scroll", onScroll);
       revokeAtlas(pending);
@@ -217,7 +275,7 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
       progress: t,
       copy: inp.copy ?? undefined,
     };
-    const chars = sketchVisibleChars(sketch);
+    const chars = visibleChars(s, sketch, 0, t);
     if (!force && chars === s.briefChars) return;
     s.briefChars = chars;
     const ctx = c.getContext("2d");
@@ -244,7 +302,7 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
       progress: t,
       copy: inp.copy ?? undefined,
     };
-    const chars = sketchVisibleChars(sketch) + (t >= 1 ? 1000 : 0);
+    const chars = visibleChars(s, sketch, 4, t) + (t >= 1 ? 1000 : 0);
     if (!force && chars === s.chromeChars) return;
     s.chromeChars = chars;
     const ctx = c.getContext("2d");
@@ -314,11 +372,28 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
       // the squared-up pane still sits inside its column.
       const zoom = 1 + 0.32 * (Math.tan((30 * Math.PI) / 360) / Math.tan((store.fov * Math.PI) / 360) - 1);
       const rise = (1 - store.rise) * 0.42 * H;
-      pane.style.transform = `translate3d(0, ${fmt(rise)}px, 0) scale(${zoom.toFixed(4)}) rotateX(${fmt(
+      // Every per-frame value goes straight onto the one element that uses
+      // it, and only when it changed: a custom property on the root would
+      // restyle all ~100 nodes of the model on every scroll frame.
+      const v = s.vals;
+      const paneTf = `translate3d(0, ${fmt(rise)}px, 0) scale(${zoom.toFixed(4)}) rotateX(${fmt(
         -el,
       )}deg) rotateY(${fmt(-az)}deg)`;
-      root.style.setProperty("--persp", `${Math.round((H * 1.05) / Math.tan((store.fov * Math.PI) / 360))}px`);
-      root.style.setProperty("--rise", store.rise.toFixed(3));
+      if (paneTf !== v.pane) {
+        v.pane = paneTf;
+        pane.style.transform = paneTf;
+      }
+      const persp = `${Math.round((H * 1.05) / Math.tan((store.fov * Math.PI) / 360))}px`;
+      if (persp !== v.persp) {
+        v.persp = persp;
+        root.style.perspective = persp;
+      }
+      const shadow = shadowRef.current;
+      const so = (0.4 + store.rise * 0.5).toFixed(2);
+      if (shadow && so !== v.shadow) {
+        v.shadow = so;
+        shadow.style.opacity = so;
+      }
 
       // Phase flags (rare changes only).
       const phase = store.briefWipe <= 0 ? "brief" : p >= P.lidClosed ? "flat" : "blocks";
@@ -334,16 +409,38 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
       const sw3 = (-0.06 + 1.12 * Math.max(0, st - 2)).toFixed(4);
       if (sw2 !== s.sw2) {
         s.sw2 = sw2;
-        root.style.setProperty("--sw2", sw2);
+        baseRef.current?.style.setProperty("--sw2", sw2);
+        blocksRef.current?.style.setProperty("--sw2", sw2);
       }
       if (sw3 !== s.sw3) {
         s.sw3 = sw3;
-        root.style.setProperty("--sw3", sw3);
+        baseRef.current?.style.setProperty("--sw3", sw3);
+        blocksRef.current?.style.setProperty("--sw3", sw3);
       }
-      root.style.setProperty("--img", store.image.toFixed(3));
-      root.style.setProperty("--grid", store.grid.toFixed(3));
-      root.style.setProperty("--bwp", (-0.06 + 1.12 * store.briefWipe).toFixed(4));
-      root.style.setProperty("--chromeLive", p >= P.lidClosed || store.launchT > 0 ? "1" : "0");
+      const img = store.image.toFixed(3);
+      if (img !== v.img) {
+        v.img = img;
+        const i = s.plan.findIndex((b) => b.block.isImage);
+        blockEls.current[i]?.style.setProperty("--img", img);
+      }
+      const grid = store.grid.toFixed(3);
+      const gridEl = gridRef.current;
+      if (gridEl && grid !== v.grid) {
+        v.grid = grid;
+        gridEl.style.opacity = grid;
+      }
+      const bwp = (-0.06 + 1.12 * store.briefWipe).toFixed(4);
+      const brief = briefRef.current;
+      if (brief && bwp !== v.bwp) {
+        v.bwp = bwp;
+        brief.style.setProperty("--bwp", bwp);
+      }
+      const chromeOn = p >= P.lidClosed || store.launchT > 0 ? "1" : "0";
+      const chromeEl = chromeRef.current;
+      if (chromeEl && chromeOn !== v.chrome) {
+        v.chrome = chromeOn;
+        chromeEl.style.opacity = chromeOn;
+      }
 
       // The laminate sheet: hinged above the page, swings over, presses.
       const lid = lidAngle(p);
@@ -351,9 +448,17 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
       const lidOn = seg(p, P.lidOn, P.lidOn + 0.03);
       const lidEl = lidRef.current;
       if (lidEl) {
-        lidEl.style.opacity = lidOn.toFixed(3);
-        lidEl.style.visibility = lidOn > 0 ? "visible" : "hidden";
-        lidEl.style.transform = `rotateX(${fmt((lid * 180) / Math.PI)}deg) translateZ(1.5px)`;
+        const lo = lidOn.toFixed(3);
+        if (lo !== v.lidO) {
+          v.lidO = lo;
+          lidEl.style.opacity = lo;
+          lidEl.style.visibility = lidOn > 0 ? "visible" : "hidden";
+        }
+        const lt = `rotateX(${fmt((lid * 180) / Math.PI)}deg) translateZ(1.5px)`;
+        if (lt !== v.lid) {
+          v.lid = lt;
+          lidEl.style.transform = lt;
+        }
       }
       const hinge = HINGE_ABOVE * H;
 
@@ -412,7 +517,7 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
       sizeCanvases();
       drawBrief(true);
       drawChrome(true);
-      s.lastTransform = [];
+      forget(s);
       if (s.store) apply(s.store);
     };
     measure();
@@ -429,15 +534,11 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
     if (s.blocks !== blocks) {
       s.blocks = blocks;
       s.plan = plan;
-      s.lastTransform = [];
-      s.sw2 = "";
-      s.sw3 = "";
+      forget(s);
       sizeCanvases();
     }
     if (active && s.store) {
-      s.lastTransform = [];
-      s.sw2 = "";
-      s.sw3 = "";
+      forget(s);
       apply(s.store);
     }
   }, [input, active, blocks, plan, apply, sizeCanvases]);
@@ -596,15 +697,15 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
       aria-hidden="true"
     >
       <div ref={paneRef} className={styles.pane}>
-        <span className={styles.paneShadow} />
+        <span ref={shadowRef} className={styles.paneShadow} />
         <span className={styles.paneBody} />
         <div ref={screenRef} className={styles.screen}>
-          <div className={styles.base}>
+          <div ref={baseRef} className={styles.base}>
             <span className={styles.base1} />
             <span className={styles.base2} />
             <span className={styles.base3} />
           </div>
-          <svg className={styles.gridLines} viewBox="0 0 1024 640" preserveAspectRatio="none">
+          <svg ref={gridRef} className={styles.gridLines} viewBox="0 0 1024 640" preserveAspectRatio="none">
             {Array.from({ length: 13 }, (_, i) => {
               const x = 64 + (i * 896) / 12;
               return <line key={i} x1={x} x2={x} y1={-40} y2={680} />;
@@ -632,7 +733,7 @@ export default function CssModel({ ref, input, hostRef, onHover, active = true, 
             )}
           </div>
           <canvas ref={briefRef} className={styles.brief} />
-          <div className={styles.blocks}>
+          <div ref={blocksRef} className={styles.blocks}>
             {plan.map(({ id, block }, i) => (
               <div
                 key={id}

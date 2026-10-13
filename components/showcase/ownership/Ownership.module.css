@@ -44,8 +44,18 @@
 
 /* 'Your rules.' always takes its own line, as one unit. */
 .rules {
-  display: inline-block;
+  display: inline-grid;
   white-space: nowrap;
+}
+
+/* A zero-height copy at the final weight: the grid column is as wide as the
+   boldest frame of the weight animation from the first paint. */
+.rulesSizer {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-variation-settings: "wght" 700;
+  user-select: none;
 }
 
 /* ── Promises ─────────────────────────────────────────────────────── */
@@ -168,6 +178,8 @@
   transform-style: preserve-3d;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  /* Sideways swipes turn the card (FlipCard); vertical ones scroll. */
+  touch-action: pan-y pinch-zoom;
 }
 
 :global(html.motion-ok) .face {

@@ -2,6 +2,7 @@
  * Rendering tier: how much motion hardware this visitor gets.
  *
  *   'webgl'  — desktop, fine pointer, WebGL2, ≥4 cores, no Save-Data
+ *              (or any screen, opted in with ?gl=1 — see glOptIn below)
  *   'css3d'  — everyone else with motion allowed (phones, tablets, weak GPUs)
  *   'static' — reduced motion, no JS, and the server render
  *
@@ -19,6 +20,7 @@ import * as React from "react";
 export type Tier = "webgl" | "css3d" | "static";
 
 const DOWNGRADE_KEY = "gwp:tier-downgrade";
+const GL_KEY = "gwp:gl";
 const TIER_EVENT = "gwp:tier";
 const Q_REDUCE = "(prefers-reduced-motion: reduce)";
 const Q_FINE_DESKTOP = "(min-width:1024px) and (hover:hover) and (pointer:fine)";
@@ -73,6 +75,24 @@ function downgraded(): boolean {
   }
 }
 
+/**
+ * Experiment, OFF by default: `?gl=1` opts this browser session into the
+ * WebGL tier on phones and tablets too (`?gl=0` opts back out). The flag
+ * lives in sessionStorage, so it survives in-site navigation but never a
+ * new session. Everything else still applies: WebGL2 without a performance
+ * caveat, ≥4 cores, no Save-Data, not downgraded by the frame-rate probe.
+ */
+function glOptIn(): boolean {
+  try {
+    const q = new URLSearchParams(window.location.search).get("gl");
+    if (q === "1") sessionStorage.setItem(GL_KEY, "1");
+    else if (q === "0") sessionStorage.removeItem(GL_KEY);
+    return sessionStorage.getItem(GL_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 /** Creates a throwaway WebGL2 context and releases it straight away. */
 function hasWebGL2(): boolean {
   try {
@@ -90,8 +110,10 @@ function hasWebGL2(): boolean {
 
 function computeTier(): Tier {
   if (matches(Q_REDUCE)) return "static";
+  // Read the URL on every visit so ?gl=0 also clears the flag on desktops.
+  const optIn = glOptIn();
   const webgl =
-    matches(Q_FINE_DESKTOP) &&
+    (matches(Q_FINE_DESKTOP) || optIn) &&
     !saveData() &&
     (navigator.hardwareConcurrency ?? 0) >= 4 &&
     !downgraded() &&

@@ -564,13 +564,34 @@ function setupFlow(root: HTMLElement, desktop: boolean): () => void {
       const e2 = fan.querySelectorAll('[data-fan-edge="2"]');
       const n1 = fan.querySelectorAll('[data-fan-node="1"]');
       const n2 = fan.querySelectorAll('[data-fan-node="2"]');
+      const p1 = fan.querySelectorAll('[data-fan-pulse="1"]');
+      const p2 = fan.querySelectorAll('[data-fan-pulse="2"]');
       gsap.set([...e1, ...e2], { drawSVG: "0% 0%" });
       gsap.set([...n1, ...n2], { opacity: 0.12 });
       tl.to(e1, { drawSVG: "0% 100%", duration: 0.5, ease: EASE.inOut, stagger: { amount: 0.18 } }, 0);
       tl.to(n1, { opacity: 1, duration: 0.25, ease: "none", stagger: { amount: 0.16 } }, 0.38);
+      // The work arrives: a run of light travels each new edge, top to bottom.
+      const pulse = (els: NodeListOf<Element>, at: number) => {
+        if (!els.length) return;
+        tl.fromTo(
+          els,
+          { drawSVG: "0% 0%", opacity: 1 },
+          {
+            keyframes: { drawSVG: ["0% 0%", "0% 34%", "66% 100%", "100% 100%"], easeEach: "none" },
+            duration: 0.62,
+            ease: EASE.inOut,
+            stagger: { amount: 0.16 },
+            immediateRender: false,
+          },
+          at,
+        );
+        tl.set(els, { opacity: 0 }, at + 0.8);
+      };
+      pulse(p1, 0.28);
       if (e2.length) {
         tl.to(e2, { drawSVG: "0% 100%", duration: 0.42, ease: EASE.inOut, stagger: { amount: 0.14 } }, 0.62);
         tl.to(n2, { opacity: 1, duration: 0.25, ease: "none" }, 0.98);
+        pulse(p2, 0.86);
       }
     }
     row.setAttribute("data-off", "");
@@ -580,28 +601,44 @@ function setupFlow(root: HTMLElement, desktop: boolean): () => void {
       once: true,
       onEnter: () => {
         row.removeAttribute("data-off");
+        row.setAttribute("data-ping", "");
         tl.play();
         // The newest row types; anything still typing above just completes.
         tw.flush();
         tw.add(jobs);
       },
     });
-    cleanups.push(() => row.removeAttribute("data-off"));
+    cleanups.push(() => {
+      row.removeAttribute("data-off");
+      row.removeAttribute("data-ping");
+    });
   }
 
-  /* The spine fills with the scroll. */
+  /* The spine fills with the scroll, a bead of light riding its tip. */
   const spine = root.querySelector<HTMLElement>("[data-spine]");
+  const head = root.querySelector<HTMLElement>("[data-spine-head]");
   const timeline = root.querySelector<HTMLElement>("[data-timeline]");
   if (spine && timeline) {
-    gsap.fromTo(
-      spine,
-      { scaleY: 0 },
-      {
-        scaleY: 1,
-        ease: "none",
-        scrollTrigger: { trigger: timeline, start: "top 78%", end: "bottom 70%", scrub: true },
+    const tl = gsap.timeline({
+      defaults: { ease: "none" },
+      scrollTrigger: {
+        trigger: timeline,
+        start: "top 78%",
+        end: "bottom 70%",
+        scrub: true,
+        invalidateOnRefresh: true,
+        onToggle: (self) => {
+          if (head) head.style.willChange = self.isActive ? "transform" : "";
+        },
       },
-    );
+    });
+    tl.fromTo(spine, { scaleY: 0 }, { scaleY: 1 }, 0);
+    if (head) {
+      const track = head.parentElement ?? spine;
+      tl.fromTo(head, { y: 0 }, { y: () => track.offsetHeight }, 0);
+      timeline.setAttribute("data-flow", "");
+      cleanups.push(() => timeline.removeAttribute("data-flow"));
+    }
   }
 
   /* Meters roll up once. */

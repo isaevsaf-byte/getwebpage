@@ -8,7 +8,9 @@
  * Desktop (≥1024px, fine pointer — html.fine-desktop): rows on the left, a
  * sticky pane on the right. One row is active at a time (scroll, hover or
  * keyboard focus). Phones, tablets and no-JS: a stack of cards, each with its
- * phone capture in a 4:3 pane. Reduced motion: no scrub, instant swaps.
+ * phone capture in a 4:3 pane. Phones with motion (<768px): the cards pile
+ * into a sticky deck, and each site scrolls in its glass while its card is on
+ * top (real-sites/useCardDeck). Reduced motion: no scrub, instant swaps.
  */
 
 import Image from "next/image";
@@ -19,6 +21,7 @@ import {
   useRef,
   useState,
   type FocusEvent as ReactFocusEvent,
+  type CSSProperties,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -33,7 +36,14 @@ import { useVisitor } from "@/lib/showcase/visitor";
 import { track } from "@/lib/showcase/analytics";
 import SiteStage from "./real-sites/SiteStage";
 import NextSketch from "./real-sites/NextSketch";
-import { NEXT_INDEX, PANE_TILT, isStageLayout } from "./real-sites/sites";
+import {
+  NEXT_INDEX,
+  PANE_TILT,
+  PHONE_FRAC,
+  PHONE_TRAVEL,
+  isStageLayout,
+} from "./real-sites/sites";
+import { useCardDeck } from "./real-sites/useCardDeck";
 import styles from "./real-sites/RealSites.module.css";
 
 const ROW_COUNT = SITES.length + 1;
@@ -80,6 +90,7 @@ export default function RealSites() {
   const visitor = useVisitor();
   const scrollTo = useScrollTo();
   const active = hover?.i ?? scrollIdx;
+  useCardDeck(rootRef);
 
   const setHover = useCallback((next: Hover) => {
     hoverRef.current = next;
@@ -414,8 +425,10 @@ export default function RealSites() {
                   data-row={i}
                   data-active={active === i ? "" : undefined}
                   className={styles.row}
+                  style={{ "--i": i } as CSSProperties}
                   onPointerMove={onRowPointerMove}
                 >
+                  {i > 0 ? <span className={styles.deckShade} data-shade="" aria-hidden="true" /> : null}
                   <span className={styles.landing} data-landing="" tabIndex={-1} />
                   <a
                     href={site.url}
@@ -423,6 +436,7 @@ export default function RealSites() {
                     rel="noopener"
                     aria-label={`Open ${site.domain} (opens in a new tab)`}
                     className={styles.link}
+                    data-deck-card=""
                     onClick={() => track("site_opened", { slug: site.slug })}
                     onAuxClick={() => track("site_opened", { slug: site.slug })}
                     onFocus={onRowFocus}
@@ -436,7 +450,11 @@ export default function RealSites() {
                         aspect="4/3"
                         className={styles.cardPaneInner}
                       >
-                        <div className={styles.phoneShot}>
+                        <div
+                          className={styles.phoneShot}
+                          data-card-shot=""
+                          data-travel={PHONE_TRAVEL[site.slug]}
+                        >
                           <Image
                             src={site.mobile}
                             alt=""
@@ -446,6 +464,16 @@ export default function RealSites() {
                             className={styles.phoneImg}
                           />
                         </div>
+                        <span className={`${styles.scrollbar} ${styles.cardBar}`} aria-hidden="true">
+                          <span
+                            className={styles.scrollThumb}
+                            data-card-thumb=""
+                            style={{ height: `${(PHONE_FRAC * 100).toFixed(2)}%` }}
+                          />
+                        </span>
+                        <span className={styles.sweep} aria-hidden="true">
+                          <span className={styles.sweepBar} data-card-sweep="" />
+                        </span>
                       </CssPane>
                     </div>
                     <Reveal className={styles.caption} selector="[data-rv]" stagger={0.05}>
@@ -476,11 +504,20 @@ export default function RealSites() {
                         </span>
                         <span className={styles.open}>
                           <span className={styles.openText}>Open {site.domain}</span>
-                          <span aria-hidden="true">↗</span>
+                          {/* An SVG, not "↗": iOS draws that glyph as a blue emoji. */}
+                          <svg
+                            className={styles.openArrow}
+                            viewBox="0 0 12 12"
+                            aria-hidden="true"
+                            focusable="false"
+                          >
+                            <path d="M3 9 9 3M4.25 3H9v4.75" />
+                          </svg>
                         </span>
                       </span>
                     </Reveal>
                   </a>
+                  <span className={styles.deckWash} data-wash="" aria-hidden="true" />
                 </li>
               ))}
 
@@ -491,10 +528,12 @@ export default function RealSites() {
                 data-row={NEXT_INDEX}
                 data-active={active === NEXT_INDEX ? "" : undefined}
                 className={`${styles.row} ${styles.rowNext}`}
+                style={{ "--i": NEXT_INDEX } as CSSProperties}
                 onPointerMove={onRowPointerMove}
               >
+                <span className={styles.deckShade} data-shade="" aria-hidden="true" />
                 <span className={styles.landing} data-landing="" tabIndex={-1} />
-                <div className={styles.nextCard}>
+                <div className={styles.nextCard} data-deck-card="">
                   <div className={`${styles.cardPane} sd-clip-reveal`} aria-hidden="true">
                     <CssPane
                       domain={visitor.domain}
@@ -504,6 +543,9 @@ export default function RealSites() {
                       className={styles.cardPaneInner}
                     >
                       <NextSketch layout="mobile" />
+                      <span className={styles.sweep}>
+                        <span className={styles.sweepBar} data-card-sweep="" />
+                      </span>
                     </CssPane>
                   </div>
                   <Reveal className={styles.caption} selector="[data-rv]" stagger={0.05}>
@@ -529,6 +571,7 @@ export default function RealSites() {
                     </span>
                   </Reveal>
                 </div>
+                <span className={styles.deckWash} data-wash="" aria-hidden="true" />
               </li>
             </ol>
 

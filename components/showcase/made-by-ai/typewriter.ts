@@ -152,6 +152,10 @@ export class Typewriter {
   }
 
   private render(j: Live) {
+    // Read before writing: the caret is placed from the layout the browser
+    // already has (one frame behind the text, invisible at typing speed), so
+    // typing never forces a synchronous reflow mid-frame.
+    this.follow();
     const left = j.text.length - this.shown;
     const n = Math.min(2, left);
     let noise = "";
@@ -162,7 +166,6 @@ export class Typewriter {
     j.typed.data = j.text.slice(0, this.shown) + noise;
     j.rest.textContent = j.text.slice(this.shown + n);
     if (this.mark.parentNode !== j.el || this.mark.nextSibling !== j.rest) j.el.insertBefore(this.mark, j.rest);
-    this.follow();
   }
 
   private tick = (_time: number, deltaMs: number) => {

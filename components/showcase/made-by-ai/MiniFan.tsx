@@ -17,14 +17,24 @@ export default function MiniFan({ phase }: { phase: number }) {
       data-fan=""
     >
       {fan.edges.map((e) => (
+        // No vector-effect on drawn paths: with non-scaling-stroke DrawSVG
+        // re-measures the path (getTotalLength + getScreenCTM) on every frame.
+        // The fan renders at ~1:1 (max-width 320px = its viewBox), so the
+        // stroke looks the same either way.
         <path
           key={e.id}
           className={e.dashed ? s.fanEdgeDashed : s.fanEdge}
           d={e.d}
           data-fan-edge={e.row}
-          vectorEffect="non-scaling-stroke"
         />
       ))}
+      {/* Pulses: a bright run that travels each solid edge once it is drawn
+          (flow motion only; invisible until JS sets its dash). */}
+      {fan.edges
+        .filter((e) => !e.dashed)
+        .map((e) => (
+          <path key={`${e.id}-pulse`} className={s.fanPulse} d={e.d} data-fan-pulse={e.row} />
+        ))}
       {fan.nodes.map((n) => (
         <FanGlyph key={`${n.id}-${n.row}`} n={n} />
       ))}

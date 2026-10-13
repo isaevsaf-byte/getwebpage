@@ -42,16 +42,19 @@ export default function FinalCall() {
       const title = titleRef.current;
       if (!title) return;
 
-      const mm = motionMedia(({ ok }) => {
+      const mm = motionMedia(({ ok, desktop, fine }) => {
         // Already revealed: a breakpoint change must not hide it again.
         if (revealed.current) return;
         const lines = gsap.utils.toArray<HTMLElement>("[data-line]", title);
         const swash = title.querySelector<SVGSVGElement>("[data-swash]");
         const scrollTrigger = { trigger: title, start: "top 85%", once: true };
+        // Phones and touch screens: the stroke is drawn by the scroll itself,
+        // left to right as the promise rises up the screen (and back).
+        const penOnScroll = ok && !(desktop && fine);
         const onComplete = () => {
           revealed.current = true;
           gsap.set(lines, { clearProps: "transform,willChange" });
-          if (swash) gsap.set(swash, { clearProps: "clipPath" });
+          if (swash && !penOnScroll) gsap.set(swash, { clearProps: "clipPath" });
         };
 
         if (ok) {
@@ -63,7 +66,17 @@ export default function FinalCall() {
             onComplete,
           });
           tl.from(lines, { yPercent: 118, duration: 0.8, stagger: 0.06, ease: "studio-out" }, 0);
-          if (swash) {
+          if (swash && penOnScroll) {
+            gsap.fromTo(
+              swash,
+              { clipPath: "inset(-40% 100% -40% 0%)" },
+              {
+                clipPath: "inset(-40% 0% -40% 0%)",
+                ease: "none",
+                scrollTrigger: { trigger: swash, start: "top 80%", end: "top 50%", scrub: true },
+              },
+            );
+          } else if (swash) {
             tl.fromTo(
               swash,
               { clipPath: "inset(-40% 100% -40% 0%)" },

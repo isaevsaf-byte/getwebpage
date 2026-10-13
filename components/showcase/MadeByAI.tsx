@@ -129,6 +129,7 @@ export default function MadeByAI() {
           <div className={s.timeline} data-timeline="">
             <span className={s.spine} aria-hidden="true">
               <span className={s.spineLit} data-spine="" />
+              <span className={s.spineHead} data-spine-head="" />
             </span>
             <ol className={s.phases}>
               {PHASES.map((p, i) => (

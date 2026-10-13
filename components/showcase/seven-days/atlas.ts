@@ -12,11 +12,12 @@
  */
 import {
   ATLAS_QUADRANT,
-  drawSketchAtlas,
+  drawSketch,
   ensureSketchFonts,
   getSketchLayout,
   type SketchCopy,
   type SketchLayoutKind,
+  type SketchStage,
 } from "@/lib/showcase/sketch";
 import type { Sector } from "@/lib/showcase/visitor";
 
@@ -38,6 +39,13 @@ export interface AtlasUrls {
 export function atlasKey(i: AtlasInput): string {
   const c = i.copy ? JSON.stringify(i.copy) : "";
   return [i.layout ?? "desktop", i.sector, i.name, i.display, i.domain, c].join("|");
+}
+
+/** Gives the main thread back between chunks of drawing. */
+function yieldToMain(): Promise<void> {
+  const sched = (globalThis as { scheduler?: { yield?: () => Promise<void> } }).scheduler;
+  if (sched?.yield) return sched.yield();
+  return new Promise((resolve) => window.setTimeout(resolve, 0));
 }
 
 function toUrl(canvas: HTMLCanvasElement): Promise<string> {
@@ -72,19 +80,35 @@ async function decoded(url: string): Promise<void> {
 export async function buildAtlasUrls(input: AtlasInput): Promise<AtlasUrls> {
   const layout: SketchLayoutKind = input.layout ?? "desktop";
   await ensureSketchFonts(input.display);
+  const q = ATLAS_QUADRANT[layout];
   const canvas = document.createElement("canvas");
-  drawSketchAtlas(canvas, {
-    name: input.name,
-    display: input.display,
-    domain: input.domain,
-    sector: input.sector,
-    layout,
-    copy: input.copy ?? undefined,
-  });
+  canvas.width = q.w * 2;
+  canvas.height = q.h * 2;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("no 2d context");
+  // The same 2×2 layout as drawSketchAtlas (stage n at col (n-1)%2, row
+  // floor((n-1)/2)), one quadrant per task, so a phone never sees one long
+  // task for the whole atlas.
+  for (let stage = 1 as SketchStage; stage <= 4; stage = (stage + 1) as SketchStage) {
+    const i = stage - 1;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, (i % 2) * q.w, Math.floor(i / 2) * q.h);
+    drawSketch(ctx, q.w, q.h, {
+      name: input.name,
+      display: input.display,
+      domain: input.domain,
+      sector: input.sector,
+      layout,
+      copy: input.copy ?? undefined,
+      stage,
+      progress: 1,
+    });
+    ctx.restore();
+    await yieldToMain();
+  }
 
   // Base: a copy with every block (except the address bar) filled with the
   // colour just outside its top-left corner.
-  const q = ATLAS_QUADRANT[layout];
   const base = document.createElement("canvas");
   base.width = canvas.width;
   base.height = canvas.height;

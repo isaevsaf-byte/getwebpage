@@ -15,7 +15,8 @@
  * which is never true during hydration.
  */
 
-import type { CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { prefersReducedMotion } from "@/lib/motion/gsap";
 import CssPane from "@/components/showcase/primitives/CssPane";
 import { SECTORS as SKETCH_SECTORS } from "@/lib/showcase/sketch";
 import { useVisitor } from "@/lib/showcase/visitor";
@@ -50,8 +51,43 @@ export default function PersonalStrip({ tier }: Props) {
   const pages = pagesOf(tier);
   const sheetBg = (SKETCH_SECTORS[visitor.sector] ?? SKETCH_SECTORS.salon).palette.bg;
 
+  // The deck arrives gathered behind the pane and fans out to the tier's
+  // page count once it is well on screen (CSS transitions do the fan). Only
+  // when it mounts below the fold with motion allowed; otherwise it is
+  // simply fanned.
+  const ref = useRef<HTMLDivElement>(null);
+  const [folded, setFolded] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || prefersReducedMotion() || typeof IntersectionObserver === "undefined") return;
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.8) return;
+    let io: IntersectionObserver | null = null;
+    const id = requestAnimationFrame(() => {
+      setFolded(true);
+      io = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          setFolded(false);
+          io?.disconnect();
+        },
+        { rootMargin: "0px 0px -30% 0px" },
+      );
+      io.observe(el);
+    });
+    return () => {
+      cancelAnimationFrame(id);
+      io?.disconnect();
+    };
+  }, []);
+
   return (
-    <div className={styles.strip} data-pages={pages} data-long={visitor.graphemes > 18 ? "" : undefined}>
+    <div
+      ref={ref}
+      className={styles.strip}
+      data-pages={pages}
+      data-long={visitor.graphemes > 18 ? "" : undefined}
+      data-folded={folded ? "" : undefined}
+    >
       <div className={styles.deck} aria-hidden="true">
         <div className={styles.deckInner} style={{ "--sheet-bg": sheetBg } as CSSProperties}>
           {Array.from({ length: MAX_SHEETS }, (_, i) => {

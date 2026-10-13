@@ -30,6 +30,8 @@ import styles from "./pricing/Pricing.module.css";
 type LoadingState = TierId | null;
 
 const NAV_FORWARD = ["nav-forward"];
+/** Mirrors the one-column grid in Pricing.module.css. */
+const SINGLE_COLUMN = "(max-width: 959px)";
 const RESTING_PREVIEW: TierId = "standard";
 
 /**
@@ -45,6 +47,8 @@ export default function Pricing({ headingLevel = "h2" }: { headingLevel?: "h1" |
   const rootRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLOListElement>(null);
   const revealed = useRef(false);
+  /** Slots already settled in the one-column reveal (keyed by tier id). */
+  const settled = useRef(new Set<string>());
 
   const [loading, setLoading] = useState<LoadingState>(null);
   const [checkoutError, setCheckoutError] = useState<TierId | null>(null);
@@ -115,6 +119,53 @@ export default function Pricing({ headingLevel = "h2" }: { headingLevel?: "h1" |
           return;
         }
 
+        // One column (phones, small tablets): the cards are a screen apart, so
+        // one grid-wide trigger would reveal the lower two off screen. Each card
+        // settles on its own as it arrives — it swings up from a slight
+        // backward tilt (hinged at its top edge) — then its day strip fills.
+        if (window.matchMedia(SINGLE_COLUMN).matches) {
+          const offs: (() => void)[] = [];
+          slots.forEach((slot) => {
+            if (settled.current.has(slot.dataset.slot ?? "")) return;
+            const cells = slot.querySelectorAll<HTMLElement>("[data-fill]");
+            const tl = gsap.timeline({
+              scrollTrigger: {
+                trigger: slot,
+                start: "top 90%",
+                once: true,
+                onEnter: () => {
+                  slot.style.willChange = "transform, opacity";
+                },
+              },
+              onComplete: () => {
+                settled.current.add(slot.dataset.slot ?? "");
+                slot.style.willChange = "";
+                gsap.set(slot, { clearProps: "transform,opacity" });
+                gsap.set(cells, { clearProps: "transform" });
+                if (settled.current.size >= slots.length) revealed.current = true;
+              },
+            });
+            tl.from(
+              slot,
+              {
+                opacity: 0,
+                y: 64,
+                rotationX: 14,
+                transformPerspective: 1100,
+                transformOrigin: "50% 0%",
+                duration: 0.95,
+                ease: "studio-out",
+              },
+              0,
+            );
+            if (cells.length) {
+              tl.from(cells, { scaleX: 0, duration: 0.3, ease: "studio-out", stagger: 0.05 }, 0.42);
+            }
+            offs.push(finishOnFocus(slot, tl));
+          });
+          return () => offs.forEach((f) => f());
+        }
+
         // Opacity only (never autoAlpha): the plan buttons stay tabbable and
         // in the accessibility tree before the cards land.
         const tl = gsap.timeline({ scrollTrigger, onComplete });
@@ -167,7 +218,7 @@ export default function Pricing({ headingLevel = "h2" }: { headingLevel?: "h1" |
           aria-label="Plans"
         >
           {TIERS.map((tier) => (
-            <li key={tier.id} className={styles.slot} data-slot="">
+            <li key={tier.id} className={styles.slot} data-slot={tier.id}>
               <TierCard
                 tier={tier}
                 loading={loading === tier.id}

@@ -214,6 +214,17 @@
   transition: color 180ms ease;
 }
 
+.openArrow {
+  flex: none;
+  width: 0.8em;
+  height: 0.8em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .openText {
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -320,6 +331,12 @@
   left: 0;
   top: 0;
   display: block;
+}
+
+/* Blank until the first draw sizes and places it, so that first draw never
+   registers as a layout shift (e.g. arriving straight at #made-by-ai). */
+.sketchBox:not([data-drawn]) .sketchCanvas {
+  visibility: hidden;
 }
 
 /* ── CTA line ───────────────────────────────────────────────────── */
@@ -470,6 +487,92 @@
   object-position: top;
   border-radius: 3px;
   box-shadow: 0 0 0 1px rgba(20, 24, 26, 0.12);
+}
+
+/* ── Phones with motion: the deck ───────────────────────────────── */
+
+/* Deck furniture: inert outside the deck. */
+.deckWash,
+.deckShade {
+  display: none;
+}
+
+/* The card scrollbar sits a little further in than the desktop one. */
+.cardBar {
+  top: 5px;
+  right: 4px;
+  bottom: 5px;
+  width: 3px;
+}
+
+/* Under 768px with motion allowed (html.motion-ok is set before first
+   paint), every row is sticky, each 8px lower than the one before, so the
+   cards pile up into a deck as you scroll: the card on top holds still while
+   its site scrolls inside the glass (useCardDeck), then the next one slides
+   over it. Flow height is unchanged — sticky never moves layout. A card too
+   tall for the screen sticks higher, so its link never hides under the
+   offer bar (--rs-h is its measured height). The list's ::after gives the
+   last card a short hold before the whole deck leaves together. */
+@media (max-width: 767.98px) and (prefers-reduced-motion: no-preference) {
+  :global(html.motion-ok) .row {
+    position: sticky;
+    /* Fixed fallback first, for engines without svh. */
+    top: calc(68px + var(--i, 0) * 8px);
+    top: calc(min(68px, 100svh - var(--rs-h, 0px) - 76px) + var(--i, 0) * 8px);
+    background: #eaece7;
+  }
+
+  :global(html.motion-ok) .rows::after {
+    content: "";
+    height: 180px;
+    height: 22svh;
+    margin-top: calc(-1 * clamp(56px, 9vw, 80px));
+  }
+
+  :global(html.motion-ok) .link,
+  :global(html.motion-ok) .nextCard {
+    background: #eaece7;
+  }
+
+  /* The clip reveal is replaced by the deck's own arrival (tilt + sheen). */
+  :global(html.motion-ok) .cardPane {
+    animation: none;
+  }
+
+  :global(html.motion-ok) .phoneShot {
+    animation: none;
+  }
+
+  /* A paper wash that rises as the next card covers this one. */
+  :global(html.motion-ok) .deckWash {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: #eaece7;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* The soft shadow the arriving card casts on the one beneath. */
+  :global(html.motion-ok) .deckShade {
+    display: block;
+    position: absolute;
+    left: 2%;
+    right: 2%;
+    bottom: 100%;
+    height: 22px;
+    z-index: 3;
+    background: linear-gradient(to top, rgba(20, 24, 26, 0.16), rgba(20, 24, 26, 0));
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Light sweep on the card glass (played when a card lands). */
+  :global(html.motion-ok) .cardPane .sweepBar {
+    width: 60%;
+  }
 }
 
 /* ── Desktop stage (sticky glass pane) ──────────────────────────── */

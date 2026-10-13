@@ -10,7 +10,10 @@
  * hero/contract.ts (HeroSceneProps).
  *
  * Mobile (<1024): HeroFanMobile — one draggable CSS-3D sketch pane with two
- * real-site cards behind it in Z. No three.js is ever downloaded there.
+ * real-site cards behind it in Z, dealt by scroll. three.js is never
+ * downloaded there unless the visitor opted into the WebGL experiment
+ * (?gl=1, lib/showcase/tier.ts): then the same ThreeStage loads HeroScene's
+ * "stack" layout over that poster, in the poster's own camera.
  */
 
 import Image from "next/image";
@@ -27,7 +30,7 @@ import {
 import ThreeStage from "@/components/three/ThreeStage";
 import CssPane from "@/components/showcase/primitives/CssPane";
 import { useScrollTo } from "@/components/motion/SmoothScroll";
-import { gsap, motionMedia, prefersReducedMotion, useGSAP } from "@/lib/motion/gsap";
+import { gsap, motionMedia, prefersReducedMotion, ScrollTrigger, useGSAP } from "@/lib/motion/gsap";
 import { useTier } from "@/lib/showcase/tier";
 import { FLAGS, getSite, type SiteSlug } from "@/lib/showcase/content";
 import type { HeroPaneSlug, HeroSceneProps } from "./contract";
@@ -35,6 +38,7 @@ import SketchScreen from "./SketchScreen";
 import AiDraft from "./AiDraft";
 import { useAiForVisitor } from "./AiButton";
 import {
+  fireSweep,
   focusNameInput,
   setStageLive,
   useHeroScroll,
@@ -429,6 +433,55 @@ const MOBILE_BACK: { slug: "beautasy" | "silkbees"; cls: string }[] = [
   { slug: "silkbees", cls: styles.mMid },
 ];
 
+/**
+ * The stack's scroll choreography, for browsers without CSS view timelines
+ * (the CSS in HeroFan.module.css is the primary path and mirrors these
+ * numbers — keep them in sync). "in" deals the deck as the stack rises into
+ * view; "out" tips the rig toward the reader as it leaves.
+ */
+const DECK = {
+  front: { from: { y: 72, z: -40, rotationX: 22 }, to: { y: 0, z: 0, rotationX: 0 } },
+  mid: {
+    from: { xPercent: 24, yPercent: -16, z: -130, rotation: 7, rotationY: -14 },
+    to: { xPercent: 6, yPercent: -8, z: -90, rotation: 0, rotationY: -8 },
+  },
+  back: {
+    from: { xPercent: -24, yPercent: -22, z: -190, rotation: -8, rotationY: 14 },
+    to: { xPercent: -6, yPercent: -15, z: -170, rotation: 0, rotationY: 8 },
+  },
+  rigOut: -10,
+} as const;
+
+const HINT_KEY = "gwp:drag-hint";
+/** Matches CssPane's drag gain, so the hint turns the pane as a real drag would. */
+const HINT_DEG_PER_PX = 0.12;
+const IN_OUT = "cubic-bezier(0.76, 0, 0.24, 1)";
+const OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
+
+function hintSeen(): boolean {
+  try {
+    return sessionStorage.getItem(HINT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markHintSeen(): void {
+  try {
+    sessionStorage.setItem(HINT_KEY, "1");
+  } catch {
+    // Private mode: the hint may show again next visit; harmless.
+  }
+}
+
+function supportsViewTimeline(): boolean {
+  try {
+    return CSS.supports("animation-timeline: view()") && CSS.supports("animation-range: cover 0% cover 50%");
+  } catch {
+    return false;
+  }
+}
+
 /** The two real-site cards behind the mobile sketch. Static: never re-renders. */
 const MobileBack = memo(function MobileBack() {
   return (
@@ -437,7 +490,7 @@ const MobileBack = memo(function MobileBack() {
         const site = getSite(slug);
         if (!site) return null;
         return (
-          <div key={slug} className={cx(styles.mCard, cls)} aria-hidden="true">
+          <div key={slug} className={cx(styles.mCard, cls)} data-m-card={slug} aria-hidden="true">
             <CssPane domain={site.domain} secure className={styles.paneRoot}>
               <Image
                 src={site.pane}
@@ -456,29 +509,222 @@ const MobileBack = memo(function MobileBack() {
   );
 });
 
+/**
+ * Phones (<1024, motion allowed):
+ * - the deck deals itself as it scrolls into view and tips toward the reader
+ *   as it leaves (CSS view timelines on the compositor; GSAP scrub where they
+ *   are missing). Transform only, 1:1 with the finger, nothing pinned;
+ * - when it lands, one light sweep crosses the sketch, then — once per
+ *   session — a fingertip nudges the pane so people find out it turns.
+ */
+function useMobileDeck(wrapRef: React.RefObject<HTMLDivElement | null>) {
+  useGSAP(
+    () => {
+      const mm = motionMedia(({ ok, desktop }) => {
+        const wrap = wrapRef.current;
+        if (!ok || desktop || !wrap) return;
+        const scene = wrap.querySelector<HTMLElement>("[data-hero-mobile-pane]");
+        const rig = wrap.querySelector<HTMLElement>("[data-m-rig]");
+        const front = wrap.querySelector<HTMLElement>("[data-m-front]");
+        const hintDot = wrap.querySelector<HTMLElement>("[data-m-hint]");
+        const mid = wrap.querySelector<HTMLElement>('[data-m-card="silkbees"]');
+        const back = wrap.querySelector<HTMLElement>('[data-m-card="beautasy"]');
+        if (!scene || !rig || !front || !mid || !back) return;
+
+        if (!supportsViewTimeline()) {
+          const layers = [front, mid, back, rig];
+          const hint = (on: boolean) => {
+            for (const el of layers) el.style.willChange = on ? "transform" : "";
+          };
+          const deal = gsap.timeline({
+            defaults: { ease: "none", duration: 1 },
+            scrollTrigger: {
+              trigger: scene,
+              start: "clamp(top bottom)",
+              end: "center 56%",
+              scrub: true,
+              onToggle: (self) => hint(self.isActive),
+            },
+          });
+          deal.fromTo(front, DECK.front.from, DECK.front.to, 0);
+          deal.fromTo(mid, DECK.mid.from, DECK.mid.to, 0);
+          deal.fromTo(back, DECK.back.from, DECK.back.to, 0);
+          gsap.fromTo(
+            rig,
+            { rotationX: 0 },
+            {
+              rotationX: DECK.rigOut,
+              ease: "none",
+              immediateRender: false,
+              scrollTrigger: {
+                trigger: scene,
+                start: "center 38%",
+                end: "bottom top",
+                scrub: true,
+                onToggle: (self) => hint(self.isActive),
+              },
+            },
+          );
+        }
+
+        // Landing: a light sweep, then the one-time drag hint.
+        let timer = 0;
+        let running: Animation[] = [];
+        let touched = false;
+
+        const playHint = () => {
+          if (touched || hintSeen() || !hintDot) return;
+          // The WebGL stack covers the poster: its drag needs no CSS hint.
+          if (wrap.querySelector('[data-stage="live"]')) return;
+          const r = front.getBoundingClientRect();
+          // Only while the pane is comfortably on screen.
+          if (r.top < 56 || r.bottom > window.innerHeight - 24) return;
+          markHintSeen();
+          const reach = 56;
+          const recoil = -30;
+          running = [
+            front.animate(
+              [
+                { rotate: "y 0deg", easing: IN_OUT },
+                { rotate: `y ${reach * HINT_DEG_PER_PX}deg`, offset: 0.44, easing: IN_OUT },
+                { rotate: `y ${recoil * HINT_DEG_PER_PX}deg`, offset: 0.78, easing: IN_OUT },
+                { rotate: "y 0deg" },
+              ],
+              { duration: 1900 },
+            ),
+            hintDot.animate(
+              [
+                { opacity: 0, translate: "0 6px", scale: "0.86", easing: OUT },
+                { opacity: 1, translate: "0 0", scale: "1", offset: 0.12, easing: IN_OUT },
+                { opacity: 1, translate: `${reach}px 0`, scale: "1", offset: 0.44, easing: IN_OUT },
+                { opacity: 1, translate: `${recoil}px 0`, scale: "1", offset: 0.78, easing: OUT },
+                { opacity: 0, translate: "0 0", scale: "0.92" },
+              ],
+              { duration: 1900 },
+            ),
+          ];
+        };
+
+        // A real touch always wins: ease the nudge out from where it is.
+        const onDown = () => {
+          touched = true;
+          markHintSeen();
+          window.clearTimeout(timer);
+          if (!running.length) return;
+          const rot = getComputedStyle(front).rotate;
+          for (const a of running) a.cancel();
+          running = [];
+          if (rot && rot !== "none") {
+            front.animate([{ rotate: rot }, { rotate: "y 0deg" }], { duration: 260, easing: OUT });
+          }
+        };
+        front.addEventListener("pointerdown", onDown, { passive: true });
+
+        ScrollTrigger.create({
+          trigger: scene,
+          start: "center 60%",
+          once: true,
+          onEnter: () => {
+            fireSweep("intro");
+            if (!hintSeen()) timer = window.setTimeout(playHint, 1500);
+          },
+        });
+
+        return () => {
+          window.clearTimeout(timer);
+          for (const a of running) a.cancel();
+          front.removeEventListener("pointerdown", onDown);
+          for (const el of [front, mid, back, rig]) el.style.willChange = "";
+        };
+      });
+      return () => mm.revert();
+    },
+    { scope: wrapRef },
+  );
+}
+
 export function HeroFanMobile() {
   const model = useSketchModel();
-  const { visitor, aiWriting } = model;
+  const sweep = useSweep();
+  const { visitor, stage, copy, aiWriting, aiStreamed } = model;
+  const wrapRef = useRef<HTMLDivElement>(null);
   const paneRef = useRef<HTMLDivElement>(null);
+  const [live, setLive] = useState(false);
+  const [paused, setPaused] = useState(false);
   const tilt = visitor.committed ? FLAT : REST_MOBILE;
   useTiltTween(paneRef, tilt);
+  useMobileDeck(wrapRef);
+
+  // Only read on the opt-in WebGL tier; harmless props otherwise.
+  const sceneProps = useMemo(() => {
+    const p: HeroSceneProps = {
+      name: visitor.name,
+      display: visitor.display,
+      domain: visitor.domain,
+      sector: visitor.sector,
+      stage,
+      committed: visitor.committed,
+      copy,
+      aiWriting,
+      aiStreamed,
+      sweep: sweep.n,
+      sweepKind: sweep.kind,
+      scroll: 0,
+    };
+    return p as unknown as Record<string, unknown>;
+  }, [visitor, stage, copy, aiWriting, aiStreamed, sweep]);
+
+  const onReady = useCallback(() => {
+    setLive(true);
+    // The poster is hidden 500ms after the first frame; stop drawing it.
+    window.setTimeout(() => setPaused(true), 600);
+  }, []);
+  const onDowngrade = useCallback(() => {
+    setLive(false);
+    setPaused(false);
+  }, []);
+
+  const stack = (
+    <div className={styles.mScene} data-hero-mobile-pane="">
+      <div className={styles.mRig} data-m-rig="" data-ai={aiWriting ? "writing" : "idle"}>
+        <MobileBack />
+        <div className={styles.mFront} data-m-front="" onClick={() => focusNameInput()}>
+          <span className={styles.mAura} aria-hidden="true" />
+          <div className={styles.mLift}>
+            <CssPane
+              domain={visitor.domain}
+              label={aiWriting ? "Claude writing…" : "SKETCH"}
+              tilt={tilt}
+              draggable
+              paneRef={paneRef}
+              className={styles.paneRoot}
+            >
+              <SketchScreen maxBacking={{ w: 780, h: 488 }} paused={paused} />
+            </CssPane>
+          </div>
+          <span className={styles.mHint} data-m-hint="" aria-hidden="true" />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className={styles.mWrap}>
-      <div className={styles.mScene} data-hero-mobile-pane="">
-        <MobileBack />
-        <div className={styles.mFront} onClick={() => focusNameInput()}>
-          <CssPane
-            domain={visitor.domain}
-            label={aiWriting ? "Claude writing…" : "SKETCH"}
-            tilt={tilt}
-            draggable
-            paneRef={paneRef}
-            className={styles.paneRoot}
-          >
-            <SketchScreen maxBacking={{ w: 780, h: 488 }} />
-          </CssPane>
-        </div>
+    <div ref={wrapRef} className={styles.mWrap}>
+      {/* Full-bleed, so the opt-in canvas can use the gutters; the poster
+          inside is centred exactly as before, on every tier. */}
+      <div
+        className={styles.mStageWrap}
+        data-hero-mobile-stage=""
+        onClick={live ? () => focusNameInput() : undefined}
+      >
+        <ThreeStage
+          className={styles.mStage}
+          poster={stack}
+          load={loadScene}
+          props={sceneProps}
+          onReady={onReady}
+          onDowngrade={onDowngrade}
+        />
       </div>
       <AiDraft variant="flow" className={styles.mDraft} />
       <p className={styles.mCaption}>{CAPTION}</p>

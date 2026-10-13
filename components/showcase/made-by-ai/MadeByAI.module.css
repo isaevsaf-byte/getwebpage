@@ -534,6 +534,27 @@
   transform-origin: 50% 0;
 }
 
+/* The build head: a bead of light riding the tip of the lit spine
+   (flow motion only — the timeline gets data-flow when it runs). */
+.spineHead {
+  display: none;
+}
+
+.timeline[data-flow] .spineHead {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: #f6dde2;
+  box-shadow:
+    0 0 0 3px rgba(207, 135, 148, 0.22),
+    0 0 16px 5px rgba(207, 135, 148, 0.5);
+}
+
 .phases {
   list-style: none;
   display: grid;
@@ -582,6 +603,38 @@
 
 .phase[data-off] .railNode {
   border-color: #3a4346;
+}
+
+/* A ring leaves the node once, the moment its phase arrives. */
+.railNode::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 50%;
+  border: 1.5px solid #cf8794;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.phase[data-ping] .railNode::before {
+  animation: mbai-ping 900ms var(--ease-studio-out) both;
+}
+
+@keyframes mbai-ping {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phase[data-ping] .railNode::before {
+    animation: none;
+  }
 }
 
 .phase[data-off] .railNode::after {
@@ -643,6 +696,16 @@
   stroke: #9aa19d;
   stroke-width: 1;
   stroke-dasharray: 2 3;
+}
+
+/* A bright run along an edge, once, after the edge draws (flow motion
+   sets its dash and opacity; without it the pulse never shows). */
+.fanPulse {
+  fill: none;
+  stroke: #f6dde2;
+  stroke-width: 2;
+  stroke-linecap: butt;
+  opacity: 0;
 }
 
 .fanPrev {

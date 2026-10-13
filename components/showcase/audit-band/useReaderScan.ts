@@ -38,8 +38,12 @@ export function useReaderScan(
       const stage = stageRef.current;
       if (!root || !stage) return;
 
-      const mm = motionMedia(({ ok }) => {
+      const mm = motionMedia(({ ok, desktop, fine }) => {
         if (!ok) return;
+        // Phones, tablets and touch screens: the X-ray band follows the
+        // scroll instead of playing on its own, so the visitor's thumb moves
+        // the reader down the page (and back up). Desktop keeps the timed scan.
+        const scrubbed = !(desktop && fine);
 
         const q = gsap.utils.selector(stage);
         const band = q("[data-band]")[0] as HTMLElement | undefined;
@@ -51,39 +55,71 @@ export function useReaderScan(
         const movers = [band, code, beam];
 
         let tl: gsap.core.Timeline | null = null;
+        let scrub: ScrollTrigger | null = null;
 
-        const scan = (dur: number, wipe: boolean) => {
-          tl?.kill();
-          const H = stage.clientHeight;
-          const bh = band.offsetHeight || H * BAND;
-          const b = bh / H;
+        /** The scan as a timeline; sizes are read when it renders (and on refresh). */
+        const build = (dur: number, wipe: boolean, paused: boolean) => {
+          const H = () => stage.clientHeight;
+          const bh = () => band.offsetHeight || H() * BAND;
+          const b = bh() / H();
           const lead = wipe ? 0.18 : 0;
 
-          gsap.set(movers, { willChange: "transform" });
-          tl = gsap.timeline({
-            onComplete: () => {
-              gsap.set(movers, { willChange: "auto" });
-            },
+          const t = gsap.timeline({
+            paused,
+            onComplete: paused
+              ? undefined
+              : () => {
+                  gsap.set(movers, { willChange: "auto" });
+                },
           });
-          if (wipe) tl.to([...marks, ...notes], { autoAlpha: 0, duration: lead, ease: "none" }, 0);
-          tl.set(marks, { drawSVG: "0%", autoAlpha: 1 }, lead)
+          if (wipe) t.to([...marks, ...notes], { autoAlpha: 0, duration: lead, ease: "none" }, 0);
+          t.set(marks, { drawSVG: "0%", autoAlpha: 1 }, lead)
             .set(notes, { autoAlpha: 0, y: 4 }, lead)
-            .fromTo(band, { y: -bh }, { y: H, duration: dur, ease: "none", immediateRender: false }, lead)
-            .fromTo(code, { y: bh }, { y: -H, duration: dur, ease: "none", immediateRender: false }, lead)
-            .fromTo(beam, { y: 0 }, { y: H + bh, duration: dur, ease: "none", immediateRender: false }, lead);
+            .fromTo(band, { y: () => -bh() }, { y: H, duration: dur, ease: "none", immediateRender: false }, lead)
+            .fromTo(code, { y: bh }, { y: () => -H(), duration: dur, ease: "none", immediateRender: false }, lead)
+            .fromTo(beam, { y: 0 }, { y: () => H() + bh(), duration: dur, ease: "none", immediateRender: false }, lead);
 
           marks.forEach((mark, i) => {
             const f = Number(mark.dataset.y ?? 0) / 100;
-            const t = lead + (dur * (f + WAKE * b)) / (1 + b);
-            tl!.to(mark, { drawSVG: "100%", duration: 0.6, ease: "studio-out" }, t);
+            const at = lead + (dur * (f + WAKE * b)) / (1 + b);
+            t.to(mark, { drawSVG: "100%", duration: 0.6, ease: "studio-out" }, at);
             const note = notes[i];
-            if (note) tl!.to(note, { autoAlpha: 1, y: 0, duration: 0.35, ease: "studio-out" }, t + 0.2);
+            if (note) t.to(note, { autoAlpha: 1, y: 0, duration: 0.35, ease: "studio-out" }, at + 0.2);
           });
+          return t;
         };
 
-        // Intro from-state, applied now (the pane is below the fold): an
-        // unmarked page waiting to be read. Skipped if it already played.
-        if (!played.current) {
+        const scan = (dur: number, wipe: boolean) => {
+          // A timed scan takes over from the scroll for good (a new address).
+          scrub?.kill();
+          scrub = null;
+          tl?.kill();
+          gsap.set(movers, { willChange: "transform" });
+          tl = build(dur, wipe, false);
+        };
+
+        if (scrubbed && !played.current) {
+          // From-state now (an unmarked page); the band then rides the scroll
+          // from the pane entering to it leaving the upper third.
+          gsap.set(marks, { drawSVG: "0%" });
+          gsap.set(notes, { autoAlpha: 0, y: 4 });
+          tl = build(INTRO_S, false, true);
+          scrub = ScrollTrigger.create({
+            trigger: stage,
+            start: "top 82%",
+            end: "bottom 30%",
+            scrub: true,
+            animation: tl,
+            invalidateOnRefresh: true,
+            onToggle: (self) => {
+              gsap.set(movers, { willChange: self.isActive ? "transform" : "auto" });
+              // Once read, a typed address may replay it on a timer.
+              if (self.isActive) played.current = true;
+            },
+          });
+        } else if (!played.current) {
+          // Intro from-state, applied now (the pane is below the fold): an
+          // unmarked page waiting to be read. Skipped if it already played.
           gsap.set(marks, { drawSVG: "0%" });
           gsap.set(notes, { autoAlpha: 0, y: 4 });
           ScrollTrigger.create({
@@ -106,6 +142,8 @@ export function useReaderScan(
 
         return () => {
           replay.current = null;
+          scrub?.kill();
+          scrub = null;
           tl?.kill();
           tl = null;
           gsap.set(movers, { clearProps: "transform,willChange" });

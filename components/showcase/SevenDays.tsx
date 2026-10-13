@@ -4,18 +4,26 @@
  * SevenDays — the visitor's own sketch, built through the real 7-day
  * process, scrubbed by scroll.
  *
- * Desktop (≥1024, motion allowed): captions flow on the left, a sticky
- * stage on the right holds the lamination model (WebGL scene, or the CSS-3D
- * model as its poster / fallback) plus DOM overlays — the day numeral, the
- * annotation, the chips and the hover label. One master timeline tweens a
- * plain `store`; everything reads it on each scroll update.
+ * Three scrubbed layouts share one master timeline (it tweens a plain
+ * `store`; everything reads it on each scroll update):
  *
- * Phones, tablets, reduced motion and no-JS: four stacked beat cards, each
- * a still of that stage in a CSS pane, then the end block on paper.
+ * - "desk" (≥1024, motion allowed): captions flow on the left, a sticky
+ *   stage on the right holds the lamination model (WebGL scene, or the
+ *   CSS-3D model as its poster / fallback) plus DOM overlays — the day
+ *   numeral, the annotation, the chips and the hover label.
+ * - "side" (phones in landscape): the same two columns, stage under the
+ *   header, with a compact in-stage progress bar instead of the rail.
+ * - "top" (phones and tablets in portrait): the stage sticks under the
+ *   header across the top ~54svh; the captions scroll beneath it as normal
+ *   content. The scrub is mapped to a reading line in the caption window, so
+ *   each beat is on screen while its part of the build plays.
+ *
+ * Reduced motion and no-JS: four stacked beat cards, each a still of that
+ * stage in a CSS pane, then the end block on paper.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { gsap, ScrollTrigger, useGSAP, motionMedia, MQ, EASE } from "@/lib/motion/gsap";
+import { gsap, ScrollTrigger, useGSAP, MQ, EASE, type MotionConditions } from "@/lib/motion/gsap";
 import { useScrollTo } from "@/components/motion/SmoothScroll";
 import Reveal from "@/components/motion/Reveal";
 import RevealHeading from "@/components/motion/RevealHeading";
@@ -57,6 +65,29 @@ const CARDS: readonly { stage: SketchStage; day: number; weight: number; tick: n
 /** URL typing speed when the site goes live. */
 const TYPE_MS_PER_CHAR = 28;
 
+/**
+ * Phones held sideways get the two-column stage (kept in sync with
+ * SevenDays.module.css). Everything else under 1024px with motion allowed
+ * gets the stage on top.
+ */
+const SIDE_Q = "(max-width: 1023.98px) and (orientation: landscape) and (max-height: 600px)";
+
+type ScrubMode = "desk" | "side" | "top";
+
+/** The architect's 3/4 view each layout swings to. Portrait is narrower, so less azimuth. */
+const CAMERA: Record<ScrubMode, { az: number; el: number }> = {
+  desk: { az: 35, el: 28 },
+  side: { az: 35, el: 28 },
+  top: { az: 26, el: 30 },
+};
+
+/** The phone offer bar (StickyOfferBar): when it may show, and its resting height. */
+const OFFER_BAR_Q = "(max-width: 767.98px), (pointer: coarse)";
+const OFFER_BAR_H = 56;
+
+/** Where the caption reading line sits inside the window under the top stage (0 top … 1 bottom). */
+const READ_AT = 0.45;
+
 function Padlock({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 12 14" aria-hidden="true" focusable="false">
@@ -97,8 +128,13 @@ export default function SevenDays() {
 
   const sectionRef = useRef<HTMLElement>(null);
   const stageColRef = useRef<HTMLDivElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
   const stageBoxRef = useRef<HTMLDivElement>(null);
   const paperRef = useRef<HTMLDivElement>(null);
+  const paperStickyRef = useRef<HTMLDivElement>(null);
+  const stagePaperRef = useRef<HTMLDivElement>(null);
+  const progFillRef = useRef<HTMLSpanElement>(null);
+  const progLabelRef = useRef<HTMLSpanElement>(null);
   const modelRef = useRef<CssModelHandle>(null);
   const annotRef = useRef<AnnotationHandle>(null);
   const numeralRef = useRef<DayNumeralHandle>(null);
@@ -113,7 +149,7 @@ export default function SevenDays() {
   const [glLive, setGlLive] = useState(false);
   const [railVisible, setRailVisible] = useState(false);
   const [railTone, setRailTone] = useState<"ink" | "paper">("ink");
-  /** True while the sticky desktop stage is the layout (drives the CSS model). */
+  /** True while a sticky stage is the layout (drives the CSS model). */
   const [sticky, setSticky] = useState(false);
 
   const storeRef = useRef<SevenStore>(createStore());
@@ -179,20 +215,34 @@ export default function SevenDays() {
       const section = sectionRef.current;
       if (!section) return;
 
-      function buildDesktop(section: HTMLElement): () => void {
+      function buildScrub(section: HTMLElement, mode: ScrubMode): () => void {
         const store = createStore();
         storeRef.current = store;
         setSticky(true);
+        section.dataset.mode = mode;
+        /** Below 1024 the stage carries its own compact progress; the rail stays off. */
+        const compact = mode !== "desk";
+        const cam = CAMERA[mode];
         const ticks = Array.from(section.querySelectorAll<SVGPathElement>("[data-tick]"));
         const previewChip = previewChipRef.current;
         const liveChip = liveChipRef.current;
         const paper = paperRef.current;
+        const paperSticky = paperStickyRef.current;
+        const stagePaper = mode === "top" ? stagePaperRef.current : null;
+        const progFill = compact ? progFillRef.current : null;
+        const progLabel = compact ? progLabelRef.current : null;
         gsap.set(ticks, { drawSVG: "0%" });
         gsap.set([previewChip, liveChip], { autoAlpha: 0, y: 12 });
 
         let annotPlaced = false;
+        let wipePlaced = false;
         let lastBeat = -1;
+        let lastWipe = "";
+        let lastFill = "";
+        let lastDay = -1;
         let ground: "ink" | "paper" = "ink";
+        let lightsOn = false;
+        let litOn = false;
         let previewShown = false;
         let previewHidden = false;
         let previewTimer: gsap.core.Tween | null = null;
@@ -218,17 +268,59 @@ export default function SevenDays() {
           annotPlaced = !!rect;
         };
 
+        /**
+         * Centre of the lights-on circle. Desk / side: the stage column's centre.
+         * Top: the squared-up pane's centre, measured once the wipe starts (the
+         * stage is stuck by then), applied to the stage's own paper layer and to
+         * the section's viewport-sized one, so the two read as one circle.
+         */
         const placeWipe = () => {
           const box = stageBoxRef.current;
           if (!box || !paper) return;
-          const sr = section.getBoundingClientRect();
+          if (mode !== "top") {
+            const sr = section.getBoundingClientRect();
+            const br = box.getBoundingClientRect();
+            paper.style.setProperty("--wx", `${Math.round(br.left - sr.left + br.width / 2)}px`);
+            paper.style.setProperty("--wy", `${Math.round(br.height / 2)}px`);
+            wipePlaced = true;
+            return;
+          }
+          if (!stagePaper || !paperSticky) return;
+          const c = modelRef.current?.centreOf(box) ?? { x: box.clientWidth / 2, y: box.clientHeight / 2 };
           const br = box.getBoundingClientRect();
-          paper.style.setProperty("--wx", `${Math.round(br.left - sr.left + br.width / 2)}px`);
-          paper.style.setProperty("--wy", `${Math.round(br.height / 2)}px`);
+          const vx = br.left + c.x;
+          const vy = br.top + c.y;
+          const vw = document.documentElement.clientWidth;
+          // The layer's own box, not the viewport: it is taller than the
+          // window (so it still covers once the iOS toolbar slides away),
+          // and its top is 0 while it is stuck, so the coordinates match.
+          const H = Math.max(paperSticky.offsetHeight, window.innerHeight);
+          const reach = `${Math.ceil(Math.hypot(Math.max(vx, vw - vx), Math.max(vy, H - vy)) + 24)}px`;
+          stagePaper.style.setProperty("--wx", `${Math.round(c.x)}px`);
+          stagePaper.style.setProperty("--wy", `${Math.round(c.y)}px`);
+          stagePaper.style.setProperty("--wmax", reach);
+          paperSticky.style.setProperty("--wx", `${Math.round(vx)}px`);
+          paperSticky.style.setProperty("--wy", `${Math.round(vy)}px`);
+          paperSticky.style.setProperty("--wmax", reach);
+          wipePlaced = true;
         };
 
         let tlRef: gsap.core.Timeline | null = null;
+        // Writes are batched into the next animation frame. ScrollTrigger
+        // updates inside the scroll event, and Lenis then reads scrollTop in
+        // the same event; writing there would force a synchronous style and
+        // layout pass on every scroll frame.
+        let queued = false;
         const render = () => {
+          queued = true;
+        };
+        const flush = () => {
+          if (!queued) return;
+          queued = false;
+          draw();
+        };
+        gsap.ticker.add(flush);
+        const draw = () => {
           const s = store;
           if (tlRef) s.p = tlRef.progress();
           modelRef.current?.apply(s);
@@ -236,16 +328,49 @@ export default function SevenDays() {
           if (gl?.setProps) gl.setProps({ ...scenePropsRef.current, p: s.p, launchT: s.launchT });
 
           const day = dayAt(s.p);
-          numeralRef.current?.set(day);
-          railRef.current?.setProgress(s.p);
-          railRef.current?.setActive(Math.min(6, Math.floor(day + 1e-6) - 1));
+          const whole = Math.min(7, Math.max(1, Math.floor(day + 1e-6)));
+          numeralRef.current?.set(day, false, compact ? 25 : 10);
+          if (compact) {
+            const f = `scaleX(${s.p.toFixed(4)})`;
+            if (progFill && f !== lastFill) {
+              lastFill = f;
+              progFill.style.transform = f;
+            }
+            if (progLabel && whole !== lastDay) {
+              lastDay = whole;
+              progLabel.textContent = DAY_TICKS[whole - 1]?.label ?? "";
+            }
+          } else {
+            railRef.current?.setProgress(s.p);
+            railRef.current?.setActive(whole - 1);
+          }
 
           const inHold = s.p >= P.holdStart - 0.01 && s.p <= P.holdEnd + 0.01;
           if (inHold && !annotPlaced) placeAnnotation();
           annotRef.current?.progress(s.annot);
           annotRef.current?.fade(1 - s.annotOut);
 
-          if (paper) paper.style.setProperty("--wipe", s.wipe.toFixed(4));
+          if (s.wipe > 0 && !wipePlaced) placeWipe();
+          const lights = s.wipe > 0;
+          if (lights !== lightsOn) {
+            lightsOn = lights;
+            if (lights) section.dataset.lights = "";
+            else delete section.dataset.lights;
+          }
+          // Fully lit: drop the circle, so the paper ground never depends on
+          // its size or on the iOS toolbar state.
+          const lit = s.wipe >= 1;
+          if (lit !== litOn) {
+            litOn = lit;
+            if (lit) section.dataset.lit = "";
+            else delete section.dataset.lit;
+          }
+          const w = s.wipe.toFixed(4);
+          if (w !== lastWipe) {
+            lastWipe = w;
+            paper?.style.setProperty("--wipe", w);
+            stagePaper?.style.setProperty("--wipe", w);
+          }
           const bloom = bloomRef.current;
           if (bloom) {
             const b = Math.min(1, Math.max(0, (s.p - 0.88) / 0.05)) * (1 - Math.min(1, Math.max(0, (s.p - 0.95) / 0.04)));
@@ -257,7 +382,8 @@ export default function SevenDays() {
           if (nextGround !== ground) {
             ground = nextGround;
             section.dataset.ground = ground;
-            setRailTone(ground);
+            // The rail is hidden below 1024: no React render mid-scroll.
+            if (!compact) setRailTone(ground);
           }
 
           const beat = beatAt(s.p);
@@ -290,21 +416,58 @@ export default function SevenDays() {
           }
         };
 
-        const tl = gsap.timeline({
-          defaults: { ease: "none" },
-          onUpdate: render,
-          scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: true,
-            onRefresh: () => {
-              annotPlaced = false;
-              placeWipe();
-              render();
-            },
-          },
-        });
+        /**
+         * How much of the bottom of the window is covered: the cookie banner
+         * (first visit) or the phone offer bar. Heights, not rects, so the
+         * banner's entry slide does not skew it. The bar is hidden over the
+         * hero, so while it may show it counts at its resting height.
+         */
+        let lastCover = -1;
+        const bottomCover = () => {
+          const banner = document.querySelector<HTMLElement>(".consent");
+          const bar = document.querySelector<HTMLElement>("[data-offer-bar]");
+          const barH = bar
+            ? bar.offsetHeight || (window.matchMedia(OFFER_BAR_Q).matches ? OFFER_BAR_H : 0)
+            : 0;
+          lastCover = Math.max(banner?.offsetHeight ?? 0, barH);
+          return lastCover;
+        };
+
+        /**
+         * Top layout: the scrub runs from the first caption reaching the
+         * reading line (just under the stage, in the caption window) to the
+         * last one leaving it. Measured from CSS, so it follows svh, the
+         * header height and the safe area, and recomputes on every refresh.
+         */
+        const readLine = () => {
+          const el = stickyRef.current;
+          if (!el) return Math.round(window.innerHeight * 0.75);
+          const stuck = parseFloat(getComputedStyle(el).top) || 0;
+          const bottom = stuck + el.offsetHeight;
+          const floor = window.innerHeight - bottomCover();
+          return Math.round(bottom + Math.max(0, floor - bottom) * READ_AT);
+        };
+        const beats = beatRefs.current.filter((el): el is HTMLElement => !!el);
+        const onRefresh = () => {
+          annotPlaced = false;
+          wipePlaced = false;
+          if (mode !== "top") placeWipe();
+          queued = false;
+          draw();
+        };
+        const scrollTrigger: ScrollTrigger.Vars =
+          mode === "top" && beats.length
+            ? {
+                trigger: beats[0],
+                endTrigger: beats[beats.length - 1],
+                start: () => `top ${readLine()}px`,
+                end: () => `bottom ${readLine()}px`,
+                scrub: true,
+                onRefresh,
+              }
+            : { trigger: section, start: "top top", end: "bottom bottom", scrub: true, onRefresh };
+
+        const tl = gsap.timeline({ defaults: { ease: "none" }, onUpdate: render, scrollTrigger });
 
         tlRef = tl;
         const at = (from: Partial<SevenStore>, to: Partial<SevenStore>, start: number, end: number, ease = "none") =>
@@ -312,7 +475,7 @@ export default function SevenDays() {
 
         // Intro: the pane rises and the camera swings to an architect's 3/4 view.
         tl.fromTo(store, { rise: 0 }, { rise: 1, duration: P.introEnd, ease: "power2.out" }, 0);
-        tl.fromTo(store, { az: 0, el: 6 }, { az: 35, el: 28, duration: P.introEnd, ease: "sine.inOut" }, 0);
+        tl.fromTo(store, { az: 0, el: 6 }, { az: cam.az, el: cam.el, duration: P.introEnd, ease: "sine.inOut" }, 0);
         // Beat 1: the brief types itself.
         at({ briefT: 0 }, { briefT: 1 }, P.briefStart, P.briefEnd);
         // Beat 2: the brief wipes away, blocks extrude, the grid appears,
@@ -327,13 +490,19 @@ export default function SevenDays() {
         at({ rev: 0 }, { rev: 1 }, P.revStart, P.revEnd);
         at({ annotOut: 0 }, { annotOut: 1 }, P.revEnd, P.holdEnd);
         // Beat 4: square up, the laminate presses it flat, lights on.
-        at({ az: 35, el: 28, fov: 30 }, { az: 0, el: 0, fov: 24 }, P.holdEnd, P.squareEnd, "sine.inOut");
+        at({ az: cam.az, el: cam.el, fov: 30 }, { az: 0, el: 0, fov: 24 }, P.holdEnd, P.squareEnd, "sine.inOut");
         at({ grid: 0.35 }, { grid: 0 }, P.holdEnd, P.holdEnd + 0.06);
-        at({ wipe: 0 }, { wipe: 1 }, P.wipeStart, 1);
+        // On top the end block arrives inside the caption window just before
+        // p = 1, so the lights finish a moment earlier there.
+        at({ wipe: 0 }, { wipe: 1 }, P.wipeStart, mode === "top" ? 0.975 : 1);
         tl.set({}, {}, 1);
 
         // The site goes live when p crosses 0.90 — a one-shot, not scrubbed.
-        const range = () => Math.max(1, section.offsetHeight - window.innerHeight);
+        // Created after the timeline, so its start reads the refreshed range.
+        const liveAt = () => {
+          const st = tl.scrollTrigger;
+          return st ? Math.round(st.start + P.live * (st.end - st.start)) : 0;
+        };
         const typeDur = () => (Math.max(4, inputRef.current.domain.length) * TYPE_MS_PER_CHAR) / 1000;
         let launch: gsap.core.Timeline | null = null;
         const goLive = () => {
@@ -358,20 +527,21 @@ export default function SevenDays() {
           launch.to([...ticks].reverse(), { drawSVG: "0%", duration: 0.2, stagger: 0.053, ease: "none" }, 0);
         };
         const liveTrigger = ScrollTrigger.create({
-          trigger: section,
-          start: () => `top+=${Math.round(P.live * range())} top`,
-          end: "bottom bottom",
+          start: liveAt,
+          end: "max",
           onEnter: goLive,
           onLeaveBack: goBack,
         });
 
-        // The rail is on while the section holds the screen.
-        const railTrigger = ScrollTrigger.create({
-          trigger: section,
-          start: "top 60%",
-          end: "bottom 40%",
-          onToggle: (self) => setRailVisible(self.isActive),
-        });
+        // The desk rail is on while the section holds the screen.
+        const railTrigger = compact
+          ? null
+          : ScrollTrigger.create({
+              trigger: section,
+              start: "top 60%",
+              end: "bottom 40%",
+              onToggle: (self) => setRailVisible(self.isActive),
+            });
 
         // Layer promotion only while the section is near the screen.
         const nearTrigger = ScrollTrigger.create({
@@ -386,21 +556,55 @@ export default function SevenDays() {
 
         const onResize = () => {
           annotPlaced = false;
+          wipePlaced = false;
         };
+        // iOS reports the old size for a moment after rotating; refresh once
+        // more after it settles (ScrollTrigger's own resize refresh stays).
+        let turnTimer = 0;
+        const onTurn = () => {
+          window.clearTimeout(turnTimer);
+          turnTimer = window.setTimeout(() => ScrollTrigger.refresh(), 400);
+        };
+        // The cookie banner mounts after hydration and leaves on a choice:
+        // re-measure the caption window whenever what covers it changes.
+        const onCover = () => {
+          if (mode !== "top") return;
+          const before = lastCover;
+          if (bottomCover() !== before) ScrollTrigger.refresh();
+        };
+        const coverTimers = [600, 2000].map((ms) => window.setTimeout(onCover, ms));
+        // The event fires before React removes the banner: measure after.
+        const onConsent = () => coverTimers.push(window.setTimeout(onCover, 80));
+        window.addEventListener("gwp-consent", onConsent);
         window.addEventListener("resize", onResize);
-        render();
+        window.addEventListener("orientationchange", onTurn);
+        draw();
 
         return () => {
+          gsap.ticker.remove(flush);
           window.removeEventListener("resize", onResize);
+          window.removeEventListener("orientationchange", onTurn);
+          window.removeEventListener("gwp-consent", onConsent);
+          window.clearTimeout(turnTimer);
+          coverTimers.forEach((t) => window.clearTimeout(t));
           launch?.kill();
           previewTimer?.kill();
           liveTrigger.kill();
-          railTrigger.kill();
+          railTrigger?.kill();
           nearTrigger.kill();
           tl.scrollTrigger?.kill();
           tl.kill();
           delete section.dataset.near;
+          delete section.dataset.mode;
+          delete section.dataset.lights;
+          delete section.dataset.lit;
           section.dataset.ground = "ink";
+          paper?.style.removeProperty("--wipe");
+          for (const el of [stagePaper, paperSticky]) {
+            if (!el) continue;
+            for (const v of ["--wipe", "--wx", "--wy", "--wmax"]) el.style.removeProperty(v);
+          }
+          if (progFill) progFill.style.transform = "";
           beatRefs.current.forEach((el) => {
             if (el) delete el.dataset.active;
           });
@@ -454,9 +658,14 @@ export default function SevenDays() {
         };
       }
 
-      const mm = motionMedia(({ ok, desktop }) => {
-        if (ok && desktop) return buildDesktop(section);
-        return buildStacked(section);
+      // motionMedia's queries plus the landscape-phone one, so turning a
+      // phone sideways rebuilds the layout (the width alone never crosses 1024).
+      const mm = gsap.matchMedia();
+      mm.add({ ...MQ, side: SIDE_Q }, (ctx) => {
+        const c = ctx.conditions as MotionConditions & { side: boolean };
+        if (!c.ok) return buildStacked(section);
+        if (c.desktop) return buildScrub(section, "desk");
+        return buildScrub(section, c.side ? "side" : "top");
       });
       return () => mm.revert();
     },
@@ -543,7 +752,7 @@ export default function SevenDays() {
       onClick={onSectionClick}
     >
       <div ref={paperRef} className={styles.paper} aria-hidden="true">
-        <div className={styles.paperSticky} />
+        <div ref={paperStickyRef} className={styles.paperSticky} />
       </div>
 
       <div className={styles.grid}>
@@ -639,8 +848,17 @@ export default function SevenDays() {
         </div>
 
         <div ref={stageColRef} className={styles.stageCol} aria-hidden="true">
-          <div className={styles.sticky}>
+          <div ref={stickyRef} className={styles.sticky}>
             <div ref={stageBoxRef} className={styles.stageBox}>
+              <div ref={stagePaperRef} className={styles.stagePaper} />
+              <div className={styles.progress}>
+                <span className={styles.progBar}>
+                  <span ref={progFillRef} className={styles.progFill} />
+                </span>
+                <span ref={progLabelRef} className={styles.progLabel}>
+                  {DAY_TICKS[0].label}
+                </span>
+              </div>
               <DayNumeral ref={numeralRef} day={1} className={styles.stageNum} />
               <span ref={bloomRef} className={styles.bloom} aria-hidden="true" />
               <ThreeStage

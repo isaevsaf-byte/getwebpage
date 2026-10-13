@@ -13,8 +13,11 @@ import { weightForDay } from "./model";
 import styles from "./SevenDays.module.css";
 
 export interface DayNumeralHandle {
-  /** Continuous day 1..7. */
-  set(day: number, reduced?: boolean): void;
+  /**
+   * Continuous day 1..7. `step` quantises the weight (Literata wght units):
+   * every change re-lays the glyph out, so phones pass a coarser step.
+   */
+  set(day: number, reduced?: boolean, step?: number): void;
 }
 
 interface Props {
@@ -34,13 +37,16 @@ export default function DayNumeral({ ref, day = 1, weight, className }: Props) {
   useImperativeHandle(
     ref,
     () => ({
-      set(d: number, reduced = false) {
+      set(d: number, reduced = false, step = 10) {
         const root = rootRef.current;
         const a = aRef.current;
         const b = bRef.current;
         if (!root || !a || !b) return;
         const s = st.current;
-        const w = Math.round(weightForDay(d));
+        // Steps of 10 by default: a weight change re-lays the glyph out, and
+        // 10 units of Literata's axis is below what the eye reads as a step.
+        const q = Math.max(1, step);
+        const w = Math.round(weightForDay(d) / q) * q;
         if (w !== s.w) {
           s.w = w;
           root.style.setProperty("--wght", String(w));

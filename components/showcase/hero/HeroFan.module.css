@@ -221,6 +221,24 @@
   }
 }
 
+/* Full-bleed host for the stack (and, opt-in, its WebGL canvas). The scene
+   inside stays centred exactly where it was; flow-root keeps the scene's
+   top margin inside the host so the canvas covers the cards' headroom. */
+.mStageWrap {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+.mStage {
+  display: flow-root;
+}
+
+/* The WebGL stack turns on a horizontal drag; vertical swipes still scroll. */
+.mStage[data-stage="live"] {
+  touch-action: pan-y;
+  cursor: grab;
+}
+
 .mScene {
   position: relative;
   width: min(88vw, 620px);
@@ -236,10 +254,30 @@
   }
 }
 
+/* The rig carries the leave-tilt; cards and the sketch keep their own poses. */
+.mRig {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
 .mCard {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+/* A dark veil each card can draw over itself (opacity only). Fading the card
+   instead would let the two cards' chrome ghost through each other. */
+.mCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: rgba(20, 24, 26, 0.62);
+  opacity: 0;
+  transform: translateZ(2px);
+  transition: opacity 600ms var(--ease-studio-out);
   pointer-events: none;
 }
 
@@ -254,6 +292,228 @@
 .mFront {
   position: relative;
   transform: translateZ(0);
+  transform-style: preserve-3d;
+}
+
+/* Lifts toward the reader while Claude writes (its own property, so it
+   never fights the scroll choreography on .mFront). */
+.mLift {
+  position: relative;
+  transform-style: preserve-3d;
+  translate: 0 0 0;
+  transition: translate 700ms var(--ease-studio-out);
+}
+
+/* A rose glow behind the sketch while Claude writes. Opacity only. */
+.mAura {
+  position: absolute;
+  inset: -18% -10%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(207, 135, 148, 0.42),
+    rgba(125, 36, 54, 0.22) 55%,
+    rgba(125, 36, 54, 0) 100%
+  );
+  opacity: 0;
+  transform: translateZ(-40px);
+  pointer-events: none;
+  transition: opacity 600ms var(--ease-studio-out);
+}
+
+.mRig[data-ai="writing"] .mAura {
+  opacity: 1;
+}
+
+.mRig[data-ai="writing"] .mLift {
+  translate: 0 0 28px;
+}
+
+/* The real sites step back into the dark while the sketch is being written. */
+.mRig[data-ai="writing"] .mCard::after {
+  opacity: 1;
+}
+
+/* The one-time drag hint: a fingertip that turns the pane (opacity 0 at rest). */
+.mHint {
+  position: absolute;
+  left: calc(50% - 21px);
+  top: calc(56% - 21px);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 250, 248, 0.92) 0 34%,
+    rgba(255, 250, 248, 0.34) 52%,
+    rgba(255, 250, 248, 0) 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 250, 248, 0.5),
+    0 6px 18px rgba(20, 24, 26, 0.35);
+  opacity: 0;
+  transform: translateZ(40px);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.motion-ok) .mRig[data-ai="writing"] .mAura {
+    animation: m-aura 2200ms var(--ease-studio-in-out) infinite alternate;
+  }
+}
+
+@keyframes m-aura {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── The deal: scroll-linked on the compositor (view timelines) ───────────
+   As the stack rises into view the sketch stands up and the two real sites
+   fan out from behind it; mid-screen everything rests at the poses above;
+   leaving, the rig tips toward the reader and the far cards lag (depth).
+   Linear, 1:1 with the finger. Browsers without view timelines get the
+   same numbers from GSAP (HeroFan.tsx, DECK). Reduced motion: static. */
+
+@media (max-width: 1023.98px) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) and (animation-range: cover 0% cover 50%) {
+    :global(html.motion-ok) .mScene {
+      view-timeline-name: --m-stack;
+      view-timeline-axis: block;
+    }
+
+    :global(html.motion-ok) .mFront,
+    :global(html.motion-ok) .mMid,
+    :global(html.motion-ok) .mBack,
+    :global(html.motion-ok) .mRig {
+      animation-duration: auto;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --m-stack;
+    }
+
+    :global(html.motion-ok) .mFront {
+      animation-name: m-front-in;
+      animation-range: cover 0% cover 45%;
+    }
+
+    :global(html.motion-ok) .mMid {
+      animation-name: m-mid-in, m-mid-drift;
+      animation-timeline: --m-stack, --m-stack;
+      animation-range:
+        cover 0% cover 45%,
+        cover 55% cover 100%;
+    }
+
+    :global(html.motion-ok) .mBack {
+      animation-name: m-back-in, m-back-drift;
+      animation-timeline: --m-stack, --m-stack;
+      animation-range:
+        cover 0% cover 45%,
+        cover 55% cover 100%;
+    }
+
+    :global(html.motion-ok) .mRig {
+      animation-name: m-rig-out;
+      animation-range: cover 60% cover 100%;
+    }
+
+    /* Tablets in portrait show the top of the stack in the first viewport,
+       where a back card would outsize the headline and become the LCP (it is
+       a lazy, low-priority image). There the two real sites stay out until
+       the first scroll, which ends LCP; then they fade in over 48px and deal
+       as everywhere else. Phones keep the peek: their headline stays larger. */
+    @media (min-width: 768px) and (orientation: portrait) {
+      :global(html.motion-ok) .mMid {
+        animation-name: m-mid-in, m-mid-drift, m-card-wake;
+        animation-timeline: --m-stack, --m-stack, scroll(root block);
+        animation-range:
+          cover 0% cover 45%,
+          cover 55% cover 100%,
+          0px 48px;
+      }
+
+      :global(html.motion-ok) .mBack {
+        animation-name: m-back-in, m-back-drift, m-card-wake;
+        animation-timeline: --m-stack, --m-stack, scroll(root block);
+        animation-range:
+          cover 0% cover 45%,
+          cover 55% cover 100%,
+          0px 48px;
+      }
+    }
+
+    /* Hidden under the live WebGL stack: let the compositor rest. */
+    :global(html.motion-ok) .mStage[data-stage="live"] :is(.mFront, .mMid, .mBack, .mRig) {
+      animation-name: none;
+    }
+  }
+}
+
+@keyframes m-front-in {
+  from {
+    transform: translate3d(0, 72px, -40px) rotateX(22deg);
+  }
+  to {
+    transform: translate3d(0, 0, 0) rotateX(0deg);
+  }
+}
+
+@keyframes m-mid-in {
+  from {
+    transform: translate3d(24%, -16%, -130px) rotateZ(7deg) rotateY(-14deg);
+  }
+  to {
+    transform: translate3d(6%, -8%, -90px) rotateZ(0deg) rotateY(-8deg);
+  }
+}
+
+@keyframes m-back-in {
+  from {
+    transform: translate3d(-24%, -22%, -190px) rotateZ(-8deg) rotateY(14deg);
+  }
+  to {
+    transform: translate3d(-6%, -15%, -170px) rotateZ(0deg) rotateY(8deg);
+  }
+}
+
+@keyframes m-card-wake {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes m-mid-drift {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 20px;
+  }
+}
+
+@keyframes m-back-drift {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 44px;
+  }
+}
+
+@keyframes m-rig-out {
+  from {
+    transform: rotateX(0deg);
+  }
+  to {
+    transform: rotateX(-10deg);
+  }
 }
 
 .mCaption {

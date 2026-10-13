@@ -15,6 +15,15 @@
  * glyph prints. When Claude finishes, the words pour from the card into the
  * page's text blocks the same way, the card dissolves and one light sweep
  * lifts the veil. The procedural sketch is code; only the copy is Claude's.
+ *
+ * Phones (opt-in, ?gl=1 — see lib/showcase/tier.ts): inside the mobile hero
+ * host ([data-hero-mobile-stage]) the scene switches to the "stack" layout —
+ * the sketch and two real sites in the same camera as the CSS stack it fades
+ * in over, dealt by scroll exactly like that stack, turned by a horizontal
+ * drag, on half the particle budget and without the floor. Any narrow
+ * (<700px) or coarse-pointer stage also gets the "lite" GPU profile: DPR
+ * capped at 1.5 and anisotropy 4. MSAA is chosen by lib/three/renderer.ts
+ * when the context is created, so it stays on.
  */
 import {
   AdditiveBlending,
@@ -101,6 +110,30 @@ const DEFS: PaneDef[] = [
 ];
 const REAL_DIM = 0.55;
 const TEXT_BLOCKS = ["sub", "cta", "cta2", "card1", "card2", "card3"] as const;
+
+// ── Stack layout (phones) ─────────────────────────────────────────────────
+// Mirrors the CSS stack in hero/HeroFan.module.css (.mScene, DECK keyframes)
+// in that stack's own units — CSS px, %, degrees — so the canvas lands on
+// the poster it replaces. Keep in sync with the CSS.
+const DEG = Math.PI / 180;
+const STACK_DEFS: PaneDef[] = [
+  { slug: "beautasy", domain: "beautasy.co.uk", pos: [0, 0, 0], rotY: 0, rotX: 0 },
+  { slug: "silkbees", domain: "silkbees.co.uk", pos: [0, 0, 0], rotY: 0, rotX: 0 },
+  // CssPane's resting tilt (rotateX 3°, rotateY -9°); three's X is flipped.
+  { slug: "sketch", domain: "yourbusiness.co.uk", pos: [0, 0, 0], rotY: -9 * DEG, rotX: -3 * DEG },
+];
+/** [x %, y %, z px, rotateZ °, rotateY °] of a card, CSS conventions. */
+type CardPose = readonly [number, number, number, number, number];
+const STACK_CARDS: Record<string, { from: CardPose; to: CardPose; drift: number }> = {
+  silkbees: { from: [24, -16, -130, 7, -14], to: [6, -8, -90, 0, -8], drift: 20 },
+  beautasy: { from: [-24, -22, -190, -8, 14], to: [-6, -15, -170, 0, 8], drift: 44 },
+};
+const STACK_FRONT_FROM = { y: 72, z: -40, rx: 22 };
+const STACK_RIG_OUT = -10;
+const STACK_PERSPECTIVE = 1100;
+const STACK_ORIGIN_Y = 0.2;
+const DRAG_PER_PX = 0.12 * DEG;
+const DRAG_LIMIT = 28 * DEG;
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -317,6 +350,27 @@ const createHeroScene: SceneFactory = async (ctx) => {
   let height = ctx.height;
   let disposed = false;
 
+  const host = ctx.canvas.closest<HTMLElement>("[data-tier]");
+  const stack = !!host?.closest("[data-hero-mobile-stage]");
+  let coarse = false;
+  try {
+    coarse = window.matchMedia("(pointer: coarse)").matches;
+  } catch {}
+  const lite = stack || coarse || width < 700;
+  const DPR_CAP = lite ? 1.5 : Infinity;
+  const defs = stack ? STACK_DEFS : DEFS;
+  /** Applies the profile's DPR cap on top of whatever the stage chose. */
+  const capDpr = (d: number) => {
+    const eff = Math.min(d, DPR_CAP);
+    if (Math.abs(renderer.getPixelRatio() - eff) > 1e-3) {
+      renderer.setPixelRatio(eff);
+      renderer.setSize(width, height, false);
+    }
+    if (host) host.dataset.sceneDpr = String(eff);
+    return eff;
+  };
+  capDpr(ctx.dpr);
+
   const scene = new Scene();
   scene.environmentIntensity = 0.35;
   scene.fog = new Fog(0x14181a, 6, 14);
@@ -325,7 +379,7 @@ const createHeroScene: SceneFactory = async (ctx) => {
 
   const own: { dispose(): void }[] = [];
   const keep = <T extends { dispose(): void }>(x: T) => (own.push(x), x);
-  const aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  const aniso = Math.min(lite ? 4 : 8, renderer.capabilities.getMaxAnisotropy());
   const canvasTex = (c: HTMLCanvasElement) => {
     const t = keep(new CanvasTexture(c));
     t.colorSpace = SRGBColorSpace;
@@ -335,7 +389,9 @@ const createHeroScene: SceneFactory = async (ctx) => {
 
   const loader = new TextureLoader();
   const [siteTex] = await Promise.all([
-    Promise.all(DEFS.slice(0, 3).map((d) => loader.loadAsync(`/showcase/sites/${d.slug}-1024.webp`))),
+    Promise.all(
+      defs.filter((d) => d.slug !== "sketch").map((d) => loader.loadAsync(`/showcase/sites/${d.slug}-1024.webp`)),
+    ),
     ensureSketchFonts(),
   ]);
   for (const t of siteTex) {
@@ -475,28 +531,35 @@ const createHeroScene: SceneFactory = async (ctx) => {
   };
 
   // ── Panes and light bars ────────────────────────────────────────────────
-  const panes: Pane[] = DEFS.map((def, i) => {
+  // Stack layout: every pane hangs off one rig (the CSS .mRig), which tips
+  // toward the reader as the stack leaves the screen.
+  const rig = new Group();
+  if (stack) scene.add(rig);
+  const panes: Pane[] = defs.map((def, i) => {
+    const real = def.slug !== "sketch";
     const pane = createGlassPane({
       width: PW,
       height: PH,
-      screen: i < 3 ? siteTex[i] : sketch.tex,
+      screen: real ? siteTex[i] : sketch.tex,
       domain: def.domain,
       env,
       invalidate,
     });
     pane.group.position.set(...def.pos);
     pane.group.rotation.set(def.rotX, def.rotY, 0);
-    if (i < 3) pane.setDim(REAL_DIM);
-    scene.add(pane.group);
+    if (real) pane.setDim(REAL_DIM);
+    // Cards rotate like CSS rotateZ() rotateY(): Z applied last.
+    if (stack && real) pane.group.rotation.order = "ZYX";
+    (stack ? rig : scene).add(pane.group);
     const bar = createLightBar(IW, PH - INSET * 2);
     bar.mesh.position.z = ZF + 0.003;
     bar.mesh.renderOrder = 4;
     bar.mesh.visible = false;
     pane.group.add(bar.mesh);
-    const toCam = CAM.clone().sub(new Vector3(...def.pos)).normalize();
+    const toCam = stack ? new Vector3(0, 0, 1) : CAM.clone().sub(new Vector3(...def.pos)).normalize();
     return { def, pane, bar, toCam, push: 0, lean: 0, rx: def.rotX, ry: def.rotY, hover: 0 };
   });
-  const sk = panes[3];
+  const sk = panes.find((p) => p.def.slug === "sketch")!;
   const skGroup = sk.pane.group;
   const bodies = panes.map((p) => p.pane.body);
 
@@ -517,7 +580,8 @@ const createHeroScene: SceneFactory = async (ctx) => {
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(1.25, FLOOR_Y, 0.3);
   floor.renderOrder = -1;
-  scene.add(floor);
+  // The phone canvas ends at the sketch's lower edge: no floor to light.
+  if (!stack) scene.add(floor);
 
   // ── Sketch chrome tag ───────────────────────────────────────────────────
   const tagCtx = ctx2d(512, 64);
@@ -619,7 +683,7 @@ const createHeroScene: SceneFactory = async (ctx) => {
   }
 
   // ── Particles (pane-local) ──────────────────────────────────────────────
-  const N = 6144; // entries: head + tail per comet
+  const N = stack ? 3072 : 6144; // entries: head + tail per comet
   const pFrom = new Float32Array(N * 3);
   const pTo = new Float32Array(N * 4);
   const pTime = new Float32Array(N * 3);
@@ -801,7 +865,9 @@ const createHeroScene: SceneFactory = async (ctx) => {
       resetSurface(card);
       fade("veil", veil, () => veilU.uOn.value, (v) => (veilU.uOn.value = v), 1, 0.5);
       fade("aura", aura, () => auraU.uOn.value, (v) => (auraU.uOn.value = v), 1, 0.8);
-      fade("card", cardMesh, () => cardMat.opacity, (v) => (cardMat.opacity = v), 1, 0.5, 0.1);
+      // The phone frame has no room above the sketch for the composer card;
+      // AiDraft shows Claude's words under the pane there instead.
+      if (!stack) fade("card", cardMesh, () => cardMat.opacity, (v) => (cardMat.opacity = v), 1, 0.5, 0.1);
       tween("focus", focus, 1, 0.7, OUT, (v) => (focus = v));
       tween("lean", sk.lean, 0.1, 0.9, OUT, (v) => (sk.lean = v));
     } else {
@@ -867,7 +933,6 @@ const createHeroScene: SceneFactory = async (ctx) => {
   let camY = 0;
   let hovered = -1;
   let hoverSent = "";
-  const host = ctx.canvas.closest<HTMLElement>("[data-tier]");
   const corner = new Vector3();
   const reportHover = () => {
     const cb = props?.onHover;
@@ -890,14 +955,138 @@ const createHeroScene: SceneFactory = async (ctx) => {
   };
   host?.addEventListener("click", onClick);
 
+  // ── Stack layout: scroll choreography and drag ─────────────────────────
+  let dragRy = 0;
+  let dragging = false;
+  let pid: number | null = null;
+  let sx = 0;
+  let sy = 0;
+  let sRy = 0;
+  let justDragged = false;
+
+  /** The CSS view-timeline 'cover' progress of the scene box, 0..1. */
+  const stackProgress = () => {
+    if (!host) return 0.5;
+    const r = host.getBoundingClientRect();
+    const vh = window.innerHeight || 1;
+    return clamp01((vh - (r.top + sf.m)) / (vh + sf.sceneH));
+  };
+  const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+
+  /** Same ranges and poses as the CSS deal (cover 0–45%, drift 55–100%, tilt 60–100%). */
+  const placeStack = () => {
+    const pr = stackProgress();
+    const deal = clamp01(pr / 0.45);
+    const drift = clamp01((pr - 0.55) / 0.45);
+    const out = clamp01((pr - 0.6) / 0.4);
+    const k = sf.k;
+    const u = 1 - deal;
+    rig.position.set(0, sf.cy, 0);
+    rig.rotation.set(-STACK_RIG_OUT * out * DEG, 0, 0);
+    for (const p of panes) {
+      const g = p.pane.group;
+      const off = p.push + p.lean;
+      if (p.def.slug === "sketch") {
+        g.position.set(0, -STACK_FRONT_FROM.y * u * k, STACK_FRONT_FROM.z * u * k + off);
+        g.rotation.set(p.rx - STACK_FRONT_FROM.rx * u * DEG, p.ry + dragRy, 0);
+        continue;
+      }
+      const c = STACK_CARDS[p.def.slug];
+      if (!c) continue;
+      const at = (i: number) => mix(c.from[i], c.to[i], deal);
+      g.position.set((at(0) / 100) * PW, (-(at(1) / 100) * sf.sceneH - c.drift * drift) * k, at(2) * k + off);
+      g.rotation.set(0, at(4) * DEG, -at(3) * DEG);
+    }
+  };
+
+  const onScroll = () => invalidate();
+  const onDown = (e: PointerEvent) => {
+    if (pid !== null) return; // a second finger never steers
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    pid = e.pointerId;
+    sx = e.clientX;
+    sy = e.clientY;
+    sRy = dragRy;
+    dragging = false;
+  };
+  const onMove = (e: PointerEvent) => {
+    if (e.pointerId !== pid || !host) return;
+    const dx = e.clientX - sx;
+    if (!dragging) {
+      if (Math.abs(dx) < 4 || Math.abs(dx) < Math.abs(e.clientY - sy)) return;
+      dragging = true;
+      try {
+        host.setPointerCapture(e.pointerId);
+      } catch {}
+    }
+    dragRy = Math.max(-DRAG_LIMIT, Math.min(DRAG_LIMIT, sRy + dx * DRAG_PER_PX));
+    invalidate();
+  };
+  const onUp = (e: PointerEvent) => {
+    if (e.pointerId !== pid) return;
+    pid = null;
+    if (!dragging) return;
+    dragging = false;
+    justDragged = e.type === "pointerup";
+    invalidate();
+  };
+  // A drag that ends over the stage must not also count as a tap on it.
+  const onClickCapture = (e: MouseEvent) => {
+    if (!justDragged) return;
+    justDragged = false;
+    e.stopPropagation();
+    e.preventDefault();
+  };
+  if (stack && host) {
+    window.addEventListener("scroll", onScroll, { passive: true });
+    host.addEventListener("pointerdown", onDown);
+    host.addEventListener("pointermove", onMove);
+    host.addEventListener("pointerup", onUp);
+    host.addEventListener("pointercancel", onUp);
+    host.addEventListener("lostpointercapture", onUp);
+    host.addEventListener("click", onClickCapture, true);
+  }
+
+  /**
+   * Stack layout camera: the CSS stack's own projection. The host is 100vw
+   * wide; the scene box (.mScene, 88vw ≤ 620px) sits under a 15vw (≥640:
+   * 96px) margin; perspective 1100px from 50% 20% of the scene box. World
+   * units: the sketch pane's 1.6 = the CSS pane width P, so k = 1.6 / P per
+   * CSS px; y = 0 at the perspective origin; the camera sits D = 1100·k in
+   * front of z = 0 with an off-centre frustum (setViewOffset) so that origin
+   * lands where CSS puts it.
+   */
+  const sf = { k: 1, m: 0, sceneH: 1, oy: 0, cy: 0 };
+  const stackCamera = (w: number, h: number, d: number) => {
+    const P = Math.min(0.88 * w, 620);
+    const m = Math.min(w >= 640 ? 96 : 0.15 * w, h * 0.5);
+    const sceneH = Math.max(1, h - m);
+    const oy = m + STACK_ORIGIN_Y * sceneH;
+    const k = PW / P;
+    const hv = 2 * Math.max(oy, h - oy);
+    camera.fov = (2 * Math.atan(hv / 2 / STACK_PERSPECTIVE) * 180) / Math.PI;
+    camera.aspect = w / hv;
+    camera.setViewOffset(w, hv, 0, hv / 2 - oy, w, h);
+    camera.position.set(0, 0, STACK_PERSPECTIVE * k);
+    camera.rotation.set(0, 0, 0);
+    camera.updateProjectionMatrix();
+    Object.assign(sf, { k, m, sceneH, oy, cy: (oy - (m + sceneH / 2)) * k });
+    ptU.uScale.value = (hv * d) / (2 * Math.tan((camera.fov * Math.PI) / 360));
+  };
+
   const resize = (w: number, h: number, d: number) => {
     width = w;
     height = h;
+    const eff = capDpr(d);
+    if (stack) {
+      stackCamera(w, h, eff);
+      return;
+    }
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     // Keep the cascade's horizontal framing on narrow or very wide stages.
     fit = Math.min(1.45, Math.max(0.84, 1 / camera.aspect));
-    ptU.uScale.value = (h * d) / (2 * Math.tan((camera.fov * Math.PI) / 360));
+    ptU.uScale.value = (h * eff) / (2 * Math.tan((camera.fov * Math.PI) / 360));
   };
   resize(width, height, ctx.dpr);
 
@@ -937,7 +1126,7 @@ const createHeroScene: SceneFactory = async (ctx) => {
       }
       if (!!p.aiWriting !== writing) setWriting(!!p.aiWriting);
       // While Claude writes, the words go to the card; the page waits.
-      if (writing && p.aiStreamed !== card.next) {
+      if (writing && !stack && p.aiStreamed !== card.next) {
         card.next = p.aiStreamed || "";
         card.dirty = true;
       }
@@ -994,7 +1183,7 @@ const createHeroScene: SceneFactory = async (ctx) => {
         ambient += dt * 90;
         while (ambient >= 1) {
           ambient -= 1;
-          if (Math.random() < 0.55) card.local(rnd(40, CTW - 40), rnd(100, CTH - 30), tmp);
+          if (!stack && Math.random() < 0.55) card.local(rnd(40, CTW - 40), rnd(100, CTH - 30), tmp);
           else {
             const r = sketch.rects[Math.floor(Math.random() * 6)];
             sketch.local(rnd(r.x0, r.x1), rnd(r.y0, r.y1), tmp);
@@ -1029,30 +1218,43 @@ const createHeroScene: SceneFactory = async (ctx) => {
 
       // The studio dims while Claude writes; the glowing pane carries the light.
       scene.environmentIntensity = envLevel * (1 - 0.35 * focus);
+      if (stack) {
+        if (!dragging && dragRy !== 0) {
+          dragRy = damp(dragRy, 0, 9, dt);
+          if (Math.abs(dragRy) < 2e-4) dragRy = 0;
+          else busy = true;
+        }
+        placeStack();
+      }
       panes.forEach((p, i) => {
-        const g = p.pane.group;
-        const off = p.push + p.lean;
-        g.position.set(p.def.pos[0] + p.toCam.x * off, p.def.pos[1] + p.toCam.y * off, p.def.pos[2] + p.toCam.z * off);
-        g.rotation.set(p.rx, p.ry, 0);
+        if (!stack) {
+          const g = p.pane.group;
+          const off = p.push + p.lean;
+          g.position.set(p.def.pos[0] + p.toCam.x * off, p.def.pos[1] + p.toCam.y * off, p.def.pos[2] + p.toCam.z * off);
+          g.rotation.set(p.rx, p.ry, 0);
+        }
         const want = hovered === i ? 1 : 0;
         p.hover = damp(p.hover, want, 12, dt);
         if (Math.abs(p.hover - want) > 0.002) busy = true;
         else p.hover = want;
-        if (i < 3) {
+        if (p.def.slug !== "sketch") {
           const dim = (REAL_DIM + (1 - REAL_DIM) * 0.55 * p.hover) * (1 - 0.45 * focus);
           p.pane.setDim(dim);
         }
       });
 
-      // Pointer parallax, aspect fit and the scroll-out dolly.
-      camX = damp(camX, px * 0.18, 4, dt);
-      camY = damp(camY, py * 0.1, 4, dt);
-      if (Math.abs(camX - px * 0.18) > 3e-4 || Math.abs(camY - py * 0.1) > 3e-4) busy = true;
-      camera.position.copy(CAM).sub(LOOK).multiplyScalar(fit).add(LOOK);
-      camera.position.x += camX;
-      camera.position.y += camY;
-      camera.position.z -= 0.8 * clamp01(props?.scroll ?? 0);
-      camera.lookAt(LOOK);
+      // Pointer parallax, aspect fit and the scroll-out dolly (the phone
+      // stack's camera is fixed: its motion comes from placeStack()).
+      if (!stack) {
+        camX = damp(camX, px * 0.18, 4, dt);
+        camY = damp(camY, py * 0.1, 4, dt);
+        if (Math.abs(camX - px * 0.18) > 3e-4 || Math.abs(camY - py * 0.1) > 3e-4) busy = true;
+        camera.position.copy(CAM).sub(LOOK).multiplyScalar(fit).add(LOOK);
+        camera.position.x += camX;
+        camera.position.y += camY;
+        camera.position.z -= 0.8 * clamp01(props?.scroll ?? 0);
+        camera.lookAt(LOOK);
+      }
       camera.updateMatrixWorld();
       scene.updateMatrixWorld();
       reportHover();
@@ -1085,6 +1287,16 @@ const createHeroScene: SceneFactory = async (ctx) => {
     dispose() {
       disposed = true;
       host?.removeEventListener("click", onClick);
+      if (stack && host) {
+        window.removeEventListener("scroll", onScroll);
+        host.removeEventListener("pointerdown", onDown);
+        host.removeEventListener("pointermove", onMove);
+        host.removeEventListener("pointerup", onUp);
+        host.removeEventListener("pointercancel", onUp);
+        host.removeEventListener("lostpointercapture", onUp);
+        host.removeEventListener("click", onClickCapture, true);
+        delete host.dataset.sceneDpr;
+      }
       if (host) host.style.cursor = "";
       for (const p of panes) {
         p.bar.dispose();

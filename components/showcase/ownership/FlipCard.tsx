@@ -40,6 +40,11 @@ const frontGlare = (el: HTMLDivElement | null) =>
 const backGlare = (el: HTMLDivElement | null) =>
   el?.style.setProperty("--sheen", "calc(clamp(0, var(--f, 1) * 2 - 1, 1) * 90% - 45%)");
 const clamp1 = (n: number) => Math.max(-1, Math.min(1, n));
+/** 0 at the front, 1 at the back, for any number of half-turns either way. */
+const turned = (f: number) => {
+  const m = ((f % 2) + 2) % 2;
+  return m > 1 ? 2 - m : m;
+};
 
 export default function FlipCard() {
   const stageRef = useRef<HTMLDivElement>(null);
@@ -79,14 +84,17 @@ export default function FlipCard() {
         const apply = () => {
           const deg = st.f * 180 + st.ry;
           const r = (deg * Math.PI) / 180;
-          const lift = Math.sin(st.f * Math.PI);
+          // How far round the card is (0 front … 1 back), whichever way and
+          // however many half-turns a swipe has taken it.
+          const t = turned(st.f);
+          const lift = Math.sin(t * Math.PI);
           card.style.transform =
             `translate3d(0,${(-lift * 12).toFixed(2)}px,${(lift * LIFT).toFixed(2)}px) ` +
             `rotateX(${st.rx.toFixed(2)}deg) rotateY(${deg.toFixed(2)}deg)`;
-          vars.style.setProperty("--f", st.f.toFixed(4));
+          vars.style.setProperty("--f", t.toFixed(4));
           vars.style.setProperty("--c", Math.abs(Math.cos(r)).toFixed(3));
-          vars.style.setProperty("--code", Math.min(1, Math.max(0, (st.f - 0.5) / 0.42)).toFixed(3));
-          const next = deg > 90 ? "back" : "front";
+          vars.style.setProperty("--code", Math.min(1, Math.max(0, (t - 0.5) / 0.42)).toFixed(3));
+          const next = Math.cos(r) < 0 ? "back" : "front";
           if (next !== side) {
             // DOM only: no React render at the crossing, mid-turn.
             side = next;
@@ -110,6 +118,8 @@ export default function FlipCard() {
               if (dir === manualDir) return;
               manualDir = 0;
               catching = true;
+              stopSpring();
+              st.f = turned(st.f);
             }
             lastDir = dir;
             const p = turnOf(self.progress);
@@ -137,6 +147,8 @@ export default function FlipCard() {
         apply();
 
         toggleRef.current = () => {
+          stopSpring();
+          st.f = turned(st.f);
           manualDir = lastDir;
           catching = false;
           card.style.willChange = "transform";
@@ -151,6 +163,104 @@ export default function FlipCard() {
             },
           });
         };
+
+        // Touch: swipe the card sideways to turn it by hand. The turn follows
+        // the finger, and on release a spring (damping 0.8 — the finger threw
+        // it) carries the finger's speed to the nearest face. Vertical swipes
+        // stay native scrolling (touch-action: pan-y in CSS).
+        const swipe = { id: -1, x0: 0, y0: 0, f0: 0, on: false, lastX: 0, lastT: 0, v: 0 };
+        let springing = 0;
+        const stopSpring = () => {
+          if (springing) gsap.ticker.remove(springStep);
+          springing = 0;
+        };
+        const spring = { x: 0, v: 0, to: 0 };
+        const springStep = (_t: number, dtMs: number) => {
+          // Apple-style spring: response 0.45s, damping ratio 0.8.
+          const w = (2 * Math.PI) / 0.45;
+          const k = w * w;
+          const c = 2 * 0.8 * w;
+          let dt = Math.min(0.064, dtMs / 1000);
+          while (dt > 0) {
+            const h = Math.min(dt, 1 / 240);
+            spring.v += (-k * (spring.x - spring.to) - c * spring.v) * h;
+            spring.x += spring.v * h;
+            dt -= h;
+          }
+          st.f = spring.x;
+          if (Math.abs(spring.x - spring.to) < 0.0008 && Math.abs(spring.v) < 0.004) {
+            // Land exactly, and fold extra half-turns back into 0 / 1 (same picture).
+            st.f = Math.abs(Math.round(spring.to)) % 2;
+            stopSpring();
+            if (!onScreen.isActive) card.style.willChange = "";
+          }
+          apply();
+        };
+
+        const onSwipeDown = (e: PointerEvent) => {
+          if (e.pointerType === "mouse" || swipe.id !== -1) return;
+          swipe.id = e.pointerId;
+          swipe.x0 = swipe.lastX = e.clientX;
+          swipe.y0 = e.clientY;
+          swipe.lastT = e.timeStamp;
+          swipe.v = 0;
+          swipe.on = false;
+        };
+        const onSwipeMove = (e: PointerEvent) => {
+          if (e.pointerId !== swipe.id) return;
+          const dx = e.clientX - swipe.x0;
+          const dy = e.clientY - swipe.y0;
+          if (!swipe.on) {
+            if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) {
+              swipe.id = -1; // a scroll, not a turn
+              return;
+            }
+            if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+            swipe.on = true;
+            stopSpring();
+            gsap.killTweensOf(st, "f");
+            manualDir = lastDir;
+            catching = false;
+            swipe.f0 = Math.round(st.f);
+            swipe.x0 = e.clientX;
+            card.style.willChange = "transform";
+            try {
+              card.setPointerCapture(e.pointerId);
+            } catch {}
+          }
+          const w = Math.max(160, card.offsetWidth);
+          const dtv = Math.max(1, e.timeStamp - swipe.lastT);
+          swipe.v = 0.7 * swipe.v + 0.3 * ((e.clientX - swipe.lastX) / dtv);
+          swipe.lastX = e.clientX;
+          swipe.lastT = e.timeStamp;
+          // Right drag turns forward; one card-width ≈ a half-turn. Never more
+          // than one face away from where the swipe began.
+          const raw = swipe.f0 + (e.clientX - swipe.x0) / w;
+          st.f = Math.max(swipe.f0 - 1, Math.min(swipe.f0 + 1, raw));
+          apply();
+        };
+        const onSwipeEnd = (e: PointerEvent) => {
+          if (e.pointerId !== swipe.id) return;
+          swipe.id = -1;
+          if (!swipe.on) return;
+          swipe.on = false;
+          const w = Math.max(160, card.offsetWidth);
+          const vF = (swipe.v * 1000) / w; // half-turns per second
+          // Project where the flick would coast to, then take the nearest face.
+          const projected = st.f + vF * 0.18;
+          const to = Math.max(swipe.f0 - 1, Math.min(swipe.f0 + 1, Math.round(projected)));
+          spring.x = st.f;
+          spring.v = vF;
+          spring.to = to;
+          if (!springing) {
+            springing = 1;
+            gsap.ticker.add(springStep);
+          }
+        };
+        card.addEventListener("pointerdown", onSwipeDown);
+        card.addEventListener("pointermove", onSwipeMove);
+        card.addEventListener("pointerup", onSwipeEnd);
+        card.addEventListener("pointercancel", onSwipeEnd);
 
         // Pointer follow, fine pointers only. The stage never moves, so the
         // hit area is stable.
@@ -178,6 +288,11 @@ export default function FlipCard() {
 
         return () => {
           unbind();
+          stopSpring();
+          card.removeEventListener("pointerdown", onSwipeDown);
+          card.removeEventListener("pointermove", onSwipeMove);
+          card.removeEventListener("pointerup", onSwipeEnd);
+          card.removeEventListener("pointercancel", onSwipeEnd);
           toggleRef.current = () => {};
           card.style.transform = "";
           card.style.willChange = "";

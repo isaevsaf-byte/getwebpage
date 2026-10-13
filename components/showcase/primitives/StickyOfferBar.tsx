@@ -119,7 +119,13 @@ export default function StickyOfferBar() {
 
   return (
     <>
-      <div className={`${styles.bar} enter-up`} hidden={!shown} role="region" aria-label="Prices and contact">
+      <div
+        className={`${styles.bar} enter-up`}
+        hidden={!shown}
+        role="region"
+        aria-label="Prices and contact"
+        data-offer-bar=""
+      >
         <div className={styles.offer}>
           <span className={styles.price}>From £500</span>
           <a className={styles.cta} href="#pricing" onClick={onPrices}>

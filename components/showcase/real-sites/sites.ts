@@ -37,3 +37,18 @@ export function isStageLayout(): boolean {
 export function visibleFraction(height: number): number {
   return Math.min(1, (TALL_WIDTH * 10) / 16 / height);
 }
+
+/** Share of a 780×1688 phone capture visible in a 4:3 card screen. */
+export const PHONE_FRAC = (0.75 * 780) / 1688;
+
+/** Native height / width of the mobile sketch in the "Next" card (ATLAS_QUADRANT.mobile). */
+export const SKETCH_MOBILE_ASPECT = 1108 / 512;
+
+/**
+ * How far (share of the capture's height) each phone capture may scroll in
+ * its card. The default runs to the bottom; safarisaev's capture ends in
+ * blank page, so it stops on the last buttons.
+ */
+export const PHONE_TRAVEL: Partial<Record<SiteSlug, number>> = {
+  safarisaev: 0.5,
+};

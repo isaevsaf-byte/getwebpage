@@ -17,10 +17,8 @@ import { useEffect, useRef, useState } from "react";
 import { drawSketch, ensureSketchFonts, getSketchLayout } from "@/lib/showcase/sketch";
 import { useVisitor } from "@/lib/showcase/visitor";
 import { useAiCopy } from "@/lib/showcase/aiCopy";
+import { SKETCH_MOBILE_ASPECT as MOBILE_ASPECT } from "./sites";
 import styles from "./RealSites.module.css";
-
-/** Native size of the mobile sketch (ATLAS_QUADRANT.mobile). */
-const MOBILE_ASPECT = 1108 / 512;
 
 export default function NextSketch({ layout }: { layout: "desktop" | "mobile" }) {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -117,7 +115,7 @@ export default function NextSketch({ layout }: { layout: "desktop" | "mobile" })
 
   return (
     <div ref={boxRef} className={styles.sketchBox}>
-      <canvas ref={canvasRef} className={styles.sketchCanvas} />
+      <canvas ref={canvasRef} className={styles.sketchCanvas} data-sketch-canvas="" />
     </div>
   );
 }

@@ -193,6 +193,13 @@
   transition-delay: calc(var(--k) * 28ms);
 }
 
+/* Gathered: the sheets wait behind the pane until the strip is on screen. */
+.strip[data-folded] .sheet[data-on] {
+  opacity: 0;
+  transform: translate3d(0, 0, 0) rotate(0deg);
+  transition: none;
+}
+
 .stripText {
   min-width: 0;
 }

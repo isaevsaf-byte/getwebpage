@@ -77,7 +77,8 @@
 
   /* Rhythm */
   --space-section: clamp(96px, 12vw, 176px);
-  --gutter: clamp(16px, 5vw, 64px);
+  /* max(): with viewport-fit=cover, landscape iPhones need the notch side cleared. */
+  --gutter: max(clamp(16px, 5vw, 64px), env(safe-area-inset-left), env(safe-area-inset-right));
 
   --radius-sm: 2px;
   --radius-DEFAULT: 4px;
@@ -95,6 +96,41 @@ html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
   font-optical-sizing: auto;
+  /* Keyboard focus and anchor jumps clear the fixed header (56px, 64px ≥1024)
+     and whatever is fixed along the bottom (WCAG 2.4.11). */
+  scroll-padding-top: calc(80px + env(safe-area-inset-top));
+}
+
+@media (min-width: 1024px) {
+  html {
+    scroll-padding-top: calc(88px + env(safe-area-inset-top));
+  }
+}
+
+html.offer-bar-visible {
+  scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom));
+}
+
+/* The consent banner is ~80px tall on wide screens, ~190px when stacked. */
+html:has(.consent) {
+  scroll-padding-bottom: calc(110px + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 560px) {
+  html:has(.consent) {
+    scroll-padding-bottom: calc(200px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Safari < 16 drops overflow: clip: keep the page from scrolling sideways
+   and keep the menu's scroll lock working. */
+@supports not (overflow: clip) {
+  body {
+    overflow-x: hidden;
+  }
+  html.lenis-stopped {
+    overflow: hidden;
+  }
 }
 
 body {
@@ -163,6 +199,11 @@ textarea:focus-visible {
   left: 0;
 }
 
+/* The oxblood ring is 1.85:1 on the ink footer; rose is 6.4:1 there. */
+.footer-link:focus-visible {
+  outline-color: #cf8794;
+}
+
 /* ── Consent banner ──────────────────────────────────────────── */
 
 .consent {
@@ -173,7 +214,8 @@ textarea:focus-visible {
   z-index: 1000;
   background: #14181a;
   border-top: 1px solid #242a2c;
-  padding: 18px 24px;
+  padding: 18px max(24px, env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom))
+    max(24px, env(safe-area-inset-left));
 }
 
 .consent-inner {
@@ -210,6 +252,7 @@ textarea:focus-visible {
   font-family: var(--font-sans), sans-serif;
   font-size: 13px;
   font-weight: 500;
+  min-height: 44px;
   padding: 10px 22px;
   border-radius: 4px;
   cursor: pointer;

@@ -6,6 +6,8 @@ import {
   FALLBACK_COPY,
   OUTPUT_SCHEMA,
   SYSTEM_PROMPT,
+  checkSub,
+  completedSub,
   isAiSector,
   parseModelJson,
   userPrompt,
@@ -18,7 +20,10 @@ import {
  *
  * The visitor explicitly asked Claude to write their homepage words. Streams
  * NDJSON lines back so the tagline can type in live:
- *   {"type":"delta","text":"…"}        raw JSON text from Claude, in order
+ *   {"type":"delta","text":"…"}        raw JSON text from Claude, in order —
+ *                                      held back until the whole tagline has
+ *                                      passed checkSub(), then sent at once;
+ *                                      nothing after it is forwarded live
  *   {"type":"done","copy":{…},"fallback":false}
  *   {"type":"done","copy":{…},"fallback":true}   Claude's draft failed our checks
  *   {"type":"error","error":"ai_failed"}          the stream broke mid-way
@@ -92,12 +97,15 @@ export async function POST(req: NextRequest) {
   const ipKey = `rl:aicopy:${clientIp(req)}`;
   const globalKey = `rl:aicopy:global:${todayStamp()}`;
 
-  const perIp = await consume(ipKey, PER_IP_DAILY);
+  // Fail closed: without KV there is no ceiling on the Anthropic bill.
+  const perIp = await consume(ipKey, PER_IP_DAILY, undefined, { failClosed: true });
+  if (perIp.unavailable) return fail("unavailable", 503);
   if (!perIp.ok) return fail("limited", 429, { scope: "ip", limit: PER_IP_DAILY });
 
-  const global = await consume(globalKey, GLOBAL_DAILY);
+  const global = await consume(globalKey, GLOBAL_DAILY, undefined, { failClosed: true });
   if (!global.ok) {
     await refund(ipKey);
+    if (global.unavailable) return fail("unavailable", 503);
     return fail("limited", 429, { scope: "global" });
   }
   const refundBoth = () => Promise.all([refund(ipKey), refund(globalKey)]);
@@ -142,10 +150,22 @@ export async function POST(req: NextRequest) {
         if (!cancelled) controller.enqueue(encoder.encode(JSON.stringify(line) + "\n"));
       };
       let raw = "";
+      // No unvalidated character reaches the browser: hold the text until the
+      // tagline is complete and passes the same checks as the final copy. The
+      // client paces the typing itself, so the live effect is unchanged.
+      let gate: "hold" | "sent" | "shut" = "hold";
       const handle = (ev: Anthropic.MessageStreamEvent) => {
         if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") {
           raw += ev.delta.text;
-          send({ type: "delta", text: ev.delta.text });
+          if (gate !== "hold") return;
+          const sub = completedSub(raw);
+          if (sub === null) return;
+          if (checkSub(sub)) {
+            gate = "sent";
+            send({ type: "delta", text: raw });
+          } else {
+            gate = "shut"; // validateCopy will reject it too → fallback
+          }
         }
       };
 

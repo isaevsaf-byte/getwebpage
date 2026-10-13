@@ -5,45 +5,18 @@ import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { SharedName } from "@/components/motion/PageTransition";
+import { SITES } from "@/lib/showcase/content";
 
-export const projects = [
-  {
-    label: "Lingerie & Atelier",
-    slug: "beautasy",
-    title: "beautasy.co.uk",
-    sub: "Luxury lingerie brand & bespoke atelier",
-    href: "https://beautasy.co.uk",
-    img: "/portfolio/beautasy.jpg",
-    imgPosition: "center",
-  },
-  {
-    label: "DJ & Artist",
-    slug: "bektothefuture",
-    title: "bektothefuture.com",
-    sub: "DJ artist portfolio & booking",
-    href: "https://bektothefuture.com",
-    img: "/portfolio/bektothefuture.jpg",
-    imgPosition: "top",
-  },
-  {
-    label: "Honey Import",
-    slug: "silkbees",
-    title: "silkbees.co.uk",
-    sub: "Premium honey import from Central Asia",
-    href: "https://silkbees.co.uk",
-    img: "/portfolio/silkbees.jpg",
-    imgPosition: "top",
-  },
-  {
-    label: "AI & Consulting",
-    slug: "safarisaev",
-    title: "safarisaev.ai",
-    sub: "AI strategy & consulting presence",
-    href: "https://safarisaev.ai",
-    img: "/portfolio/safarisaev.jpg",
-    imgPosition: "center",
-  },
-];
+/** From lib/showcase/content SITES, so labels and disclosures match the home page. */
+export const projects = SITES.map((site) => ({
+  label: site.label,
+  slug: site.slug,
+  title: site.domain,
+  sub: site.sub,
+  href: site.url,
+  img: site.image,
+  imgPosition: site.imgPosition,
+}));
 
 export default function WorkSection({ showAll = false }: { showAll?: boolean }) {
   const ref = useRef(null);
@@ -226,14 +199,16 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
             </motion.a>
           ))}
 
-          {/* Coming soon card */}
-          <div
+          {/* Next-project card: a way forward, not a claim that work is underway */}
+          <Link
+            href="/pricing"
             style={{
+              display: "block",
               background: "#fff",
               border: "1px dashed #c3c8c0",
               borderRadius: 6,
               overflow: "hidden",
-              opacity: 0.5,
+              textDecoration: "none",
             }}
           >
             <div
@@ -261,7 +236,7 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
                     textTransform: "uppercase",
                   }}
                 >
-                  Coming soon
+                  Your site here
                 </span>
               </div>
             </div>
@@ -286,7 +261,7 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
                   color: "#636b67",
                 }}
               >
-                In progress
+                Could be yours
               </div>
               <div
                 style={{
@@ -296,10 +271,10 @@ export default function WorkSection({ showAll = false }: { showAll?: boolean }) 
                   marginTop: 4,
                 }}
               >
-                Could be yours
+                See prices — from £500 →
               </div>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
     </section>

@@ -72,7 +72,8 @@ export default function FinalCall() {
             );
           }
         } else {
-          gsap.from(title, { autoAlpha: 0, duration: 0.2, ease: "none", scrollTrigger, onComplete });
+          // Reduced motion: no from-state. The heading is simply there.
+          revealed.current = true;
         }
       });
 

@@ -38,8 +38,8 @@ export default function WhatsAppButton() {
       <style>{`
         .wa-btn {
           position: fixed;
-          bottom: 24px;
-          right: 24px;
+          bottom: calc(24px + env(safe-area-inset-bottom));
+          right: calc(24px + env(safe-area-inset-right));
           z-index: 999;
           width: 56px;
           height: 56px;
@@ -57,10 +57,11 @@ export default function WhatsAppButton() {
             transform: scale(1.1);
           }
         }
-        /* Phones: the sticky offer bar carries its own WhatsApp link, and
-           an open keyboard leaves no room — so the FAB steps aside. Both
-           classes are set on <html> by StickyOfferBar. */
-        @media (max-width: 767px) {
+        /* Phones and touch tablets: the sticky offer bar carries its own
+           WhatsApp link, and an open keyboard leaves no room — so the FAB
+           steps aside. Both classes are set on <html> by StickyOfferBar;
+           this query must match the bar's own ELIGIBLE query. */
+        @media (max-width: 767.98px), (pointer: coarse) {
           html.offer-bar-visible .wa-btn,
           html.input-focused .wa-btn {
             display: none;
@@ -70,8 +71,8 @@ export default function WhatsAppButton() {
           .wa-btn {
             width: 48px;
             height: 48px;
-            bottom: 16px;
-            right: 16px;
+            bottom: calc(16px + env(safe-area-inset-bottom));
+            right: calc(16px + env(safe-area-inset-right));
           }
           .wa-btn svg {
             width: 24px;

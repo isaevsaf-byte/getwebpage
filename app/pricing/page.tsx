@@ -3,7 +3,9 @@ import SiteHeader from "@/components/showcase/SiteHeader";
 import Footer from "@/components/Footer";
 import Pricing from "@/components/showcase/Pricing";
 import Ownership from "@/components/showcase/Ownership";
-import ButtonLink from "@/components/ButtonLink";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import styles from "./pricing.module.css";
 
 export const metadata: Metadata = {
   title: "Pricing — GetWebPage",
@@ -11,7 +13,7 @@ export const metadata: Metadata = {
     "Transparent pricing for UK small business websites. From £500. No monthly fees, no lock-in, full ownership.",
 };
 
-const faqs = [
+const faqs: { q: string; a: ReactNode }[] = [
   {
     q: "What's included in the price?",
     a: "Everything you see in the feature list — plus domain setup, hosting configuration, and SSL certificate. No hidden fees.",
@@ -26,7 +28,15 @@ const faqs = [
   },
   {
     q: "Can I see examples first?",
-    a: "Yes. Head to our Work page to see live examples of sites we've built across different industries.",
+    a: (
+      <>
+        Yes. Head to our{" "}
+        <Link href="/work" className={styles.link}>
+          Work page
+        </Link>{" "}
+        to see live examples of sites we&apos;ve built across different industries.
+      </>
+    ),
   },
   {
     q: "How do revisions work?",
@@ -50,13 +60,7 @@ export default function PricingPage() {
         <Ownership />
 
         {/* FAQ */}
-        <section
-          style={{
-            background: "#eaece7",
-            padding: "100px 40px",
-            borderTop: "1px solid #d5d9d2",
-          }}
-        >
+        <section className={styles.faq}>
           <div style={{ maxWidth: 800, margin: "0 auto" }}>
             <div
               style={{
@@ -86,16 +90,7 @@ export default function PricingPage() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
               {faqs.map((faq) => (
-                <div
-                  key={faq.q}
-                  style={{
-                    borderTop: "1px solid #d5d9d2",
-                    padding: "28px 0",
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1.4fr",
-                    gap: 48,
-                  }}
-                >
+                <div key={faq.q} className={styles.row}>
                   <div
                     style={{
                       fontFamily: "var(--font-display), serif",
@@ -121,45 +116,6 @@ export default function PricingPage() {
               ))}
               <div style={{ borderTop: "1px solid #d5d9d2", height: 1 }} />
             </div>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section
-          style={{
-            background: "#e3e6e0",
-            padding: "80px 40px",
-            borderTop: "1px solid #d5d9d2",
-          }}
-        >
-          <div style={{ maxWidth: 580, margin: "0 auto", textAlign: "center" }}>
-            <h2
-              style={{
-                fontFamily: "var(--font-display), serif",
-                fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)",
-                fontWeight: 300,
-                color: "#14181a",
-                lineHeight: 1.1,
-                letterSpacing: "-0.015em",
-                marginBottom: 16,
-              }}
-            >
-              Not sure which plan is right?
-            </h2>
-            <p
-              style={{
-                fontFamily: "var(--font-sans), sans-serif",
-                fontSize: 14,
-                color: "#5a6360",
-                marginBottom: 32,
-              }}
-            >
-              Tell us about your business and we&apos;ll recommend the right fit.
-              No commitment, reply within 24 hours.
-            </p>
-            <ButtonLink href="/contact" variant="primary">
-              Get a free quote
-            </ButtonLink>
           </div>
         </section>
       </main>

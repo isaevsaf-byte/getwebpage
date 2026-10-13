@@ -40,12 +40,20 @@ const LETTER_OR_DIGIT_RE = new RegExp("[\\p{L}\\p{N}]", "gu");
 const TLD = "(?:com|co|uk|net|org|io|ai|app|dev|shop|biz|info|me|xyz|store|online|site)";
 /** Web addresses in a typed name. '@' alone is allowed ("Hair@Home"). */
 const NAME_URL_RE = new RegExp(`(?:https?:|www\\.|:\\/\\/|\\b[a-z0-9-]+\\.${TLD}\\b)`, "i");
-/** Web or email addresses in Claude's output. */
-const OUTPUT_URL_RE = new RegExp(`(?:https?:|www\\.|:\\/\\/|@|\\b[a-z0-9-]+\\.${TLD}\\b)`, "i");
+/**
+ * Web or email addresses in Claude's output — any host, not just the TLDs
+ * above (bit.ly, goo.gl, bloom.london…). A false positive only serves the
+ * fallback. Names stay on the narrower NAME_URL_RE so "A.J.Smith Builders"
+ * is not told it looks like a web address.
+ */
+const OUTPUT_URL_RE = new RegExp(
+  "(?:https?:|www\\.|:\\/\\/|@|\\b[\\p{L}\\p{N}-]+\\.[\\p{L}]{2,}\\b)",
+  "iu",
+);
 /** Markup or template characters. Never valid in a name or in copy. */
 const MARKUP_RE = /[<>{}[\]`\\|]/;
 /** Characters that only show up when the model formats instead of writes. */
-const OUTPUT_FORMAT_RE = /[#*_~^=+"]/;
+const OUTPUT_FORMAT_RE = /[#*_~^=+"/]/;
 const DIGIT_RE = /\d/;
 const MONEY_RE = /[£$€¥%]/;
 /** Claims we can't stand behind for a business we know nothing about. */
@@ -105,6 +113,24 @@ function cleanField(value: unknown, min: number, max: number): string | null {
     return null;
   }
   return s;
+}
+
+/** The tagline alone passes the same checks validateCopy applies to it. */
+export function checkSub(sub: string): boolean {
+  return cleanField(sub, MIN.sub, LIMITS.sub) !== null;
+}
+
+const DONE_SUB_RE = /"sub"\s*:\s*"((?:[^"\\]|\\.)*)"/;
+
+/** The "sub" value from partial JSON once its closing quote has arrived, else null. */
+export function completedSub(json: string): string | null {
+  const m = DONE_SUB_RE.exec(json);
+  if (!m) return null;
+  try {
+    return JSON.parse(`"${m[1]}"`) as string;
+  } catch {
+    return "";
+  }
 }
 
 /**

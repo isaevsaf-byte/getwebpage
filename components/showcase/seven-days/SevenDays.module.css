@@ -15,7 +15,7 @@
   --meta: #9aa19d;
   --acc: #cf8794;
   --hair: rgba(227, 230, 224, 0.16);
-  --pad: clamp(16px, 5vw, 64px);
+  --pad: var(--gutter);
   --gap: clamp(16px, 2.5vw, 32px);
   position: relative;
   background: var(--ink);
@@ -435,10 +435,11 @@
   }
 }
 
-/* Stacked at desktop widths (reduced motion): keep clear of the fixed rail. */
+/* Stacked at desktop widths (reduced motion): keep clear of the fixed rail
+   (132px wide with its skip link, plus its 24px offset). */
 @media (min-width: 1024px) {
   .grid {
-    padding-right: max(var(--pad), 96px);
+    padding-right: max(var(--pad), 168px);
   }
 }
 
@@ -1020,5 +1021,14 @@
   .chip,
   .tip {
     background: #14181a;
+  }
+}
+
+/* 1024–1365px: the fixed desk rail (132px + 24px offset) would sit on the
+   sticky stage — skip link over the light pane, counter over the numeral.
+   Reserve its width. Wider screens have room to spare. */
+@media (min-width: 1024px) and (max-width: 1365.98px) {
+  :global(html.motion-ok) .grid {
+    padding-right: max(var(--pad), 168px);
   }
 }

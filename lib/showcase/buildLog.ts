@@ -9,10 +9,11 @@
  * gracefully: totals that are missing a part get a "+" ("at least"), and a
  * log line whose numbers are all missing is simply left out.
  *
- * 🚨 OWNER: the audit lines below are worded neutrally on purpose ("security
- * hole … closed", "cookie consent rebuilt"). The full truth is sharper — the
- * old site had a request-forgery hole and fired analytics before consent.
- * Say it more plainly only if you are comfortable admitting it in public.
+ * 🚨 OWNER: the audit lines below are worded as neutral hardening on purpose
+ * ("audit fetcher hardened", "analytics wait for consent"). The full truth is
+ * sharper — the old site had a request-forgery hole and fired analytics
+ * before consent. Say it more plainly only if you are comfortable admitting
+ * it in public.
  */
 
 /* ------------------------------------------------------------------ */
@@ -21,8 +22,8 @@
 
 export const FLAGS = {
   /**
-   * true  → "We build your site the same way."
-   * false → "This is how we work now."
+   * true  → "We build your site the same way." + the speed/QA support line.
+   * false → "That's how this page was made." — a claim about this page only.
    * Only switch on once client sites really are built with this pipeline.
    */
   aiStoryClientClaim: false,
@@ -53,9 +54,9 @@ export const AUDIT = {
   issues: 22,
   critical: 3,
   criticals: [
-    "security hole in the audit fetcher → closed",
-    "cookie consent rebuilt → analytics now opt-in",
-    "unmetered AI spend → closed",
+    "audit fetcher hardened",
+    "analytics wait for consent",
+    "AI spend capped per day",
   ],
   attackUrlsBlocked: 17,
   attackUrlsTried: 17,
@@ -148,7 +149,7 @@ function sectionsNumbersLine(): LogLine | null {
   const parts: string[] = [];
   if (SECTIONS.minutes !== null) parts.push(`~${SECTIONS.minutes} min`);
   if (SECTIONS.tokens !== null) parts.push(`~${formatTokens(SECTIONS.tokens)} tokens`);
-  if (SECTIONS.toolCalls !== null) parts.push(`${SECTIONS.toolCalls} tool calls`);
+  if (SECTIONS.toolCalls !== null) parts.push(`${SECTIONS.toolCalls.toLocaleString("en-GB")} tool calls`);
   return parts.length ? { who: "sections", text: parts.join(" · ") } : null;
 }
 
@@ -172,7 +173,7 @@ export const PHASES: Phase[] = [
     id: "audit",
     label: "audit",
     title: "Read every file first.",
-    sub: "Before anything new, one agent read the old site’s code. Every hole it found is now closed.",
+    sub: "Before anything new, one agent read the old site’s code. Its critical findings were fixed first.",
     lines: [
       { who: "audit", text: `read all ${AUDIT.filesRead} files` },
       { who: "audit", text: `${AUDIT.issues} issues found · ${AUDIT.critical} critical`, key: true },
@@ -184,7 +185,7 @@ export const PHASES: Phase[] = [
       },
       {
         who: "security",
-        text: `Next.js ${AUDIT.nextFrom} → ${AUDIT.nextTo} · critical remote-code-execution flaw closed`,
+        text: `Next.js ${AUDIT.nextFrom} → ${AUDIT.nextTo} · latest security patches`,
       },
     ],
   },
@@ -220,7 +221,7 @@ export const PHASES: Phase[] = [
       { who: "judge:impact", text: "chose “Light Table” · the wow lands on screen one", key: true },
       {
         who: "judge:engineering",
-        text: "chose “Your Name, Set in Glass” · iOS has no deviceMemory → no WebGL on phones",
+        text: "chose “Your Name, Set in Glass” · phones get a lighter version so they stay fast",
         key: true,
       },
       { who: "judge:engineering", text: "measured three.js: 134 KB vanilla vs up to 328 KB with R3F + drei" },
@@ -250,7 +251,7 @@ export const PHASES: Phase[] = [
       { who: "foundation", text: "motion core · sketch renderer · 3D stage · section contracts" },
       {
         who: "foundation",
-        text: `~${formatTokens(FOUNDATION.tokens)} tokens · ${FOUNDATION.toolCalls} tool calls · ~${FOUNDATION.minutes} min`,
+        text: `~${formatTokens(FOUNDATION.tokens)} tokens · ${FOUNDATION.toolCalls.toLocaleString("en-GB")} tool calls · ~${FOUNDATION.minutes} min`,
         key: true,
       },
     ],
@@ -259,7 +260,7 @@ export const PHASES: Phase[] = [
     id: "sections",
     label: "sections",
     title: "Every section at once.",
-    sub: "Twelve builders made a section each — this one included.",
+    sub: "Twelve builders worked at once — sections, 3D scenes and the AI copywriter.",
     lines: [
       { who: "sections", text: sectionsAgentsText },
       ...(sectionsNumbersLine() ? [sectionsNumbersLine() as LogLine] : []),
@@ -413,6 +414,9 @@ export const CLOSING = {
   line: ["Directed by a person.", "Built by agents.", "Checked by both."],
   claim: FLAGS.aiStoryClientClaim
     ? "We build your site the same way."
-    : "This is how we work now.",
-  support: "Agents work in parallel, so it’s fast. Every frame gets checked, so it holds up.",
+    : "That’s how this page was made.",
+  /** Speaks about client builds, so it only shows once the flag is on. */
+  support: FLAGS.aiStoryClientClaim
+    ? "Agents work in parallel, so it’s fast. Every frame gets checked, so it holds up."
+    : "",
 } as const;

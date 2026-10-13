@@ -294,7 +294,15 @@ export default function SiteHeader({ home: homeProp }: { home?: boolean }) {
     const onMq = () => mq.matches && setOpen(false);
     document.addEventListener("keydown", onKey);
     mq.addEventListener("change", onMq);
+    // The full-screen sheet covers the page: take the page out of the
+    // accessibility tree too, so swipe navigation cannot wander behind it.
+    // The header (and its close button) stays live.
+    const behind = Array.from(
+      document.querySelectorAll<HTMLElement>("main, footer, .wa-btn, [aria-label='Prices and contact']"),
+    ).filter((el) => !el.inert && !el.contains(sheet));
+    for (const el of behind) el.inert = true;
     return () => {
+      for (const el of behind) el.inert = false;
       lenis?.start();
       cancelAnimationFrame(raf);
       document.removeEventListener("keydown", onKey);

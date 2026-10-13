@@ -12,9 +12,13 @@ import "./globals.css";
 // weights, so display weights can animate smoothly. Upright only: the
 // italic file doubled the preload (+180 KB measured) for a style the
 // showcase does not use.
+// Preload Latin only (deliberate deviation from spec G1): next/font still
+// emits @font-face for every subset, so Cyrillic names render through
+// unicode-range and ensureSketchFonts() loads it on demand. Preloading it
+// cost ~100 ms of FCP on slow 4G for a glyph range the SSR HTML never uses.
 const literata = Literata({
   variable: "--font-display",
-  subsets: ["latin", "cyrillic"],
+  subsets: ["latin"],
   weight: "variable",
   axes: ["opsz"],
   style: ["normal"],
@@ -42,14 +46,14 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: "GetWebPage — Serious websites for UK small businesses",
   description:
-    "A UK web studio building fast, beautiful websites for salons, studios, hospitality and trades. From £500, delivered in 7 days. Full ownership guaranteed.",
+    "A UK web studio building fast, beautiful websites for salons, studios, hospitality and trades. From £500, live in 7 working days. Full ownership guaranteed.",
   keywords: "web design, website, UK, small business, affordable, fast",
   icons: {
     icon: "/icon.svg",
   },
   openGraph: {
     title: "GetWebPage — Serious websites for UK small businesses",
-    description: "From £500. Delivered in 7 days. Full ownership yours.",
+    description: "From £500. Live in 7 working days. Full ownership yours.",
     url: SITE,
     siteName: "GetWebPage",
     locale: "en_GB",
@@ -59,7 +63,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "GetWebPage — Serious websites for UK small businesses",
-    description: "From £500. Delivered in 7 days. Full ownership yours.",
+    description: "From £500. Live in 7 working days. Full ownership yours.",
     images: [`${SITE}/og-image.jpg`],
   },
 };
@@ -81,7 +85,7 @@ const jsonLd = {
       "@id": `${SITE}/#business`,
       name: "GetWebPage",
       description:
-        "UK web studio building websites for salons, studios, hospitality and trades. From £500, delivered in 7 days.",
+        "UK web studio building websites for salons, studios, hospitality and trades. From £500, live in 7 working days.",
       url: SITE,
       email: "saf@safarisaev.ai",
       telephone: "+447729741116",

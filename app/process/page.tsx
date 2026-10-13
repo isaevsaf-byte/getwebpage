@@ -40,9 +40,9 @@ const steps = [
     n: "03",
     title: "Revisions",
     duration: "Day 4",
-    body: "You get one round of revisions (two on Identity and above). We turn feedback around the same day. We're not here to negotiate — if something isn't right, we fix it.",
+    body: "Starter includes one round of revisions, Standard two and Identity three. We turn feedback around the same day. We're not here to negotiate — if something isn't right, we fix it.",
     details: [
-      "One structured feedback round",
+      "Revision rounds set by your plan",
       "Same-day turnaround",
       "Change requests tracked clearly",
       "No nitpicking charges",

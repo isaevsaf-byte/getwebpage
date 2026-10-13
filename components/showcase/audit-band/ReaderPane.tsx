@@ -167,8 +167,8 @@ export default function ReaderPane({ domain, host, className }: Props) {
       </div>
       <figcaption className={s.caption}>
         {host
-          ? `Claude will read ${host}: the code Google sees and the page your visitors see.`
-          : "Claude reads the code Google sees and the page your visitors see."}
+          ? `Claude will read ${host}: your page's code and text — what Google reads first.`
+          : "Claude reads your page's code and text — what Google reads first."}
       </figcaption>
     </figure>
   );

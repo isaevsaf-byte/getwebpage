@@ -89,6 +89,20 @@ export function prefersReducedMotion(): boolean {
   );
 }
 
+/**
+ * Reveal from-states use opacity only — never autoAlpha/visibility — so the
+ * content stays in the accessibility tree and the tab order before it is
+ * revealed. This finishes the reveal the moment focus lands inside `trigger`,
+ * so a focused control is never invisible. Returns the cleanup.
+ */
+export function finishOnFocus(trigger: Element, anim: gsap.core.Animation): () => void {
+  const finish = () => {
+    anim.progress(1);
+  };
+  trigger.addEventListener("focusin", finish, { once: true });
+  return () => trigger.removeEventListener("focusin", finish);
+}
+
 export {
   gsap,
   ScrollTrigger,

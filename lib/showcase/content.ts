@@ -20,21 +20,24 @@
 
 export const FLAGS = {
   /**
-   * Quote 1 is from Beautasy, a family project. It is live on the current
-   * site, so it defaults to on — the owner must confirm or switch it off.
+   * Quote 1 is from Beautasy, a family business of the founder — a connected
+   * party, not an arm's-length client. Off until there is an independent
+   * quote (CAP Code 3.45/3.47). If the owner switches it back on, the credit
+   * below already discloses the connection.
    */
-  testimonial1: true,
+  testimonial1: false,
   /** Quote 2's outcome claims cannot be verified, so it is off by default. */
   testimonial2: false,
   /**
    * The small label above each portfolio domain. Edit freely.
-   * silkbees: the live site's brand is "Tian Shan Queens" and it also sells
-   * queen bees — the owner must confirm "Honey Import".
+   * silkbees: the live site's <title> is "Tian Shan Queens — Mountain
+   * Beekeeping from Uzbekistan", so the label and sub follow that wording
+   * until the owner confirms a better one (it was "Honey Import").
    */
   siteLabels: {
     beautasy: "Lingerie & Atelier",
     bektothefuture: "DJ & Artist",
-    silkbees: "Honey Import",
+    silkbees: "Beekeeping",
     safarisaev: "AI & Consulting",
   } as Record<SiteSlug, string>,
 };
@@ -82,7 +85,7 @@ export const TIERS: readonly Tier[] = [
     name: "Starter",
     price: "£500",
     days: 5,
-    time: "5 days",
+    time: "5 working days",
     deposit: "£250",
     depositLine: "£250 today · £250 before go-live",
     desc: "One-page site. Perfect for getting online fast.",
@@ -104,7 +107,7 @@ export const TIERS: readonly Tier[] = [
     name: "Standard",
     price: "£800",
     days: 7,
-    time: "7 days",
+    time: "7 working days",
     deposit: "£400",
     depositLine: "£400 today · £400 before go-live",
     desc: "Up to 5 pages. For businesses that need more room.",
@@ -125,7 +128,7 @@ export const TIERS: readonly Tier[] = [
     name: "Identity",
     price: "£1,200",
     days: 7,
-    time: "7 days",
+    time: "7 working days",
     deposit: "£600",
     depositLine: "£600 today · £600 before go-live",
     desc: "Full brand + site — design, copy, photography direction.",
@@ -236,9 +239,21 @@ function site(
 
 /** The 4 real, live portfolio sites, in WorkSection order. Captures: scripts/capture-showcase.js. */
 export const SITES: readonly Site[] = [
-  site("beautasy", "beautasy.co.uk", "Luxury lingerie brand & bespoke atelier", "center", true),
+  site(
+    "beautasy",
+    "beautasy.co.uk",
+    "Luxury lingerie brand & bespoke atelier — a family business of our founder",
+    "center",
+    true,
+  ),
   site("bektothefuture", "bektothefuture.com", "DJ artist portfolio & booking", "top", false),
-  site("silkbees", "silkbees.co.uk", "Premium honey import from Central Asia", "top", true),
+  site(
+    "silkbees",
+    "silkbees.co.uk",
+    "Tian Shan Queens — mountain beekeeping from Uzbekistan",
+    "top",
+    true,
+  ),
   site(
     "safarisaev",
     "safarisaev.ai",
@@ -294,7 +309,7 @@ export const PROCESS_BEATS: readonly ProcessBeat[] = [
     days: [4],
     title: "Day 4 — Revisions",
     short: "Revisions",
-    body: "You tell us what isn't right. We turn feedback around the same day. If something isn't right, we fix it.",
+    body: "Tell us what to change. We turn it around the same day.",
     note: "Revision rounds depend on your plan — see pricing.",
   },
   {
@@ -327,7 +342,7 @@ export const DAY_TICKS: readonly { day: number; label: string }[] = [
 export const SEVEN_DAYS_COPY = {
   kicker: "Your sketch, built the way we build every site.",
   /** Replace {name}. */
-  kickerWithName: "Shown on: {name}",
+  kickerWithName: "Your sketch for {name}.",
   title: "From brief to live in 7 days.",
   endLine: "That was a sketch. Yours gets the real thing.",
   endPrimary: "Start yours — from £500",
@@ -358,7 +373,7 @@ export const TESTIMONIALS: readonly Testimonial[] = [
     quote:
       "Genuinely couldn't believe how fast it was. The site looks better than anything I've seen from agencies charging triple.",
     name: "Beautasy studio owner",
-    role: "Southampton, UK",
+    role: "Southampton, UK — a family business of our founder",
     slug: "beautasy",
   },
   {

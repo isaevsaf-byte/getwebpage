@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, type JSX, type ReactNode } from "react";
-import { gsap, useGSAP, motionMedia } from "@/lib/motion/gsap";
+import { gsap, useGSAP, motionMedia, finishOnFocus } from "@/lib/motion/gsap";
 
 type Props = {
   as?: keyof JSX.IntrinsicElements;
@@ -21,8 +21,9 @@ type Props = {
  * the block reaches 85% of the viewport.
  *
  * The hidden from-state is applied by JS when the trigger is created, never
- * by CSS, so without JS everything is simply visible. Reduced motion keeps a
- * 200ms fade with no movement.
+ * by CSS, so without JS everything is simply visible. It is opacity only, so
+ * the content stays tabbable and in the accessibility tree; focus landing
+ * inside finishes the reveal at once. Reduced motion renders final.
  */
 export default function Reveal({
   as = "div",
@@ -48,31 +49,25 @@ export default function Reveal({
         const targets = selector ? Array.from(el.querySelectorAll(selector)) : [el];
         if (targets.length === 0) return;
 
-        const scrollTrigger = { trigger: el, start: "top 85%", once: true };
-        const onComplete = () => {
+        // Reduced motion: no from-state at all. A short fade buys nothing.
+        if (!ok) {
           done.current = true;
-        };
-
-        if (ok) {
-          gsap.from(targets, {
-            autoAlpha: 0,
-            y,
-            duration: 0.65,
-            ease: "studio-out",
-            stagger,
-            delay,
-            scrollTrigger,
-            onComplete,
-          });
-        } else {
-          gsap.from(targets, {
-            autoAlpha: 0,
-            duration: 0.2,
-            ease: "none",
-            scrollTrigger,
-            onComplete,
-          });
+          return;
         }
+
+        const tween = gsap.from(targets, {
+          opacity: 0,
+          y,
+          duration: 0.65,
+          ease: "studio-out",
+          stagger,
+          delay,
+          scrollTrigger: { trigger: el, start: "top 85%", once: true },
+          onComplete: () => {
+            done.current = true;
+          },
+        });
+        return finishOnFocus(el, tween);
       });
 
       return () => mm.revert();

@@ -9,7 +9,7 @@
  * AI click sends it anywhere — to Claude, disclosed next to the button.
  */
 
-import { useCallback, useRef, type KeyboardEvent } from "react";
+import { useCallback, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useLenis } from "lenis/react";
 import { useScrollTo } from "@/components/motion/SmoothScroll";
@@ -47,6 +47,10 @@ export default function NameCard() {
   const afterRef = useRef<HTMLDivElement>(null);
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const typed = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const liftTimer = useRef<number | undefined>(undefined);
+  /** Screen-reader line, written only on commit — never per keystroke. */
+  const [announce, setAnnounce] = useState("");
 
   const urlHost = looksLikeUrl(visitor.raw);
 
@@ -54,6 +58,9 @@ export default function NameCard() {
   const commit = useCallback((quiet = false) => {
     const v = getVisitor();
     if (!v.hasName) return false;
+    setAnnounce(
+      `A sketch for ${v.name}, drawn in your browser. The real one takes 5–7 working days.`,
+    );
     if (!v.committed) {
       commitVisitor();
       track("sketch_committed");
@@ -65,7 +72,7 @@ export default function NameCard() {
     return true;
   }, []);
 
-  const onChange = (raw: string) => {
+  const onChange = useCallback((raw: string) => {
     const before = getVisitor().raw;
     markInk(before, raw);
     setVisitorName(raw);
@@ -74,7 +81,15 @@ export default function NameCard() {
       track("sketch_typed");
     }
     if (raw.trim()) fireTypeSweep();
-  };
+  }, []);
+
+  // Text typed (or autofilled) before hydration lives only in the DOM. Copy it
+  // into the store in the hydration commit, before useSyncExternalStore's
+  // client snapshot would write "" over it.
+  useLayoutEffect(() => {
+    const v = inputRef.current?.value ?? "";
+    if (v && v !== getVisitor().raw) onChange(v);
+  }, [onChange]);
 
   /** After an explicit commit, bring the new row on screen if it is below the fold. */
   const reveal = () => {
@@ -97,18 +112,24 @@ export default function NameCard() {
   };
 
   const onBlur = () => {
+    // Focus left before the lift ran: never scroll the page under the new focus.
+    window.clearTimeout(liftTimer.current);
     if (getVisitor().graphemes >= 2) commit(true);
   };
 
-  // Phones: lift the card above the keyboard, 72px under the top.
+  // Touch phones/tablets: lift the card above the on-screen keyboard, 72px
+  // under the top. A narrow desktop window has no on-screen keyboard.
   const onFocus = () => {
     if (window.matchMedia("(min-width: 1024px)").matches) return;
+    if (!window.matchMedia("(pointer: coarse)").matches) return;
     const card = cardRef.current;
     if (!card) return;
-    window.setTimeout(() => {
+    window.clearTimeout(liftTimer.current);
+    liftTimer.current = window.setTimeout(() => {
+      if (document.activeElement !== inputRef.current) return;
       const reduce = prefersReducedMotion();
       if (lenis) {
-        lenis.scrollTo(card, { offset: -72, duration: 0.6, immediate: reduce, force: true });
+        lenis.scrollTo(card, { offset: -72, duration: 0.6, immediate: reduce });
       } else {
         const top = card.getBoundingClientRect().top + window.scrollY - 72;
         window.scrollTo({ top, behavior: reduce ? "instant" : "smooth" });
@@ -159,6 +180,7 @@ export default function NameCard() {
       </label>
       <div className={styles.field}>
         <input
+          ref={inputRef}
           id="hero-name"
           className={styles.input}
           type="text"
@@ -216,7 +238,10 @@ export default function NameCard() {
       </p>
 
       <div ref={afterRef} className={styles.after}>
-        <p className={styles.caption} aria-live="polite">
+        <p role="status" className={styles.srOnly}>
+          {announce}
+        </p>
+        <p className={styles.caption}>
           {visitor.committed ? (
             <span className={`${styles.captionText} enter-up`}>
               A sketch for {visitor.name}, drawn in your browser. The real one takes 5–7 working days.

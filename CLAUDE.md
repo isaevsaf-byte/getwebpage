@@ -35,6 +35,7 @@ No test suite is configured.
 | `POST /api/checkout` | Create Stripe checkout session (3 tiers: £500/£800/£1200) |
 | `POST /api/contact` | Contact form → Resend email |
 | `POST /api/webhook` | Stripe webhook: send order notification emails |
+| `POST /api/ai-copy` | name + sector → Claude Haiku 5.5, streamed NDJSON (tagline validated before it is sent); 8/IP/day + global ceiling, fails closed without KV; name never stored |
 
 ### Audit Tool Data Flow
 
@@ -47,6 +48,8 @@ URL input → /api/audit (fetch HTML + Cheerio parse + Claude) → KV cache (24h
 Rate limiting: 20 audits per IP per 24h, plus a global daily ceiling
 (`AUDIT_GLOBAL_DAILY_LIMIT`, default 500) so rotating IPs cannot run up the
 Anthropic bill. Both tracked in KV.
+AI copy (`/api/ai-copy`): 8 per IP per day + `AI_COPY_GLOBAL_DAILY_LIMIT`
+(default 400). Unlike the other routes it fails closed when KV is unreachable.
 
 ### Key Files
 

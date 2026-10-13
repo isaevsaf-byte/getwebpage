@@ -18,6 +18,7 @@ import { EDGES, NODE_BY_ID, VB_W } from "./geometry";
 const SAMPLES = 40;
 const SPEED = 300; // viewBox units per second
 const TRAIL = 7;
+const IDLE_MS = 5000;
 
 interface EdgeRT {
   lut: Float32Array;
@@ -74,6 +75,8 @@ export class PulseField {
   private visible = false;
   private spawnAcc = 0;
   private dirty = true;
+  /** Last scroll/resize/visibility wake. Ambient pulses stop 5s after it (WCAG 2.2.2). */
+  private lastWake = 0;
   private readonly io: IntersectionObserver;
   private readonly ro: ResizeObserver;
 
@@ -125,6 +128,7 @@ export class PulseField {
   /** Something changed (scroll moved a tip): draw at least one frame. */
   wake() {
     this.dirty = true;
+    this.lastWake = performance.now();
     if (this.visible && !this.running) {
       this.running = true;
       gsap.ticker.add(this.tick);
@@ -171,10 +175,12 @@ export class PulseField {
     const on: number[] = [];
     for (let i = 0; i < this.edges.length; i++) if (this.isOn(i)) on.push(i);
 
-    // Ambient spawning, scaled to how much of the graph is lit.
+    // Ambient spawning, scaled to how much of the graph is lit — only while
+    // the visitor is scrolling (and 5s after), so the page comes to rest.
+    const idle = performance.now() - this.lastWake > IDLE_MS;
     const target = Math.round(Math.min(34, 3 + on.length * 0.5) * this.density);
     this.spawnAcc += dt;
-    if (on.length && this.pulses.length < target && this.spawnAcc > 0.09) {
+    if (!idle && on.length && this.pulses.length < target && this.spawnAcc > 0.09) {
       this.spawnAcc = 0;
       const i = on[(Math.random() * on.length) | 0];
       this.pulses.push({ e: i, t: 0, v: (SPEED / this.edges[i].len) * (0.8 + Math.random() * 0.4), hops: 0 });
@@ -250,8 +256,8 @@ export class PulseField {
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
 
-    // Nothing alive and nothing lit: sleep until woken.
-    if (!drew && !on.length && !this.dirty) {
+    // Nothing alive and nothing more to spawn: sleep until woken.
+    if (!drew && (!on.length || idle) && !this.dirty) {
       gsap.ticker.remove(this.tick);
       this.running = false;
     }

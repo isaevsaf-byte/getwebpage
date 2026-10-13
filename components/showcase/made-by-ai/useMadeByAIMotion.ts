@@ -719,11 +719,19 @@ export function useMadeByAIMotion(root: RefObject<HTMLElement | null>) {
         const offHover = desktop && fine && box ? setupHover(box) : () => {};
         // Reduced motion: the server-rendered final state is the experience.
         if (!ok) return offHover;
+        // The rec dot and caret loop forever; run them only near the viewport.
+        const live = new IntersectionObserver(
+          (entries) => el.toggleAttribute("data-live", entries[entries.length - 1].isIntersecting),
+          { rootMargin: "100px 0px" },
+        );
+        live.observe(el);
         setupClosing(el);
         const scene =
           desktop && fine && document.documentElement.classList.contains("fine-desktop");
         const offMode = scene ? setupScene(el) : setupFlow(el, desktop);
         return () => {
+          live.disconnect();
+          el.removeAttribute("data-live");
           offHover();
           offMode();
         };

@@ -18,7 +18,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { gsap, useGSAP, motionMedia } from "@/lib/motion/gsap";
+import { gsap, useGSAP, motionMedia, finishOnFocus } from "@/lib/motion/gsap";
 import Reveal from "@/components/motion/Reveal";
 import { SharedName } from "@/components/motion/PageTransition";
 import { CUSTOM, PRICING_COPY, TIERS, type TierId } from "@/lib/showcase/content";
@@ -109,32 +109,30 @@ export default function Pricing({ headingLevel = "h2" }: { headingLevel?: "h1" |
           gsap.set(fills, { clearProps: "transform" });
         };
 
-        if (ok) {
-          const tl = gsap.timeline({ scrollTrigger, onComplete });
-          tl.from(
-            slots,
-            { autoAlpha: 0, y: 24, duration: 0.65, ease: "studio-out", stagger: 0.06 },
-            0,
-          );
-          slots.forEach((slot, i) => {
-            const cells = slot.querySelectorAll("[data-fill]");
-            if (cells.length === 0) return;
-            tl.from(
-              cells,
-              { scaleX: 0, duration: 0.3, ease: "studio-out", stagger: 0.04 },
-              0.32 + i * 0.06,
-            );
-          });
-        } else {
-          // Reduced motion: a short fade; the day strips are simply filled.
-          gsap.from(slots, {
-            autoAlpha: 0,
-            duration: 0.2,
-            ease: "none",
-            scrollTrigger,
-            onComplete,
-          });
+        // Reduced motion: no from-state; the cards and day strips are simply there.
+        if (!ok) {
+          revealed.current = true;
+          return;
         }
+
+        // Opacity only (never autoAlpha): the plan buttons stay tabbable and
+        // in the accessibility tree before the cards land.
+        const tl = gsap.timeline({ scrollTrigger, onComplete });
+        tl.from(
+          slots,
+          { opacity: 0, y: 24, duration: 0.65, ease: "studio-out", stagger: 0.06 },
+          0,
+        );
+        slots.forEach((slot, i) => {
+          const cells = slot.querySelectorAll("[data-fill]");
+          if (cells.length === 0) return;
+          tl.from(
+            cells,
+            { scaleX: 0, duration: 0.3, ease: "studio-out", stagger: 0.04 },
+            0.32 + i * 0.06,
+          );
+        });
+        return finishOnFocus(grid, tl);
       });
 
       return () => mm.revert();

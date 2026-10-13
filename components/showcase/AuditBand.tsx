@@ -85,8 +85,8 @@ export default function AuditBand() {
           </RevealHeading>
           <Reveal>
             <p className={s.body}>
-              Paste your URL and our AI reads your site the way Google and a first-time visitor do — then
-              tells you exactly what is costing you enquiries.
+              Paste your URL and our AI reads your site the way Google does — then tells you exactly
+              what is costing you enquiries.
             </p>
           </Reveal>
 
@@ -125,7 +125,7 @@ export default function AuditBand() {
               </button>
             </div>
             <p id="audit-band-note" className={s.note}>
-              Takes about 30 seconds
+              Takes about 30 seconds · your email unlocks the full report
             </p>
             <p id="audit-band-error" className={s.error} aria-live="polite">
               {error ? ERROR : ""}

@@ -40,7 +40,7 @@ export default function Footer() {
           >
             A real website, built with care,
             <br />
-            delivered in a week. That&apos;s the whole idea.
+            live in seven working days. That&apos;s the whole idea.
           </p>
         </div>
 

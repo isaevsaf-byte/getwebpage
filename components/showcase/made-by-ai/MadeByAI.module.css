@@ -38,7 +38,7 @@
 .intro {
   max-width: calc(1320px + 2 * clamp(16px, 5vw, 64px));
   margin-inline: auto;
-  padding-inline: clamp(16px, 5vw, 64px);
+  padding-inline: var(--gutter);
 }
 
 .kicker {
@@ -134,7 +134,7 @@
   position: relative;
   max-width: calc(1320px + 2 * clamp(16px, 5vw, 64px));
   margin-inline: auto;
-  padding-inline: clamp(16px, 5vw, 64px);
+  padding-inline: var(--gutter);
 }
 
 .glow {
@@ -759,8 +759,15 @@
   pointer-events: none;
 }
 
-:global(html.motion-ok) .caret {
+:global(html.motion-ok) .caret[data-on] {
   animation: mbai-blink 1.05s steps(2, jump-none) infinite;
+}
+
+/* Off-screen, the rec dot and caret loops pause (data-live is set by an
+   IntersectionObserver in useMadeByAIMotion), so the page can rest. */
+.section:not([data-live]) .kicker::after,
+.section:not([data-live]) .caret[data-on] {
+  animation-play-state: paused;
 }
 
 @keyframes mbai-blink {
@@ -849,7 +856,7 @@
   max-width: calc(1320px + 2 * clamp(16px, 5vw, 64px));
   margin-inline: auto;
   margin-top: clamp(80px, 11vw, 144px);
-  padding-inline: clamp(16px, 5vw, 64px);
+  padding-inline: var(--gutter);
 }
 
 .closing {
@@ -918,8 +925,14 @@
     transform 120ms cubic-bezier(0.2, 0.9, 0.1, 1);
 }
 
-.cta:hover {
-  background: #93293e;
+@media (hover: hover) and (pointer: fine) {
+  .cta:hover {
+    background: #93293e;
+  }
+
+  .cta:hover .ctaArrow {
+    translate: 0 2px;
+  }
 }
 
 .cta:active {
@@ -936,9 +949,6 @@
   transition: translate 180ms ease;
 }
 
-.cta:hover .ctaArrow {
-  translate: 0 2px;
-}
 
 /* ─────────────────────────────────────────────────────────────────
    SCENE — desktop, fine pointer, motion allowed.
@@ -966,7 +976,7 @@
     row-gap: 10px;
     padding-top: 92px;
     padding-bottom: 28px;
-    padding-inline: max(clamp(16px, 5vw, 64px), calc((100% - 1320px) / 2));
+    padding-inline: max(var(--gutter), calc((100% - 1320px) / 2));
     overflow: hidden;
   }
 

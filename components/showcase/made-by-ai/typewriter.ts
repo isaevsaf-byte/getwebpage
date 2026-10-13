@@ -109,6 +109,8 @@ export class Typewriter {
   detach() {
     this.mark.remove();
     this.caret.style.visibility = "hidden";
+    // Blink only while shown: no infinite animation on a hidden element.
+    delete this.caret.dataset.on;
   }
 
   get busy(): boolean {
@@ -130,6 +132,7 @@ export class Typewriter {
     if (!m.height) return;
     const st = this.caret.style;
     st.visibility = "visible";
+    this.caret.dataset.on = "";
     st.height = `${m.height}px`;
     st.width = `${Math.round(m.height * 0.5)}px`;
     st.transform = `translate(${Math.round(m.left - h.left + 2)}px, ${Math.round(m.top - h.top)}px)`;

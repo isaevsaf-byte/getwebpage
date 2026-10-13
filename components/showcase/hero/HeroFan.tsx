@@ -29,7 +29,7 @@ import CssPane from "@/components/showcase/primitives/CssPane";
 import { useScrollTo } from "@/components/motion/SmoothScroll";
 import { gsap, motionMedia, prefersReducedMotion, useGSAP } from "@/lib/motion/gsap";
 import { useTier } from "@/lib/showcase/tier";
-import { getSite, type SiteSlug } from "@/lib/showcase/content";
+import { FLAGS, getSite, type SiteSlug } from "@/lib/showcase/content";
 import type { HeroPaneSlug, HeroSceneProps } from "./contract";
 import SketchScreen from "./SketchScreen";
 import AiDraft from "./AiDraft";
@@ -57,13 +57,13 @@ const loadScene = () => import("./HeroScene");
 const CAPTION = "In front: your sketch. Behind: sites we've built — live today.";
 
 const TIPS: Record<Exclude<HeroPaneSlug, "sketch">, string> = {
-  beautasy: "beautasy.co.uk · Lingerie & Atelier",
-  silkbees: "silkbees.co.uk · Honey Import",
-  safarisaev: "safarisaev.ai · AI & Consulting — our founder's own practice",
+  beautasy: `beautasy.co.uk · ${FLAGS.siteLabels.beautasy} — a family business of our founder`,
+  silkbees: `silkbees.co.uk · ${FLAGS.siteLabels.silkbees}`,
+  safarisaev: `safarisaev.ai · ${FLAGS.siteLabels.safarisaev} — our founder's own practice`,
 };
 
 const ALT: Record<Exclude<HeroPaneSlug, "sketch">, string> = {
-  beautasy: "beautasy.co.uk home page, a site we built",
+  beautasy: "beautasy.co.uk home page, a site we built for a family business of our founder",
   silkbees: "silkbees.co.uk home page, a site we built",
   safarisaev: "safarisaev.ai home page, our founder's own practice",
 };

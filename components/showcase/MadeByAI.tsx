@@ -8,6 +8,7 @@ import { track } from "@/lib/showcase/analytics";
 import { SITE_FACTS } from "@/lib/showcase/content";
 import {
   CLOSING,
+  FLAGS,
   METER_COPY,
   PHASES,
   TOTALS,
@@ -197,11 +198,14 @@ export default function MadeByAI() {
         </p>
         <Reveal className={s.outroBody} selector="[data-reveal]" stagger={0.06}>
           <p className={s.claim} data-reveal="">
-            <strong>{CLOSING.claim}</strong> {CLOSING.support}
+            <strong>{CLOSING.claim}</strong>
+            {CLOSING.support ? ` ${CLOSING.support}` : null}
           </p>
           <div data-reveal="">
             <a href="#pricing" className={s.cta} onClick={onCta}>
-              Get yours — from {SITE_FACTS.priceFrom}
+              {FLAGS.aiStoryClientClaim
+                ? `Get yours — from ${SITE_FACTS.priceFrom}`
+                : "See what a site costs"}
               <span className={s.ctaArrow} aria-hidden="true">
                 ↓
               </span>

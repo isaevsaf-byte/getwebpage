@@ -36,8 +36,8 @@ const DEFAULT_LIMIT = 20;
 const T = {
   en: {
     eyebrow: "Free AI audit",
-    headline: "93% of small business websites are losing customers.",
-    subheadline: "Is yours?",
+    headline: "Is your website losing you customers?",
+    subheadline: "Find out in 30 seconds.",
     description:
       "Paste your URL below. Our AI scans your site in ~30 seconds and shows exactly what's costing you customers.",
     placeholder: "https://yourbusiness.co.uk",
@@ -74,8 +74,8 @@ const T = {
   },
   ru: {
     eyebrow: "Бесплатный AI-аудит",
-    headline: "93% сайтов малого бизнеса теряют клиентов.",
-    subheadline: "Ваш тоже?",
+    headline: "Ваш сайт теряет клиентов?",
+    subheadline: "Узнайте за 30 секунд.",
     description:
       "Вставьте URL ниже. Наш ИИ проверит сайт за ~30 секунд и покажет, что именно отпугивает клиентов.",
     placeholder: "https://вашбизнес.ru",

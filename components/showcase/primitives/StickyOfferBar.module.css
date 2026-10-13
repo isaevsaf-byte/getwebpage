@@ -11,7 +11,7 @@
   justify-content: space-between;
   gap: 12px;
   min-height: calc(56px + env(safe-area-inset-bottom, 0px));
-  padding: 6px clamp(16px, 5vw, 64px) calc(6px + env(safe-area-inset-bottom, 0px));
+  padding: 6px var(--gutter) calc(6px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
   background: #14181a;
   border-top: 1px solid #242a2c;

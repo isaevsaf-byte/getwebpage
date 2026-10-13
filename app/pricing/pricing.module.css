@@ -1,0 +1,34 @@
+/* /pricing FAQ. Stacks to one column on phones, where two columns left the
+   questions 4–5 lines tall. */
+
+.faq {
+  background: #eaece7;
+  padding: 100px var(--gutter);
+  border-top: 1px solid #d5d9d2;
+}
+
+.row {
+  border-top: 1px solid #d5d9d2;
+  padding: 28px 0;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 48px;
+}
+
+.link {
+  color: #7d2436;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 639.98px) {
+  .faq {
+    padding-block: 72px;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 22px 0;
+  }
+}

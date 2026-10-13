@@ -14,23 +14,31 @@ export interface LimitResult {
   ok: boolean;
   limit: number;
   remaining: number;
+  /** True when KV could not be reached and the caller asked to fail closed. */
+  unavailable?: boolean;
 }
 
 /**
  * Counts this request against a rolling daily bucket and reports whether it is
  * allowed. Counting happens up front, so a failure downstream cannot hand the
  * caller a free retry.
+ *
+ * KV unavailable: fails open by default (contact, checkout must keep working).
+ * Pass `failClosed` for routes that spend money and are not essential, so an
+ * outage or a half-configured Preview cannot lift their ceiling.
  */
 export async function consume(
   key: string,
   limit: number,
-  windowSeconds = DAY
+  windowSeconds = DAY,
+  { failClosed = false }: { failClosed?: boolean } = {}
 ): Promise<LimitResult> {
   try {
     const used = await kv.incr(key);
     if (used === 1) await kv.expire(key, windowSeconds);
     return { ok: used <= limit, limit, remaining: Math.max(0, limit - used) };
   } catch {
+    if (failClosed) return { ok: false, limit, remaining: 0, unavailable: true };
     // KV unavailable — fail open rather than taking the whole route down.
     return { ok: true, limit, remaining: limit };
   }

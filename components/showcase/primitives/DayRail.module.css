@@ -222,12 +222,13 @@
   position: fixed;
   left: 0;
   right: 0;
-  top: var(--header-h, 64px);
+  /* .mob only shows below 1024px, where the header is exactly 56px + inset. */
+  top: calc(56px + env(safe-area-inset-top));
   z-index: 40;
   display: none;
   align-items: center;
   gap: 12px;
-  padding: 6px clamp(16px, 5vw, 64px);
+  padding: 6px var(--gutter);
   background: var(--rail-ground);
   font-family: var(--font-mono), ui-monospace, Menlo, monospace;
   font-size: 0.8125rem;
@@ -274,5 +275,20 @@
 
   .mob {
     display: flex;
+  }
+}
+
+/* Touch screens ≥1024 (iPad landscape): 28px ticks are too tight to tap. */
+@media (pointer: coarse) {
+  .tick {
+    height: 40px;
+  }
+}
+
+/* Landscape phones: header + bar + offer bar already eat a third of the
+   height. The progress bar is decorative (pointer-events: none). */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mob {
+    display: none;
   }
 }

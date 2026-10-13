@@ -266,9 +266,12 @@ export default function RealSites() {
     playSwitch();
   }, [active, contextSafe, applyTilt]);
 
-  // Hovered or focused rows load at once; the active one always has its capture.
+  // Hovered or focused rows load at once; the active one always has its
+  // capture — but only once the section has come near the viewport, so the
+  // tall captures never download on a load at the top of the page.
+  const nearRef = useRef(false);
   useEffect(() => {
-    if (!isStageLayout()) return;
+    if (!isStageLayout() || !nearRef.current) return;
     const id = requestAnimationFrame(() => allowLoad(active));
     return () => cancelAnimationFrame(id);
   }, [active, allowLoad]);
@@ -281,6 +284,7 @@ export default function RealSites() {
       (entries) => {
         for (const e of entries) {
           if (!e.isIntersecting) continue;
+          nearRef.current = true;
           const i = Number((e.target as HTMLElement).dataset.row);
           if (Number.isFinite(i)) allowLoad(i);
         }

@@ -19,6 +19,24 @@ function cx(...parts: (string | false | null | undefined)[]) {
 
 export default function AiDraft({ variant, className }: { variant: "stage" | "flow"; className?: string }) {
   const { visitor, ai, status } = useAiForVisitor();
+
+  // Phones scroll the visitor down to this pane on click, away from AiNote —
+  // so a failure must also be said here, where they are looking.
+  if (variant === "flow" && (status === "error" || status === "limited")) {
+    return (
+      <div className={cx(styles.draft, styles[variant], "enter-up", className)} aria-hidden="true">
+        <div className={styles.inner}>
+          <p className={styles.head}>
+            <span className={styles.glyph}>✦</span>
+            No draft this time
+          </p>
+          <p className={styles.sub}>
+            {ai.message || "Claude couldn't write this just now. Try again in a moment."}
+          </p>
+        </div>
+      </div>
+    );
+  }
   if (status !== "writing" && status !== "done") return null;
 
   const copy = status === "done" ? ai.copy : null;

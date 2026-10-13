@@ -14,6 +14,7 @@ export const metadata: Metadata = {
       "See what's costing you customers. A free AI audit of your site in about 30 seconds.",
     url: "https://getwebpage.co.uk/audit",
     type: "website",
+    images: [{ url: "https://getwebpage.co.uk/og-v2.jpg", width: 1200, height: 630, alt: "GetWebPage — a serious website for your business, built in 7 days. From £500." }],
   },
 };
 

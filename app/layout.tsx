@@ -58,13 +58,13 @@ export const metadata: Metadata = {
     siteName: "GetWebPage",
     locale: "en_GB",
     type: "website",
-    images: [{ url: `${SITE}/og-image.jpg`, width: 1200, height: 630 }],
+    images: [{ url: `${SITE}/og-v2.jpg`, width: 1200, height: 630, alt: "GetWebPage — a serious website for your business, built in 7 days. From £500." }],
   },
   twitter: {
     card: "summary_large_image",
     title: "GetWebPage — Serious websites for UK small businesses",
     description: "From £500. Live in 7 working days. Full ownership yours.",
-    images: [`${SITE}/og-image.jpg`],
+    images: [{ url: `${SITE}/og-v2.jpg`, alt: "GetWebPage — a serious website for your business, built in 7 days. From £500." }],
   },
 };
 
@@ -89,7 +89,7 @@ const jsonLd = {
       url: SITE,
       email: "saf@safarisaev.ai",
       telephone: "+447729741116",
-      image: `${SITE}/og-image.jpg`,
+      image: `${SITE}/og-v2.jpg`,
       priceRange: "££",
       areaServed: { "@type": "Country", name: "United Kingdom" },
       parentOrganization: {
